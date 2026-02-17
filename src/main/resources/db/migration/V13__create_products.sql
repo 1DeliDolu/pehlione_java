@@ -1,0 +1,16 @@
+CREATE TABLE products (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  sku VARCHAR(64) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  price DECIMAL(19,2) NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'EUR',
+  stock_quantity INT NOT NULL DEFAULT 0,
+  status VARCHAR(16) NOT NULL DEFAULT 'DRAFT',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_products_sku (sku),
+  KEY idx_products_status (status),
+  KEY idx_products_name (name)
+);

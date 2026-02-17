@@ -30,7 +30,7 @@ Use Maven Wrapper when possible:
 - Frameworks: JUnit 5, Spring Boot Test, Testcontainers (MySQL).
 - Test classes should follow `*Tests.java` naming (example: `WebApplicationTests`).
 - Add or update tests for behavior changes, especially DB/session/security paths.
-- If tests depend on Testcontainers, ensure Docker/Testcontainers runtime is available before running `./mvnw test`.
+
 
 ## Commit & Pull Request Guidelines
 Git history currently uses short messages (for example: `doku`, `implement basis code`, `ok`) without strict formatting. Prefer clearer imperative messages:

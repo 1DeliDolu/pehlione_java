@@ -1,402 +1,538 @@
+Tamam — **Product 2 = Category (normalized) + product_categories (Many-to-Many) + public filter**.
+Hedef:
+
+* `categories` tablosu (unique slug)
+* `product_categories` join table
+* Product create/update request’te `categoryIds`
+* `GET /api/v1/products?category=slug` ile filtre
+* Admin CRUD: category oluşturma/güncelleme
 
 ---
 
-## 1) Security: password reset endpoint’leri public olsun
+## 1) Flyway: categories + join table
 
-**`src/main/java/com/pehlione/web/security/SecurityConfig.java`** (API chain authorize kısmı)
-
-```java
-.authorizeHttpRequests(auth -> auth
-    .requestMatchers(
-        "/api/v1/auth/login",
-        "/api/v1/auth/refresh",
-        "/api/v1/auth/logout",
-        "/api/v1/auth/register",
-        "/api/v1/auth/verify",
-        "/api/v1/auth/password/**"   // ✅ forgot + reset
-    ).permitAll()
-    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-    .anyRequest().authenticated()
-)
-```
-
----
-
-## 2) Rate limit: password reset’i de kapsa
-
-**`src/main/java/com/pehlione/web/security/AuthRateLimitFilter.java`** içindeki `shouldNotFilter`’ı genişlet:
-
-```java
-@Override
-protected boolean shouldNotFilter(HttpServletRequest request) {
-    String path = request.getRequestURI();
-    return !(path.equals("/api/v1/auth/login")
-            || path.equals("/api/v1/auth/refresh")
-            || path.equals("/api/v1/auth/password/forgot")
-            || path.equals("/api/v1/auth/password/reset"));
-}
-```
-
----
-
-## 3) DB: Password reset token tablosu
-
-Eğer daha önce eklemediysen:
-
-**`src/main/resources/db/migration/V11__create_password_reset_tokens.sql`**
+**`src/main/resources/db/migration/V14__create_categories.sql`**
 
 ```sql
-CREATE TABLE password_reset_tokens (
+CREATE TABLE categories (
   id BIGINT NOT NULL AUTO_INCREMENT,
-  user_id BIGINT NOT NULL,
-  token_hash CHAR(64) NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
-  used_at TIMESTAMP NULL,
+  slug VARCHAR(64) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_prt_hash (token_hash),
-  KEY idx_prt_user (user_id),
-  CONSTRAINT fk_prt_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  UNIQUE KEY uk_categories_slug (slug),
+  KEY idx_categories_name (name)
 );
+
+CREATE TABLE product_categories (
+  product_id BIGINT NOT NULL,
+  category_id BIGINT NOT NULL,
+  PRIMARY KEY (product_id, category_id),
+  CONSTRAINT fk_pc_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_pc_category ON product_categories(category_id);
 ```
 
 ---
 
-## 4) Entity + Repository
+## 2) Entity: Category
 
-### Entity
-
-**`src/main/java/com/pehlione/web/auth/PasswordResetToken.java`**
+**`src/main/java/com/pehlione/web/category/Category.java`**
 
 ```java
-package com.pehlione.web.auth;
+package com.pehlione.web.category;
 
-import com.pehlione.web.user.User;
 import jakarta.persistence.*;
 
 import java.time.Instant;
 
 @Entity
-@Table(name="password_reset_tokens")
-public class PasswordResetToken {
+@Table(name = "categories")
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name="user_id", nullable = false)
-    private User user;
+    @Column(nullable = false, unique = true, length = 64)
+    private String slug;
 
-    @Column(name="token_hash", nullable = false, unique = true, length = 64)
-    private String tokenHash;
-
-    @Column(name="expires_at", nullable = false)
-    private Instant expiresAt;
-
-    @Column(name="used_at")
-    private Instant usedAt;
+    @Column(nullable = false, length = 255)
+    private String name;
 
     @Column(name="created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(name="updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
+
+    @PreUpdate
+    void preUpdate() { this.updatedAt = Instant.now(); }
+
     public Long getId() { return id; }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 
-    public String getTokenHash() { return tokenHash; }
-    public void setTokenHash(String tokenHash) { this.tokenHash = tokenHash; }
-
-    public Instant getExpiresAt() { return expiresAt; }
-    public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
-
-    public Instant getUsedAt() { return usedAt; }
-    public void setUsedAt(Instant usedAt) { this.usedAt = usedAt; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }
 ```
 
-### Repository
+---
 
-**`src/main/java/com/pehlione/web/auth/PasswordResetTokenRepository.java`**
+## 3) Product entity: categories ilişki alanı ekle
+
+**`src/main/java/com/pehlione/web/product/Product.java`** içine ekle:
 
 ```java
-package com.pehlione.web.auth;
+import com.pehlione.web.category.Category;
+import java.util.HashSet;
+import java.util.Set;
+```
+
+Alan:
+
+```java
+@ManyToMany(fetch = FetchType.LAZY)
+@JoinTable(
+    name = "product_categories",
+    joinColumns = @JoinColumn(name = "product_id"),
+    inverseJoinColumns = @JoinColumn(name = "category_id")
+)
+private Set<Category> categories = new HashSet<>();
+
+public Set<Category> getCategories() { return categories; }
+public void setCategories(Set<Category> categories) { this.categories = categories; }
+```
+
+---
+
+## 4) Repository’ler
+
+### CategoryRepository
+
+**`src/main/java/com/pehlione/web/category/CategoryRepository.java`**
+
+```java
+package com.pehlione.web.category;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
-    Optional<PasswordResetToken> findByTokenHash(String tokenHash);
+public interface CategoryRepository extends JpaRepository<Category, Long> {
+    Optional<Category> findBySlug(String slug);
+    boolean existsBySlug(String slug);
 }
 ```
 
----
+### ProductRepository: category filter için query
 
-## 5) TokenGenerator (yoksa ekle)
-
-**`src/main/java/com/pehlione/web/auth/TokenGenerator.java`**
+**`src/main/java/com/pehlione/web/product/ProductRepository.java`** içine ekle:
 
 ```java
-package com.pehlione.web.auth;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+```
 
-import java.security.SecureRandom;
-import java.util.Base64;
+```java
+@Query("""
+    select distinct p from Product p
+    join p.categories c
+    where p.status = :status and c.slug = :slug
+""")
+Page<Product> findActiveByCategorySlug(@Param("status") ProductStatus status,
+                                      @Param("slug") String slug,
+                                      Pageable pageable);
+```
 
-public final class TokenGenerator {
-    private static final SecureRandom random = new SecureRandom();
-    private TokenGenerator() {}
+> `distinct` join kaynaklı duplicate’leri engeller.
 
-    public static String newRawToken() {
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+---
+
+## 5) DTO güncelle: ProductResponse categories + Create/Update categoryIds
+
+**`src/main/java/com/pehlione/web/api/product/ProductDtos.java`** değiştir:
+
+### Request’lere `categoryIds` ekle
+
+```java
+import java.util.Set;
+```
+
+Create:
+
+```java
+public record CreateProductRequest(
+        @NotBlank @Size(max = 64) String sku,
+        @NotBlank @Size(max = 255) String name,
+        @Size(max = 10000) String description,
+        @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
+        @NotBlank @Pattern(regexp = "^[A-Z]{3}$") String currency,
+        @Min(0) int stockQuantity,
+        @NotNull ProductStatus status,
+        Set<@NotNull Long> categoryIds
+) {}
+```
+
+Update:
+
+```java
+public record UpdateProductRequest(
+        @NotBlank @Size(max = 255) String name,
+        @Size(max = 10000) String description,
+        @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
+        @NotBlank @Pattern(regexp = "^[A-Z]{3}$") String currency,
+        @Min(0) int stockQuantity,
+        @NotNull ProductStatus status,
+        Set<@NotNull Long> categoryIds
+) {}
+```
+
+### Response’a categories ekle
+
+Category DTO:
+
+```java
+public record CategoryRef(Long id, String slug, String name) {}
+```
+
+ProductResponse:
+
+```java
+public record ProductResponse(
+        Long id,
+        String sku,
+        String name,
+        String description,
+        BigDecimal price,
+        String currency,
+        int stockQuantity,
+        ProductStatus status,
+        java.util.List<CategoryRef> categories,
+        Instant createdAt,
+        Instant updatedAt
+) {
+    public static ProductResponse from(Product p) {
+        var cats = p.getCategories().stream()
+                .map(c -> new CategoryRef(c.getId(), c.getSlug(), c.getName()))
+                .toList();
+
+        return new ProductResponse(
+                p.getId(), p.getSku(), p.getName(), p.getDescription(),
+                p.getPrice(), p.getCurrency(), p.getStockQuantity(),
+                p.getStatus(), cats, p.getCreatedAt(), p.getUpdatedAt()
+        );
     }
 }
 ```
 
-`TokenHash.sha256Hex(...)` zaten sende var.
+---
+
+## 6) ProductService: categoryIds set et
+
+**`src/main/java/com/pehlione/web/product/ProductService.java`** constructor’a `CategoryRepository` ekle ve category resolve methodu yaz:
+
+```java
+import com.pehlione.web.category.Category;
+import com.pehlione.web.category.CategoryRepository;
+import java.util.HashSet;
+import java.util.Set;
+```
+
+```java
+private final CategoryRepository categoryRepo;
+
+public ProductService(ProductRepository repo, CategoryRepository categoryRepo) {
+    this.repo = repo;
+    this.categoryRepo = categoryRepo;
+}
+```
+
+Helper:
+
+```java
+private Set<Category> resolveCategories(Set<Long> ids) {
+    if (ids == null || ids.isEmpty()) return Set.of();
+    var found = new HashSet<>(categoryRepo.findAllById(ids));
+    if (found.size() != ids.size()) {
+        throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.VALIDATION_FAILED, "Some categoryIds not found");
+    }
+    return found;
+}
+```
+
+Create/update sırasında set et (controller yerine service’te yapmak daha temiz ama hızlıca controller’da da olur). En temiz: ProductController’da req.categoryIds()’i service’e geç.
 
 ---
 
-## 6) PasswordResetService (token üret + mail + reset + revoke-all sessions)
+## 7) ProductController: list’te category slug filter + create/update set categories
 
-**`src/main/java/com/pehlione/web/auth/PasswordResetService.java`**
+**`src/main/java/com/pehlione/web/api/product/ProductController.java`**
+
+### list endpoint
 
 ```java
-package com.pehlione.web.auth;
+@GetMapping
+public Page<ProductResponse> list(
+        @RequestParam(name="q", required=false) String q,
+        @RequestParam(name="category", required=false) String categorySlug,
+        Pageable pageable
+) {
+    return service.listPublic(q, categorySlug, pageable).map(ProductResponse::from);
+}
+```
+
+### create/update categories
+
+Create:
+
+```java
+p.setCategories(service.resolveCategoriesForController(req.categoryIds()));
+```
+
+Update:
+
+```java
+p.setCategories(service.resolveCategoriesForController(req.categoryIds()));
+```
+
+Burada “resolveCategories” private kaldığı için public wrapper ekleyelim:
+
+**ProductService içine:**
+
+```java
+@Transactional(readOnly = true)
+public Set<Category> resolveCategoriesForController(Set<Long> ids) {
+    return resolveCategories(ids);
+}
+```
+
+### ProductService listPublic overload
+
+**`ProductService` içine:**
+
+```java
+@Transactional(readOnly = true)
+public Page<Product> listPublic(String q, String categorySlug, Pageable pageable) {
+    if (categorySlug != null && !categorySlug.isBlank()) {
+        return repo.findActiveByCategorySlug(ProductStatus.ACTIVE, categorySlug.trim(), pageable);
+    }
+    if (q != null && !q.isBlank()) {
+        return repo.findByStatusAndNameContainingIgnoreCase(ProductStatus.ACTIVE, q.trim(), pageable);
+    }
+    return repo.findByStatus(ProductStatus.ACTIVE, pageable);
+}
+```
+
+> Not: q + category beraber istersen, JPQL’i genişletiriz. Şimdilik netlik için tek filtre.
+
+---
+
+## 8) Admin Category API (CRUD)
+
+### DTO
+
+**`src/main/java/com/pehlione/web/api/category/CategoryDtos.java`**
+
+```java
+package com.pehlione.web.api.category;
+
+import com.pehlione.web.category.Category;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+import java.time.Instant;
+
+public class CategoryDtos {
+
+    public record CreateCategoryRequest(
+            @NotBlank @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$") @Size(max=64) String slug,
+            @NotBlank @Size(max=255) String name
+    ) {}
+
+    public record UpdateCategoryRequest(
+            @NotBlank @Size(max=255) String name
+    ) {}
+
+    public record CategoryResponse(
+            Long id,
+            String slug,
+            String name,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        public static CategoryResponse from(Category c) {
+            return new CategoryResponse(c.getId(), c.getSlug(), c.getName(), c.getCreatedAt(), c.getUpdatedAt());
+        }
+    }
+}
+```
+
+### Service
+
+**`src/main/java/com/pehlione/web/category/CategoryService.java`**
+
+```java
+package com.pehlione.web.category;
 
 import com.pehlione.web.api.error.ApiErrorCode;
 import com.pehlione.web.api.error.ApiException;
-import com.pehlione.web.mail.MailService;
-import com.pehlione.web.user.User;
-import com.pehlione.web.user.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 @Service
-public class PasswordResetService {
+public class CategoryService {
 
-    private final UserRepository userRepo;
-    private final PasswordResetTokenRepository tokenRepo;
-    private final PasswordEncoder encoder;
-    private final MailService mailService;
-    private final AuthSessionService sessionService;
+    private final CategoryRepository repo;
 
-    private final String publicBaseUrl;
-
-    public PasswordResetService(
-            UserRepository userRepo,
-            PasswordResetTokenRepository tokenRepo,
-            PasswordEncoder encoder,
-            MailService mailService,
-            AuthSessionService sessionService,
-            @Value("${app.public-base-url}") String publicBaseUrl
-    ) {
-        this.userRepo = userRepo;
-        this.tokenRepo = tokenRepo;
-        this.encoder = encoder;
-        this.mailService = mailService;
-        this.sessionService = sessionService;
-        this.publicBaseUrl = publicBaseUrl;
-    }
-
-    /**
-     * Email enumeration yapmamak için controller her zaman 204 dönecek.
-     * Burada user varsa mail atacağız; yoksa sessizce bitecek.
-     */
-    @Transactional
-    public void requestReset(String email) {
-        User u = userRepo.findByEmail(email).orElse(null);
-        if (u == null) return;
-
-        // Policy: istersen sadece verified+enabled için mail at
-        if (!u.isEnabled() || u.isLocked() || !u.isEmailVerified()) return;
-
-        String raw = TokenGenerator.newRawToken();
-        String hash = TokenHash.sha256Hex(raw);
-
-        PasswordResetToken t = new PasswordResetToken();
-        t.setUser(u);
-        t.setTokenHash(hash);
-        t.setExpiresAt(Instant.now().plus(30, ChronoUnit.MINUTES)); // 30 dk
-        tokenRepo.save(t);
-
-        // Link genelde frontend sayfasına gider; token query string ile taşınır.
-        String link = publicBaseUrl + "/reset-password?token=" + raw;
-
-        String html = """
-            <p>Password reset requested.</p>
-            <p>Click to reset your password:</p>
-            <p><a href="%s">Reset Password</a></p>
-            <p>This link expires in 30 minutes.</p>
-            """.formatted(link);
-
-        mailService.sendHtml(u.getEmail(), "Reset your password", html);
+    public CategoryService(CategoryRepository repo) {
+        this.repo = repo;
     }
 
     @Transactional
-    public void resetPassword(String rawToken, String newPassword) {
-        String hash = TokenHash.sha256Hex(rawToken);
-
-        PasswordResetToken t = tokenRepo.findByTokenHash(hash)
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.CONFLICT, "Invalid token"));
-
-        if (t.getUsedAt() != null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.CONFLICT, "Token already used");
+    public Category create(Category c) {
+        if (repo.existsBySlug(c.getSlug())) {
+            throw new ApiException(HttpStatus.CONFLICT, ApiErrorCode.CONFLICT, "Category slug already exists");
         }
-        if (t.getExpiresAt().isBefore(Instant.now())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.CONFLICT, "Token expired");
-        }
+        return repo.save(c);
+    }
 
-        User u = t.getUser();
+    @Transactional(readOnly = true)
+    public Category getOrThrow(Long id) {
+        return repo.findById(id).orElseThrow(() ->
+                new ApiException(HttpStatus.NOT_FOUND, ApiErrorCode.NOT_FOUND, "Category not found"));
+    }
 
-        // Şifreyi değiştir
-        u.setPasswordHash(encoder.encode(newPassword));
+    @Transactional
+    public Category update(Long id, String name) {
+        Category c = getOrThrow(id);
+        c.setName(name.trim());
+        return c;
+    }
 
-        // Token'ı one-time yap
-        t.setUsedAt(Instant.now());
-
-        // Güvenlik: tüm cihazlardan logout (refresh+session kill switch)
-        sessionService.revokeAllForUser(u.getId());
+    @Transactional
+    public void delete(Long id) {
+        // RESTRICT FK yüzünden category silmek fail edebilir (ürün bağlıysa)
+        repo.delete(getOrThrow(id));
     }
 }
 ```
 
----
+### Controller (admin write, public read list)
 
-## 7) Controller: forgot + reset (her zaman güvenli davranış)
-
-**`src/main/java/com/pehlione/web/api/PasswordController.java`**
+**`src/main/java/com/pehlione/web/api/category/CategoryController.java`**
 
 ```java
-package com.pehlione.web.api;
+package com.pehlione.web.api.category;
 
-import com.pehlione.web.auth.PasswordResetService;
+import com.pehlione.web.category.Category;
+import com.pehlione.web.category.CategoryRepository;
+import com.pehlione.web.category.CategoryService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+import static com.pehlione.web.api.category.CategoryDtos.*;
+
 @RestController
-@RequestMapping("/api/v1/auth/password")
-public class PasswordController {
+@RequestMapping("/api/v1/categories")
+public class CategoryController {
 
-    private final PasswordResetService resetService;
+    private final CategoryRepository repo;
+    private final CategoryService service;
 
-    // refresh cookie temizlemek için (senin AuthController ile aynı path/samesite ayarına uygun)
-    // Burada path'i "/api/v1/auth" tutuyoruz ki cookie kesin temizlensin.
-    public PasswordController(PasswordResetService resetService) {
-        this.resetService = resetService;
+    public CategoryController(CategoryRepository repo, CategoryService service) {
+        this.repo = repo;
+        this.service = service;
     }
 
-    @PostMapping("/forgot")
-    public ResponseEntity<Void> forgot(@Valid @RequestBody ForgotRequest req) {
-        // Always 204: email enumeration yok
-        resetService.requestReset(req.email());
-        return ResponseEntity.noContent().build();
+    // Public read
+    @GetMapping
+    public List<CategoryResponse> list() {
+        return repo.findAll().stream().map(CategoryResponse::from).toList();
     }
 
-    @PostMapping("/reset")
-    public ResponseEntity<Void> reset(@Valid @RequestBody ResetRequest req) {
-        resetService.resetPassword(req.token(), req.newPassword());
-
-        // password reset sonrası refresh cookie temizle (client tarafı güvenli)
-        ResponseCookie cleared = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(false) // dev; prod’da config’ten alabilirsin
-                .path("/api/v1/auth")
-                .sameSite("Strict")
-                .maxAge(0)
-                .build();
-
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, cleared.toString())
-                .build();
+    // Admin write
+    @PostMapping
+    public CategoryResponse create(@Valid @RequestBody CreateCategoryRequest req) {
+        Category c = new Category();
+        c.setSlug(req.slug().trim());
+        c.setName(req.name().trim());
+        return CategoryResponse.from(service.create(c));
     }
 
-    public record ForgotRequest(@Email @NotBlank String email) {}
+    @PutMapping("/{id}")
+    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody UpdateCategoryRequest req) {
+        return CategoryResponse.from(service.update(id, req.name()));
+    }
 
-    public record ResetRequest(
-            @NotBlank String token,
-            @NotBlank @Size(min = 8, max = 72) String newPassword
-    ) {}
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
 }
 ```
 
-> Cookie temizlemede `secure=false` dev içindi. İstersen bunu `@Value("${app.security.refresh-cookie.secure}")` ile konfigürasyondan okuyacak hale getiririm (AuthController’daki gibi).
-
 ---
 
-## 8) Önceki adım: VerificationService placeholder düzeltmesi
+## 9) Security: categories GET public, write admin
 
-Senin kodun derlenebilir olsun diye **VerificationService**’te token üretimini `TokenGenerator` ile yap.
-
-**`src/main/java/com/pehlione/web/auth/VerificationService.java`** içindeki token üretimini şu şekilde düzelt:
+`SecurityConfig` API chain authorize’ya ekle:
 
 ```java
-String rawToken = TokenGenerator.newRawToken();
-String hash = TokenHash.sha256Hex(rawToken);
+.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/categories/**").permitAll()
+.requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
 ```
-
-(placeholder olan satırları tamamen kaldır.)
 
 ---
 
-## 9) Test (MailHog ile en kolay)
+## 10) Test (curl)
 
-### (A) MailHog önerisi
-
-Localde mail test için en pratik: MailHog (SMTP 1025, UI 8025).
-
-`application.properties`:
-
-```properties
-spring.mail.host=localhost
-spring.mail.port=1025
-app.public-base-url=http://localhost:8083
-```
-
-### (B) Forgot
+### Admin create category
 
 ```bash
-curl -i -X POST http://localhost:8083/api/v1/auth/password/forgot \
+curl -i -X POST http://localhost:8083/api/v1/categories \
+  -H "Authorization: Bearer <ADMIN_ACCESS_TOKEN>" \
   -H "Content-Type: application/json" \
-  -d '{"email":"user@pehlione.com"}'
+  -d '{"slug":"tshirts","name":"T-Shirts"}'
 ```
 
-Her zaman `204` dönmeli.
-
-MailHog UI’da gelen mailde linkte `token=...` olacak.
-
-### (C) Reset
+### Admin create product with categoryIds
 
 ```bash
-curl -i -X POST http://localhost:8083/api/v1/auth/password/reset \
+curl -i -X POST http://localhost:8083/api/v1/products \
+  -H "Authorization: Bearer <ADMIN_ACCESS_TOKEN>" \
   -H "Content-Type: application/json" \
-  -d '{"token":"<MAILDEKI_TOKEN>","newPassword":"NewPassw0rd!"}'
+  -d '{
+    "sku":"SKU-002",
+    "name":"Basic Tee",
+    "description":"100% cotton",
+    "price":15.99,
+    "currency":"EUR",
+    "stockQuantity":50,
+    "status":"ACTIVE",
+    "categoryIds":[1]
+  }'
 ```
 
-Sonra login’i yeni şifreyle dene.
+### Public filter
+
+```bash
+curl -s "http://localhost:8083/api/v1/products?category=tshirts"
+```
 
 ---
 
-### Bu adımın güvenlik sonuçları
+## Product 3 (sonraki)
 
-* Reset başarılı olunca **tüm cihazlardaki refresh/session revoke** edildi → kullanıcı yeniden login olmak zorunda.
-* Forgot endpoint’i **email enumeration** yapmaz (her zaman 204).
-
----

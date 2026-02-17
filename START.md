@@ -17,3 +17,20 @@ mvn -U clean package
 # dependency
 
 mvn dependency:tree | grep mysql
+
+# MailHog (local SMTP)
+
+docker run -d --name mailhog --restart unless-stopped -p 1025:1025 -p 8025:8025 mailhog/mailhog:v1.0.1
+
+# UI
+
+http://localhost:8025
+
+# stop/start
+
+docker stop mailhog
+docker start mailhog
+
+# note
+
+Bu proje localde MySQL kullanir, Docker MSSQL kullanimi yoktur.
