@@ -4,7 +4,6 @@ import static com.pehlione.web.api.product.ProductDtos.CreateProductRequest;
 import static com.pehlione.web.api.product.ProductDtos.ProductResponse;
 import static com.pehlione.web.api.product.ProductDtos.UpdateProductRequest;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,9 +31,15 @@ public class ProductController {
     }
 
     @GetMapping
-    public Page<ProductResponse> list(
+    public Object list(
             @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "category", required = false) String categorySlug,
             Pageable pageable) {
+        if (categorySlug != null && !categorySlug.isBlank()) {
+            return service.listActiveByCategoryNoPaging(categorySlug).stream()
+                    .map(ProductResponse::from)
+                    .toList();
+        }
         return service.listPublic(q, pageable).map(ProductResponse::from);
     }
 
@@ -53,6 +58,7 @@ public class ProductController {
         p.setCurrency(req.currency().trim());
         p.setStockQuantity(req.stockQuantity());
         p.setStatus(req.status());
+        p.setCategories(service.resolveCategoriesForController(req.categoryIds()));
         return ProductResponse.from(service.create(p));
     }
 
@@ -65,6 +71,7 @@ public class ProductController {
             p.setCurrency(req.currency().trim());
             p.setStockQuantity(req.stockQuantity());
             p.setStatus(req.status());
+            p.setCategories(service.resolveCategoriesForController(req.categoryIds()));
         });
         return ProductResponse.from(updated);
     }

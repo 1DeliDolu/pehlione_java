@@ -2,6 +2,8 @@ package com.pehlione.web.api.product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 import com.pehlione.web.product.Product;
 import com.pehlione.web.product.ProductStatus;
@@ -22,7 +24,8 @@ public class ProductDtos {
             @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
             @NotBlank @Pattern(regexp = "^[A-Z]{3}$") String currency,
             @Min(0) int stockQuantity,
-            @NotNull ProductStatus status) {
+            @NotNull ProductStatus status,
+            Set<@NotNull Long> categoryIds) {
     }
 
     public record UpdateProductRequest(
@@ -31,7 +34,14 @@ public class ProductDtos {
             @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
             @NotBlank @Pattern(regexp = "^[A-Z]{3}$") String currency,
             @Min(0) int stockQuantity,
-            @NotNull ProductStatus status) {
+            @NotNull ProductStatus status,
+            Set<@NotNull Long> categoryIds) {
+    }
+
+    public record CategoryRef(Long id, String slug, String name) {
+    }
+
+    public record ImageRef(Long id, String url, String altText, int sortOrder, boolean primary) {
     }
 
     public record ProductResponse(
@@ -43,9 +53,19 @@ public class ProductDtos {
             String currency,
             int stockQuantity,
             ProductStatus status,
+            List<CategoryRef> categories,
+            ImageRef primaryImage,
+            List<ImageRef> images,
             Instant createdAt,
             Instant updatedAt) {
         public static ProductResponse from(Product p) {
+            List<CategoryRef> cats = p.getCategories().stream()
+                    .map(c -> new CategoryRef(c.getId(), c.getSlug(), c.getName()))
+                    .toList();
+            List<ImageRef> imgs = p.getImages().stream()
+                    .map(i -> new ImageRef(i.getId(), i.getUrl(), i.getAltText(), i.getSortOrder(), i.isPrimary()))
+                    .toList();
+            ImageRef primary = imgs.stream().filter(ImageRef::primary).findFirst().orElse(null);
             return new ProductResponse(
                     p.getId(),
                     p.getSku(),
@@ -55,6 +75,9 @@ public class ProductDtos {
                     p.getCurrency(),
                     p.getStockQuantity(),
                     p.getStatus(),
+                    cats,
+                    primary,
+                    imgs,
                     p.getCreatedAt(),
                     p.getUpdatedAt());
         }

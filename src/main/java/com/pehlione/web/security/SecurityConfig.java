@@ -33,10 +33,13 @@ public class SecurityConfig {
                                 "/api/v1/auth/logout",
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/verify",
-                                "/api/v1/auth/password/**")
+                                "/api/v1/auth/password/**",
+                                "/api/v1/webhooks/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/**").permitAll()
                         .requestMatchers("/api/v1/products", "/api/v1/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories", "/api/v1/categories/**").permitAll()
+                        .requestMatchers("/api/v1/categories", "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))

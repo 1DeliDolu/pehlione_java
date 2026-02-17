@@ -1,403 +1,629 @@
+Tamam — **Product 11 = Order Transition Guard (tek yerde) + Admin list/filter endpoint’leri (orders + refunds + webhook events)**.
+
+Aşağıdaki adımda iki şeyi “enterprise düzeyine” çekiyoruz:
+
+1. **Order status değişimleri artık tek merkezden kontrol edilecek** (state machine / guard).
+2. Admin tarafında **listeleme + filtreleme** (paging’li) endpoint’leri gelecek.
 
 ---
 
-## 1) Security: password reset endpoint’leri public olsun
+# A) Order Transition Guard (tek yerde)
 
-**`src/main/java/com/pehlione/web/security/SecurityConfig.java`** (API chain authorize kısmı)
+## A1) OrderTransitionService
 
-```java
-.authorizeHttpRequests(auth -> auth
-    .requestMatchers(
-        "/api/v1/auth/login",
-        "/api/v1/auth/refresh",
-        "/api/v1/auth/logout",
-        "/api/v1/auth/register",
-        "/api/v1/auth/verify",
-        "/api/v1/auth/password/**"   // ✅ forgot + reset
-    ).permitAll()
-    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-    .anyRequest().authenticated()
-)
-```
-
----
-
-## 2) Rate limit: password reset’i de kapsa
-
-**`src/main/java/com/pehlione/web/security/AuthRateLimitFilter.java`** içindeki `shouldNotFilter`’ı genişlet:
+**`src/main/java/com/pehlione/web/order/OrderTransitionService.java`**
 
 ```java
-@Override
-protected boolean shouldNotFilter(HttpServletRequest request) {
-    String path = request.getRequestURI();
-    return !(path.equals("/api/v1/auth/login")
-            || path.equals("/api/v1/auth/refresh")
-            || path.equals("/api/v1/auth/password/forgot")
-            || path.equals("/api/v1/auth/password/reset"));
-}
-```
-
----
-
-## 3) DB: Password reset token tablosu
-
-Eğer daha önce eklemediysen:
-
-**`src/main/resources/db/migration/V11__create_password_reset_tokens.sql`**
-
-```sql
-CREATE TABLE password_reset_tokens (
-  id BIGINT NOT NULL AUTO_INCREMENT,
-  user_id BIGINT NOT NULL,
-  token_hash CHAR(64) NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
-  used_at TIMESTAMP NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_prt_hash (token_hash),
-  KEY idx_prt_user (user_id),
-  CONSTRAINT fk_prt_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
----
-
-## 4) Entity + Repository
-
-### Entity
-
-**`src/main/java/com/pehlione/web/auth/PasswordResetToken.java`**
-
-```java
-package com.pehlione.web.auth;
-
-import com.pehlione.web.user.User;
-import jakarta.persistence.*;
-
-import java.time.Instant;
-
-@Entity
-@Table(name="password_reset_tokens")
-public class PasswordResetToken {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name="user_id", nullable = false)
-    private User user;
-
-    @Column(name="token_hash", nullable = false, unique = true, length = 64)
-    private String tokenHash;
-
-    @Column(name="expires_at", nullable = false)
-    private Instant expiresAt;
-
-    @Column(name="used_at")
-    private Instant usedAt;
-
-    @Column(name="created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
-
-    public Long getId() { return id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getTokenHash() { return tokenHash; }
-    public void setTokenHash(String tokenHash) { this.tokenHash = tokenHash; }
-
-    public Instant getExpiresAt() { return expiresAt; }
-    public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
-
-    public Instant getUsedAt() { return usedAt; }
-    public void setUsedAt(Instant usedAt) { this.usedAt = usedAt; }
-
-    public Instant getCreatedAt() { return createdAt; }
-}
-```
-
-### Repository
-
-**`src/main/java/com/pehlione/web/auth/PasswordResetTokenRepository.java`**
-
-```java
-package com.pehlione.web.auth;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Optional;
-
-public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
-    Optional<PasswordResetToken> findByTokenHash(String tokenHash);
-}
-```
-
----
-
-## 5) TokenGenerator (yoksa ekle)
-
-**`src/main/java/com/pehlione/web/auth/TokenGenerator.java`**
-
-```java
-package com.pehlione.web.auth;
-
-import java.security.SecureRandom;
-import java.util.Base64;
-
-public final class TokenGenerator {
-    private static final SecureRandom random = new SecureRandom();
-    private TokenGenerator() {}
-
-    public static String newRawToken() {
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-}
-```
-
-`TokenHash.sha256Hex(...)` zaten sende var.
-
----
-
-## 6) PasswordResetService (token üret + mail + reset + revoke-all sessions)
-
-**`src/main/java/com/pehlione/web/auth/PasswordResetService.java`**
-
-```java
-package com.pehlione.web.auth;
+package com.pehlione.web.order;
 
 import com.pehlione.web.api.error.ApiErrorCode;
 import com.pehlione.web.api.error.ApiException;
-import com.pehlione.web.mail.MailService;
-import com.pehlione.web.user.User;
-import com.pehlione.web.user.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
+import java.util.Map;
 
 @Service
-public class PasswordResetService {
+public class OrderTransitionService {
 
-    private final UserRepository userRepo;
-    private final PasswordResetTokenRepository tokenRepo;
-    private final PasswordEncoder encoder;
-    private final MailService mailService;
-    private final AuthSessionService sessionService;
+    // Allowed transitions
+    private static final Map<OrderStatus, EnumSet<OrderStatus>> ALLOWED = Map.of(
+            OrderStatus.PENDING_PAYMENT, EnumSet.of(OrderStatus.PAID, OrderStatus.PAYMENT_FAILED, OrderStatus.CANCELLED),
+            OrderStatus.PAID,            EnumSet.of(OrderStatus.SHIPPED, OrderStatus.REFUND_PENDING, OrderStatus.CANCELLED),
+            OrderStatus.SHIPPED,         EnumSet.of(OrderStatus.FULFILLED),
+            OrderStatus.REFUND_PENDING,  EnumSet.of(OrderStatus.REFUNDED, OrderStatus.PAID), // refund failed -> back to PAID
+            OrderStatus.PAYMENT_FAILED,  EnumSet.of(OrderStatus.CANCELLED),
 
-    private final String publicBaseUrl;
+            // terminal states
+            OrderStatus.CANCELLED,       EnumSet.noneOf(OrderStatus.class),
+            OrderStatus.FULFILLED,       EnumSet.noneOf(OrderStatus.class),
+            OrderStatus.REFUNDED,        EnumSet.noneOf(OrderStatus.class),
 
-    public PasswordResetService(
-            UserRepository userRepo,
-            PasswordResetTokenRepository tokenRepo,
-            PasswordEncoder encoder,
-            MailService mailService,
-            AuthSessionService sessionService,
-            @Value("${app.public-base-url}") String publicBaseUrl
-    ) {
-        this.userRepo = userRepo;
-        this.tokenRepo = tokenRepo;
-        this.encoder = encoder;
-        this.mailService = mailService;
-        this.sessionService = sessionService;
-        this.publicBaseUrl = publicBaseUrl;
+            // backward compat: eski PLACED varsa "PAID gibi" davran
+            OrderStatus.PLACED,          EnumSet.of(OrderStatus.SHIPPED, OrderStatus.REFUND_PENDING, OrderStatus.CANCELLED)
+    );
+
+    public void assertTransition(OrderStatus from, OrderStatus to, String context) {
+        if (from == to) return;
+        EnumSet<OrderStatus> allowed = ALLOWED.get(from);
+        if (allowed == null || !allowed.contains(to)) {
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    ApiErrorCode.CONFLICT,
+                    "Invalid order transition: " + from + " -> " + to + (context == null ? "" : (" (" + context + ")"))
+            );
+        }
     }
 
-    /**
-     * Email enumeration yapmamak için controller her zaman 204 dönecek.
-     * Burada user varsa mail atacağız; yoksa sessizce bitecek.
-     */
-    @Transactional
-    public void requestReset(String email) {
-        User u = userRepo.findByEmail(email).orElse(null);
-        if (u == null) return;
-
-        // Policy: istersen sadece verified+enabled için mail at
-        if (!u.isEnabled() || u.isLocked() || !u.isEmailVerified()) return;
-
-        String raw = TokenGenerator.newRawToken();
-        String hash = TokenHash.sha256Hex(raw);
-
-        PasswordResetToken t = new PasswordResetToken();
-        t.setUser(u);
-        t.setTokenHash(hash);
-        t.setExpiresAt(Instant.now().plus(30, ChronoUnit.MINUTES)); // 30 dk
-        tokenRepo.save(t);
-
-        // Link genelde frontend sayfasına gider; token query string ile taşınır.
-        String link = publicBaseUrl + "/reset-password?token=" + raw;
-
-        String html = """
-            <p>Password reset requested.</p>
-            <p>Click to reset your password:</p>
-            <p><a href="%s">Reset Password</a></p>
-            <p>This link expires in 30 minutes.</p>
-            """.formatted(link);
-
-        mailService.sendHtml(u.getEmail(), "Reset your password", html);
-    }
-
-    @Transactional
-    public void resetPassword(String rawToken, String newPassword) {
-        String hash = TokenHash.sha256Hex(rawToken);
-
-        PasswordResetToken t = tokenRepo.findByTokenHash(hash)
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.CONFLICT, "Invalid token"));
-
-        if (t.getUsedAt() != null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.CONFLICT, "Token already used");
-        }
-        if (t.getExpiresAt().isBefore(Instant.now())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.CONFLICT, "Token expired");
-        }
-
-        User u = t.getUser();
-
-        // Şifreyi değiştir
-        u.setPasswordHash(encoder.encode(newPassword));
-
-        // Token'ı one-time yap
-        t.setUsedAt(Instant.now());
-
-        // Güvenlik: tüm cihazlardan logout (refresh+session kill switch)
-        sessionService.revokeAllForUser(u.getId());
+    public void transition(Order order, OrderStatus to, String context) {
+        OrderStatus from = order.getStatus();
+        if (from == to) return; // idempotent
+        assertTransition(from, to, context);
+        order.setStatus(to);
     }
 }
 ```
 
 ---
 
-## 7) Controller: forgot + reset (her zaman güvenli davranış)
+## A2) Servislerde statü set etmeyi buna bağla (minimal patch)
 
-**`src/main/java/com/pehlione/web/api/PasswordController.java`**
+### FulfillmentService
+
+**`src/main/java/com/pehlione/web/fulfillment/FulfillmentService.java`**
+
+* Constructor’a `OrderTransitionService` ekle.
+* `o.setStatus(...)` olan yerleri `transitionService.transition(...)` yap.
+
+Örnek patch (ilgili kısımlar):
 
 ```java
-package com.pehlione.web.api;
+import com.pehlione.web.order.OrderTransitionService;
 
-import com.pehlione.web.auth.PasswordResetService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+// field
+private final OrderTransitionService transitionService;
+
+public FulfillmentService(OrderRepository orderRepo, ShipmentRepository shipmentRepo, AuditService auditService,
+                          OrderTransitionService transitionService) {
+    this.orderRepo = orderRepo;
+    this.shipmentRepo = shipmentRepo;
+    this.auditService = auditService;
+    this.transitionService = transitionService;
+}
+
+// ship(...) içinde:
+transitionService.transition(o, OrderStatus.SHIPPED, "admin-ship");
+
+// deliver(...) içinde:
+transitionService.transition(o, OrderStatus.FULFILLED, "admin-deliver");
+
+// cancel(...) içinde:
+transitionService.transition(o, OrderStatus.CANCELLED, "admin-cancel");
+```
+
+> Mevcut “PAID değilse ship olmaz” kontrolünü istersen kaldırabilirsin; guard zaten engelliyor.
+
+### PaymentWebhookService (Product 10)
+
+**`src/main/java/com/pehlione/web/webhook/PaymentWebhookService.java`**
+
+* Constructor’a `OrderTransitionService` ekle.
+* `o.setStatus(...)` satırlarını transition ile değiştir.
+
+```java
+import com.pehlione.web.order.OrderTransitionService;
+
+private final OrderTransitionService transitionService;
+
+public PaymentWebhookService(..., OrderTransitionService transitionService, ...) {
+   ...
+   this.transitionService = transitionService;
+}
+
+// payment succeeded:
+transitionService.transition(o, OrderStatus.PAID, "webhook-payment-succeeded");
+
+// payment failed:
+transitionService.transition(o, OrderStatus.PAYMENT_FAILED, "webhook-payment-failed");
+
+// refund succeeded:
+transitionService.transition(o, OrderStatus.REFUNDED, "webhook-refund-succeeded");
+
+// refund failed:
+transitionService.transition(o, OrderStatus.PAID, "webhook-refund-failed");
+```
+
+### PaymentService refund create (Product 10)
+
+**`src/main/java/com/pehlione/web/payment/PaymentService.java`**
+
+* Refund başlatırken `order.setStatus(REFUND_PENDING)` yerine transition kullan.
+
+```java
+import com.pehlione.web.order.OrderTransitionService;
+
+// field
+private final OrderTransitionService transitionService;
+
+// ctor param + assign
+
+// refund create:
+transitionService.transition(order, com.pehlione.web.order.OrderStatus.REFUND_PENDING, "user-refund-request");
+```
+
+---
+
+# B) Admin list/filter endpoint’leri (Orders + Refunds + Webhook Events)
+
+Burada en temiz yol: **Specifications**. Paging’li, dinamik filtre.
+
+---
+
+## B1) OrderRepository: Specification destekle
+
+**`src/main/java/com/pehlione/web/order/OrderRepository.java`**
+
+```java
+package com.pehlione.web.order;
+
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.Optional;
+
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
+
+    Page<Order> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"items", "shipments", "shippingAddress"})
+    Optional<Order> findByPublicIdAndUserId(String publicId, Long userId);
+
+    // Admin list: user join ile N+1 olmasın
+    @EntityGraph(attributePaths = {"user"})
+    Page<Order> findAll(org.springframework.data.jpa.domain.Specification<Order> spec, Pageable pageable);
+
+    // Admin detail (full)
+    @EntityGraph(attributePaths = {"user", "items", "shipments", "shippingAddress"})
+    Optional<Order> findByPublicId(String publicId);
+}
+```
+
+> `findByPublicId` daha önce yoksa ekle. (User detail için zaten vardı.)
+
+---
+
+## B2) OrderSpecifications
+
+**`src/main/java/com/pehlione/web/order/OrderSpecifications.java`**
+
+```java
+package com.pehlione.web.order;
+
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.Instant;
+
+public final class OrderSpecifications {
+    private OrderSpecifications() {}
+
+    public static Specification<Order> statusEq(OrderStatus status) {
+        return (root, q, cb) -> status == null ? cb.conjunction() : cb.equal(root.get("status"), status);
+    }
+
+    public static Specification<Order> userEmailLike(String email) {
+        return (root, q, cb) -> {
+            if (email == null || email.isBlank()) return cb.conjunction();
+            var userJoin = root.join("user");
+            return cb.like(cb.lower(userJoin.get("email")), "%" + email.trim().toLowerCase() + "%");
+        };
+    }
+
+    public static Specification<Order> orderIdLike(String qstr) {
+        return (root, q, cb) -> {
+            if (qstr == null || qstr.isBlank()) return cb.conjunction();
+            String s = "%" + qstr.trim().toLowerCase() + "%";
+            return cb.like(cb.lower(root.get("publicId")), s);
+        };
+    }
+
+    public static Specification<Order> createdFrom(Instant from) {
+        return (root, q, cb) -> from == null ? cb.conjunction() : cb.greaterThanOrEqualTo(root.get("createdAt"), from);
+    }
+
+    public static Specification<Order> createdTo(Instant to) {
+        return (root, q, cb) -> to == null ? cb.conjunction() : cb.lessThanOrEqualTo(root.get("createdAt"), to);
+    }
+}
+```
+
+---
+
+## B3) Admin Orders API
+
+### DTO
+
+**`src/main/java/com/pehlione/web/api/admin/AdminOrderDtos.java`**
+
+```java
+package com.pehlione.web.api.admin;
+
+import com.pehlione.web.api.order.OrderDtos;
+import com.pehlione.web.order.Order;
+import com.pehlione.web.order.OrderStatus;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
+public class AdminOrderDtos {
+
+    public record AdminOrderSummary(
+            String orderId,
+            OrderStatus status,
+            String userEmail,
+            String currency,
+            BigDecimal totalAmount,
+            Instant createdAt
+    ) {
+        public static AdminOrderSummary from(Order o) {
+            return new AdminOrderSummary(
+                    o.getPublicId(),
+                    o.getStatus(),
+                    o.getUser().getEmail(),
+                    o.getCurrency(),
+                    o.getTotalAmount(),
+                    o.getCreatedAt()
+            );
+        }
+    }
+
+    public record AdminOrderDetail(
+            String orderId,
+            OrderStatus status,
+            String userEmail,
+            String currency,
+            BigDecimal totalAmount,
+            Instant createdAt,
+            OrderDtos.ShippingAddressInfo shippingAddress,
+            List<OrderDtos.OrderItemResponse> items,
+            List<OrderDtos.ShipmentInfo> shipments
+    ) {
+        public static AdminOrderDetail from(Order o) {
+            var sa = o.getShippingAddress();
+            OrderDtos.ShippingAddressInfo shipAddr = (sa == null) ? null :
+                    new OrderDtos.ShippingAddressInfo(
+                            sa.getFullName(), sa.getPhone(), sa.getLine1(), sa.getLine2(),
+                            sa.getCity(), sa.getState(), sa.getPostalCode(), sa.getCountryCode()
+                    );
+
+            var items = o.getItems().stream().map(OrderDtos.OrderItemResponse::from).toList();
+            var ships = o.getShipments().stream().map(s ->
+                    new OrderDtos.ShipmentInfo(
+                            s.getPublicId(),
+                            s.getStatus().name(),
+                            s.getCarrier(),
+                            s.getTrackingNumber(),
+                            s.getShippedAt(),
+                            s.getDeliveredAt()
+                    )
+            ).toList();
+
+            return new AdminOrderDetail(
+                    o.getPublicId(), o.getStatus(), o.getUser().getEmail(),
+                    o.getCurrency(), o.getTotalAmount(), o.getCreatedAt(),
+                    shipAddr, items, ships
+            );
+        }
+    }
+}
+```
+
+> Not: `OrderDtos.ShippingAddressInfo` ve `OrderDtos.ShipmentInfo` Product 9/8’de eklemiştik.
+
+### Controller
+
+**`src/main/java/com/pehlione/web/api/admin/AdminOrderController.java`**
+
+```java
+package com.pehlione.web.api.admin;
+
+import com.pehlione.web.api.error.ApiErrorCode;
+import com.pehlione.web.api.error.ApiException;
+import com.pehlione.web.order.*;
+import org.springframework.data.domain.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+
+import static com.pehlione.web.api.admin.AdminOrderDtos.*;
+
 @RestController
-@RequestMapping("/api/v1/auth/password")
-public class PasswordController {
+@RequestMapping("/api/v1/admin/orders")
+public class AdminOrderController {
 
-    private final PasswordResetService resetService;
+    private final OrderRepository repo;
 
-    // refresh cookie temizlemek için (senin AuthController ile aynı path/samesite ayarına uygun)
-    // Burada path'i "/api/v1/auth" tutuyoruz ki cookie kesin temizlensin.
-    public PasswordController(PasswordResetService resetService) {
-        this.resetService = resetService;
+    public AdminOrderController(OrderRepository repo) {
+        this.repo = repo;
     }
 
-    @PostMapping("/forgot")
-    public ResponseEntity<Void> forgot(@Valid @RequestBody ForgotRequest req) {
-        // Always 204: email enumeration yok
-        resetService.requestReset(req.email());
-        return ResponseEntity.noContent().build();
+    @GetMapping
+    public Page<AdminOrderSummary> list(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false, name = "q") String query,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+            Pageable pageable
+    ) {
+        var spec = OrderSpecifications.statusEq(status)
+                .and(OrderSpecifications.userEmailLike(email))
+                .and(OrderSpecifications.orderIdLike(query))
+                .and(OrderSpecifications.createdFrom(from))
+                .and(OrderSpecifications.createdTo(to));
+
+        return repo.findAll(spec, pageable).map(AdminOrderSummary::from);
     }
 
-    @PostMapping("/reset")
-    public ResponseEntity<Void> reset(@Valid @RequestBody ResetRequest req) {
-        resetService.resetPassword(req.token(), req.newPassword());
-
-        // password reset sonrası refresh cookie temizle (client tarafı güvenli)
-        ResponseCookie cleared = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(false) // dev; prod’da config’ten alabilirsin
-                .path("/api/v1/auth")
-                .sameSite("Strict")
-                .maxAge(0)
-                .build();
-
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, cleared.toString())
-                .build();
+    @GetMapping("/{orderId}")
+    public AdminOrderDetail get(@PathVariable String orderId) {
+        Order o = repo.findByPublicId(orderId)
+                .orElseThrow(() -> new ApiException(
+                        org.springframework.http.HttpStatus.NOT_FOUND,
+                        ApiErrorCode.NOT_FOUND,
+                        "Order not found"
+                ));
+        return AdminOrderDetail.from(o);
     }
-
-    public record ForgotRequest(@Email @NotBlank String email) {}
-
-    public record ResetRequest(
-            @NotBlank String token,
-            @NotBlank @Size(min = 8, max = 72) String newPassword
-    ) {}
 }
 ```
 
-> Cookie temizlemede `secure=false` dev içindi. İstersen bunu `@Value("${app.security.refresh-cookie.secure}")` ile konfigürasyondan okuyacak hale getiririm (AuthController’daki gibi).
+**Filtre örnekleri**
+
+* `GET /api/v1/admin/orders?status=PAID&page=0&size=20`
+* `GET /api/v1/admin/orders?email=gmail.com`
+* `GET /api/v1/admin/orders?from=2026-02-01T00:00:00Z&to=2026-02-17T23:59:59Z`
 
 ---
 
-## 8) Önceki adım: VerificationService placeholder düzeltmesi
+## B4) Admin Refunds list/filter
 
-Senin kodun derlenebilir olsun diye **VerificationService**’te token üretimini `TokenGenerator` ile yap.
+### RefundRepository: spec destekle
 
-**`src/main/java/com/pehlione/web/auth/VerificationService.java`** içindeki token üretimini şu şekilde düzelt:
+**`src/main/java/com/pehlione/web/payment/RefundRepository.java`**
 
 ```java
-String rawToken = TokenGenerator.newRawToken();
-String hash = TokenHash.sha256Hex(rawToken);
+package com.pehlione.web.payment;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.Optional;
+
+public interface RefundRepository extends JpaRepository<Refund, Long>, JpaSpecificationExecutor<Refund> {
+    Optional<Refund> findByPublicId(String publicId);
+}
 ```
 
-(placeholder olan satırları tamamen kaldır.)
+### RefundSpecifications
+
+**`src/main/java/com/pehlione/web/payment/RefundSpecifications.java`**
+
+```java
+package com.pehlione.web.payment;
+
+import org.springframework.data.jpa.domain.Specification;
+
+public final class RefundSpecifications {
+    private RefundSpecifications() {}
+
+    public static Specification<Refund> statusEq(RefundStatus status) {
+        return (root, q, cb) -> status == null ? cb.conjunction() : cb.equal(root.get("status"), status);
+    }
+
+    public static Specification<Refund> orderIdEq(String orderPublicId) {
+        return (root, q, cb) -> {
+            if (orderPublicId == null || orderPublicId.isBlank()) return cb.conjunction();
+            var orderJoin = root.join("order");
+            return cb.equal(orderJoin.get("publicId"), orderPublicId.trim());
+        };
+    }
+
+    public static Specification<Refund> userEmailLike(String email) {
+        return (root, q, cb) -> {
+            if (email == null || email.isBlank()) return cb.conjunction();
+            var userJoin = root.join("user");
+            return cb.like(cb.lower(userJoin.get("email")), "%" + email.trim().toLowerCase() + "%");
+        };
+    }
+}
+```
+
+### AdminRefundController
+
+**`src/main/java/com/pehlione/web/api/admin/AdminRefundController.java`**
+
+```java
+package com.pehlione.web.api.admin;
+
+import com.pehlione.web.payment.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@RestController
+@RequestMapping("/api/v1/admin/refunds")
+public class AdminRefundController {
+
+    private final RefundRepository repo;
+
+    public AdminRefundController(RefundRepository repo) {
+        this.repo = repo;
+    }
+
+    public record RefundSummary(
+            String refundId,
+            RefundStatus status,
+            String userEmail,
+            String orderId,
+            String currency,
+            BigDecimal amount,
+            Instant createdAt
+    ) {
+        static RefundSummary from(Refund r) {
+            return new RefundSummary(
+                    r.getPublicId(),
+                    r.getStatus(),
+                    r.getUser().getEmail(),
+                    r.getOrder().getPublicId(),
+                    r.getCurrency(),
+                    r.getAmount(),
+                    r.getCreatedAt()
+            );
+        }
+    }
+
+    @GetMapping
+    public Page<RefundSummary> list(
+            @RequestParam(required = false) RefundStatus status,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String orderId,
+            Pageable pageable
+    ) {
+        var spec = RefundSpecifications.statusEq(status)
+                .and(RefundSpecifications.userEmailLike(email))
+                .and(RefundSpecifications.orderIdEq(orderId));
+
+        return repo.findAll(spec, pageable).map(RefundSummary::from);
+    }
+}
+```
 
 ---
 
-## 9) Test (MailHog ile en kolay)
+## B5) Admin Webhook events list
 
-### (A) MailHog önerisi
+### Repository: spec destekle
 
-Localde mail test için en pratik: MailHog (SMTP 1025, UI 8025).
+**`src/main/java/com/pehlione/web/webhook/PaymentWebhookEventRepository.java`**
 
-`application.properties`:
+```java
+package com.pehlione.web.webhook;
 
-```properties
-spring.mail.host=localhost
-spring.mail.port=1025
-app.public-base-url=http://localhost:8083
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.Optional;
+
+public interface PaymentWebhookEventRepository extends JpaRepository<PaymentWebhookEvent, Long>,
+        JpaSpecificationExecutor<PaymentWebhookEvent> {
+
+    Optional<PaymentWebhookEvent> findByProviderAndEventId(String provider, String eventId);
+}
 ```
 
-### (B) Forgot
+### Specs
 
-```bash
-curl -i -X POST http://localhost:8083/api/v1/auth/password/forgot \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@pehlione.com"}'
+**`src/main/java/com/pehlione/web/webhook/WebhookEventSpecifications.java`**
+
+```java
+package com.pehlione.web.webhook;
+
+import org.springframework.data.jpa.domain.Specification;
+
+public final class WebhookEventSpecifications {
+    private WebhookEventSpecifications() {}
+
+    public static Specification<PaymentWebhookEvent> providerEq(String provider) {
+        return (root, q, cb) -> (provider == null || provider.isBlank()) ? cb.conjunction()
+                : cb.equal(root.get("provider"), provider.trim());
+    }
+
+    public static Specification<PaymentWebhookEvent> eventIdLike(String eventId) {
+        return (root, q, cb) -> (eventId == null || eventId.isBlank()) ? cb.conjunction()
+                : cb.like(cb.lower(root.get("eventId")), "%" + eventId.trim().toLowerCase() + "%");
+    }
+}
 ```
 
-Her zaman `204` dönmeli.
+### Controller
 
-MailHog UI’da gelen mailde linkte `token=...` olacak.
+**`src/main/java/com/pehlione/web/api/admin/AdminWebhookEventController.java`**
 
-### (C) Reset
+```java
+package com.pehlione.web.api.admin;
 
-```bash
-curl -i -X POST http://localhost:8083/api/v1/auth/password/reset \
-  -H "Content-Type: application/json" \
-  -d '{"token":"<MAILDEKI_TOKEN>","newPassword":"NewPassw0rd!"}'
+import com.pehlione.web.webhook.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+
+@RestController
+@RequestMapping("/api/v1/admin/webhook-events")
+public class AdminWebhookEventController {
+
+    private final PaymentWebhookEventRepository repo;
+
+    public AdminWebhookEventController(PaymentWebhookEventRepository repo) {
+        this.repo = repo;
+    }
+
+    public record WebhookEventRow(String provider, String eventId, String payloadHash, Instant receivedAt) {
+        static WebhookEventRow from(PaymentWebhookEvent e) {
+            return new WebhookEventRow(e.getProvider(), e.getEventId(), e.getPayloadHash(), e.getReceivedAt());
+        }
+    }
+
+    @GetMapping
+    public Page<WebhookEventRow> list(
+            @RequestParam(required = false) String provider,
+            @RequestParam(required = false) String eventId,
+            Pageable pageable
+    ) {
+        var spec = WebhookEventSpecifications.providerEq(provider)
+                .and(WebhookEventSpecifications.eventIdLike(eventId));
+        return repo.findAll(spec, pageable).map(WebhookEventRow::from);
+    }
+}
 ```
-
-Sonra login’i yeni şifreyle dene.
 
 ---
 
-### Bu adımın güvenlik sonuçları
+# C) Security
 
-* Reset başarılı olunca **tüm cihazlardaki refresh/session revoke** edildi → kullanıcı yeniden login olmak zorunda.
-* Forgot endpoint’i **email enumeration** yapmaz (her zaman 204).
+`/api/v1/admin/**` zaten ROLE_ADMIN korumasında olmalı. Ek bir şey yok.
 
 ---
 
+# D) Hızlı test
+
+* Orders:
+
+  * `GET /api/v1/admin/orders?status=PAID&page=0&size=20`
+* Refunds:
+
+  * `GET /api/v1/admin/refunds?status=PENDING`
+* Webhooks:
+
+  * `GET /api/v1/admin/webhook-events?provider=MOCK`
+
+---
+
+## Product 12 (sonraki)
+
+Bundan sonra en mantıklı iki adım:
+
+1. **Admin “Order Ops”**: manual payment mark, resend shipment mail, partial refund, etc.
+2. **Observability**: metrics + structured logs + tracing (actuator/metrics) + audit log endpoint.
+
+“Product 12” dersen varsayılan olarak **Observability (Actuator + metrics + audit endpoint)** ile devam edeyim.

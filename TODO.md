@@ -1,538 +1,433 @@
-Tamam — **Product 2 = Category (normalized) + product_categories (Many-to-Many) + public filter**.
-Hedef:
+Tamam — **Product 13 = Rate Limiting + Security Hardening**. Bu adımda API’yi “production-grade” yapıyoruz:
 
-* `categories` tablosu (unique slug)
-* `product_categories` join table
-* Product create/update request’te `categoryIds`
-* `GET /api/v1/products?category=slug` ile filtre
-* Admin CRUD: category oluşturma/güncelleme
+* **Rate limiting** (IP / kullanıcı bazlı, endpoint bazlı policy)
+* **Brute-force & abuse koruması** (login/register/checkout/webhook)
+* **HTTP security headers + firewall + request size limitleri**
+* 429 yanıtları **standart JSON** (ApiException ile)
+
+Aşağıda “kopyala-yapıştır” ilerleyebilmen için net bir paket veriyorum.
 
 ---
 
-## 1) Flyway: categories + join table
+# 1) Maven (pom.xml) — Bucket4j + Caffeine
 
-**`src/main/resources/db/migration/V14__create_categories.sql`**
+**pom.xml** içine ekle:
 
-```sql
-CREATE TABLE categories (
-  id BIGINT NOT NULL AUTO_INCREMENT,
-  slug VARCHAR(64) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_categories_slug (slug),
-  KEY idx_categories_name (name)
-);
+```xml
+<dependency>
+  <groupId>com.bucket4j</groupId>
+  <artifactId>bucket4j-core</artifactId>
+  <version>8.10.1</version>
+</dependency>
 
-CREATE TABLE product_categories (
-  product_id BIGINT NOT NULL,
-  category_id BIGINT NOT NULL,
-  PRIMARY KEY (product_id, category_id),
-  CONSTRAINT fk_pc_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-  CONSTRAINT fk_pc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
-);
-
-CREATE INDEX idx_pc_category ON product_categories(category_id);
+<dependency>
+  <groupId>com.github.ben-manes.caffeine</groupId>
+  <artifactId>caffeine</artifactId>
+  <version>3.1.8</version>
+</dependency>
 ```
 
+> Bucket’ları cache’te tutacağız (expireAfterAccess ile bellek şişmesin).
+
 ---
 
-## 2) Entity: Category
+# 2) ApiErrorCode: RATE_LIMITED ekle
 
-**`src/main/java/com/pehlione/web/category/Category.java`**
+**`ApiErrorCode`** enum’ına ekle:
 
 ```java
-package com.pehlione.web.category;
+RATE_LIMITED
+```
 
-import jakarta.persistence.*;
+429 dönerken bunu kullanacağız.
 
-import java.time.Instant;
+---
 
-@Entity
-@Table(name = "categories")
-public class Category {
+# 3) application.yml — limitler + request size
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+**`src/main/resources/application.yml`** ekle/merge:
 
-    @Column(nullable = false, unique = true, length = 64)
-    private String slug;
+```yaml
+app:
+  ratelimit:
+    enabled: true
+    # cache’te bucket kaç dakika idle kalınca silinsin
+    bucket-ttl-minutes: 30
 
-    @Column(nullable = false, length = 255)
-    private String name;
+    policies:
+      auth_ip_per_minute: 10
+      auth_ip_per_hour: 100
 
-    @Column(name="created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+      api_user_per_minute: 120
+      api_ip_per_minute: 300
 
-    @Column(name="updated_at", nullable = false)
-    private Instant updatedAt = Instant.now();
+      checkout_user_per_minute: 20
+      payment_user_per_minute: 20
 
-    @PreUpdate
-    void preUpdate() { this.updatedAt = Instant.now(); }
+      webhook_ip_per_minute: 120
 
-    public Long getId() { return id; }
+server:
+  # payload’ları sınırlamak abuse’u azaltır
+  max-http-request-header-size: 16KB
 
-    public String getSlug() { return slug; }
-    public void setSlug(String slug) { this.slug = slug; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
-}
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 ```
 
 ---
 
-## 3) Product entity: categories ilişki alanı ekle
+# 4) Rate limit core: Policy + Cache + Filter
 
-**`src/main/java/com/pehlione/web/product/Product.java`** içine ekle:
+## 4.1 Properties
 
-```java
-import com.pehlione.web.category.Category;
-import java.util.HashSet;
-import java.util.Set;
-```
-
-Alan:
+**`src/main/java/com/pehlione/web/security/ratelimit/RateLimitProperties.java`**
 
 ```java
-@ManyToMany(fetch = FetchType.LAZY)
-@JoinTable(
-    name = "product_categories",
-    joinColumns = @JoinColumn(name = "product_id"),
-    inverseJoinColumns = @JoinColumn(name = "category_id")
-)
-private Set<Category> categories = new HashSet<>();
+package com.pehlione.web.security.ratelimit;
 
-public Set<Category> getCategories() { return categories; }
-public void setCategories(Set<Category> categories) { this.categories = categories; }
-```
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
----
+import java.util.Map;
 
-## 4) Repository’ler
+@ConfigurationProperties(prefix = "app.ratelimit")
+public class RateLimitProperties {
+    private boolean enabled = true;
+    private int bucketTtlMinutes = 30;
+    private Map<String, Integer> policies;
 
-### CategoryRepository
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
-**`src/main/java/com/pehlione/web/category/CategoryRepository.java`**
+    public int getBucketTtlMinutes() { return bucketTtlMinutes; }
+    public void setBucketTtlMinutes(int bucketTtlMinutes) { this.bucketTtlMinutes = bucketTtlMinutes; }
 
-```java
-package com.pehlione.web.category;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Optional;
-
-public interface CategoryRepository extends JpaRepository<Category, Long> {
-    Optional<Category> findBySlug(String slug);
-    boolean existsBySlug(String slug);
+    public Map<String, Integer> getPolicies() { return policies; }
+    public void setPolicies(Map<String, Integer> policies) { this.policies = policies; }
 }
 ```
 
-### ProductRepository: category filter için query
+## 4.2 Filter
 
-**`src/main/java/com/pehlione/web/product/ProductRepository.java`** içine ekle:
-
-```java
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-```
+**`src/main/java/com/pehlione/web/security/ratelimit/RateLimitFilter.java`**
 
 ```java
-@Query("""
-    select distinct p from Product p
-    join p.categories c
-    where p.status = :status and c.slug = :slug
-""")
-Page<Product> findActiveByCategorySlug(@Param("status") ProductStatus status,
-                                      @Param("slug") String slug,
-                                      Pageable pageable);
-```
+package com.pehlione.web.security.ratelimit;
 
-> `distinct` join kaynaklı duplicate’leri engeller.
-
----
-
-## 5) DTO güncelle: ProductResponse categories + Create/Update categoryIds
-
-**`src/main/java/com/pehlione/web/api/product/ProductDtos.java`** değiştir:
-
-### Request’lere `categoryIds` ekle
-
-```java
-import java.util.Set;
-```
-
-Create:
-
-```java
-public record CreateProductRequest(
-        @NotBlank @Size(max = 64) String sku,
-        @NotBlank @Size(max = 255) String name,
-        @Size(max = 10000) String description,
-        @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
-        @NotBlank @Pattern(regexp = "^[A-Z]{3}$") String currency,
-        @Min(0) int stockQuantity,
-        @NotNull ProductStatus status,
-        Set<@NotNull Long> categoryIds
-) {}
-```
-
-Update:
-
-```java
-public record UpdateProductRequest(
-        @NotBlank @Size(max = 255) String name,
-        @Size(max = 10000) String description,
-        @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal price,
-        @NotBlank @Pattern(regexp = "^[A-Z]{3}$") String currency,
-        @Min(0) int stockQuantity,
-        @NotNull ProductStatus status,
-        Set<@NotNull Long> categoryIds
-) {}
-```
-
-### Response’a categories ekle
-
-Category DTO:
-
-```java
-public record CategoryRef(Long id, String slug, String name) {}
-```
-
-ProductResponse:
-
-```java
-public record ProductResponse(
-        Long id,
-        String sku,
-        String name,
-        String description,
-        BigDecimal price,
-        String currency,
-        int stockQuantity,
-        ProductStatus status,
-        java.util.List<CategoryRef> categories,
-        Instant createdAt,
-        Instant updatedAt
-) {
-    public static ProductResponse from(Product p) {
-        var cats = p.getCategories().stream()
-                .map(c -> new CategoryRef(c.getId(), c.getSlug(), c.getName()))
-                .toList();
-
-        return new ProductResponse(
-                p.getId(), p.getSku(), p.getName(), p.getDescription(),
-                p.getPrice(), p.getCurrency(), p.getStockQuantity(),
-                p.getStatus(), cats, p.getCreatedAt(), p.getUpdatedAt()
-        );
-    }
-}
-```
-
----
-
-## 6) ProductService: categoryIds set et
-
-**`src/main/java/com/pehlione/web/product/ProductService.java`** constructor’a `CategoryRepository` ekle ve category resolve methodu yaz:
-
-```java
-import com.pehlione.web.category.Category;
-import com.pehlione.web.category.CategoryRepository;
-import java.util.HashSet;
-import java.util.Set;
-```
-
-```java
-private final CategoryRepository categoryRepo;
-
-public ProductService(ProductRepository repo, CategoryRepository categoryRepo) {
-    this.repo = repo;
-    this.categoryRepo = categoryRepo;
-}
-```
-
-Helper:
-
-```java
-private Set<Category> resolveCategories(Set<Long> ids) {
-    if (ids == null || ids.isEmpty()) return Set.of();
-    var found = new HashSet<>(categoryRepo.findAllById(ids));
-    if (found.size() != ids.size()) {
-        throw new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.VALIDATION_FAILED, "Some categoryIds not found");
-    }
-    return found;
-}
-```
-
-Create/update sırasında set et (controller yerine service’te yapmak daha temiz ama hızlıca controller’da da olur). En temiz: ProductController’da req.categoryIds()’i service’e geç.
-
----
-
-## 7) ProductController: list’te category slug filter + create/update set categories
-
-**`src/main/java/com/pehlione/web/api/product/ProductController.java`**
-
-### list endpoint
-
-```java
-@GetMapping
-public Page<ProductResponse> list(
-        @RequestParam(name="q", required=false) String q,
-        @RequestParam(name="category", required=false) String categorySlug,
-        Pageable pageable
-) {
-    return service.listPublic(q, categorySlug, pageable).map(ProductResponse::from);
-}
-```
-
-### create/update categories
-
-Create:
-
-```java
-p.setCategories(service.resolveCategoriesForController(req.categoryIds()));
-```
-
-Update:
-
-```java
-p.setCategories(service.resolveCategoriesForController(req.categoryIds()));
-```
-
-Burada “resolveCategories” private kaldığı için public wrapper ekleyelim:
-
-**ProductService içine:**
-
-```java
-@Transactional(readOnly = true)
-public Set<Category> resolveCategoriesForController(Set<Long> ids) {
-    return resolveCategories(ids);
-}
-```
-
-### ProductService listPublic overload
-
-**`ProductService` içine:**
-
-```java
-@Transactional(readOnly = true)
-public Page<Product> listPublic(String q, String categorySlug, Pageable pageable) {
-    if (categorySlug != null && !categorySlug.isBlank()) {
-        return repo.findActiveByCategorySlug(ProductStatus.ACTIVE, categorySlug.trim(), pageable);
-    }
-    if (q != null && !q.isBlank()) {
-        return repo.findByStatusAndNameContainingIgnoreCase(ProductStatus.ACTIVE, q.trim(), pageable);
-    }
-    return repo.findByStatus(ProductStatus.ACTIVE, pageable);
-}
-```
-
-> Not: q + category beraber istersen, JPQL’i genişletiriz. Şimdilik netlik için tek filtre.
-
----
-
-## 8) Admin Category API (CRUD)
-
-### DTO
-
-**`src/main/java/com/pehlione/web/api/category/CategoryDtos.java`**
-
-```java
-package com.pehlione.web.api.category;
-
-import com.pehlione.web.category.Category;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-
-import java.time.Instant;
-
-public class CategoryDtos {
-
-    public record CreateCategoryRequest(
-            @NotBlank @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$") @Size(max=64) String slug,
-            @NotBlank @Size(max=255) String name
-    ) {}
-
-    public record UpdateCategoryRequest(
-            @NotBlank @Size(max=255) String name
-    ) {}
-
-    public record CategoryResponse(
-            Long id,
-            String slug,
-            String name,
-            Instant createdAt,
-            Instant updatedAt
-    ) {
-        public static CategoryResponse from(Category c) {
-            return new CategoryResponse(c.getId(), c.getSlug(), c.getName(), c.getCreatedAt(), c.getUpdatedAt());
-        }
-    }
-}
-```
-
-### Service
-
-**`src/main/java/com/pehlione/web/category/CategoryService.java`**
-
-```java
-package com.pehlione.web.category;
-
+import com.bucket4j.*;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.pehlione.web.api.error.ApiErrorCode;
 import com.pehlione.web.api.error.ApiException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-@Service
-public class CategoryService {
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-    private final CategoryRepository repo;
+@Component
+public class RateLimitFilter extends OncePerRequestFilter {
 
-    public CategoryService(CategoryRepository repo) {
-        this.repo = repo;
+    private final RateLimitProperties props;
+    private final Cache<String, Bucket> buckets;
+
+    public RateLimitFilter(RateLimitProperties props) {
+        this.props = props;
+        this.buckets = Caffeine.newBuilder()
+                .expireAfterAccess(props.getBucketTtlMinutes(), TimeUnit.MINUTES)
+                .maximumSize(200_000)
+                .build();
     }
 
-    @Transactional
-    public Category create(Category c) {
-        if (repo.existsBySlug(c.getSlug())) {
-            throw new ApiException(HttpStatus.CONFLICT, ApiErrorCode.CONFLICT, "Category slug already exists");
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !props.isEnabled();
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws IOException, jakarta.servlet.ServletException {
+
+        String path = req.getRequestURI();
+        String method = req.getMethod();
+
+        // Çok temel bypass: health/info gibi endpointler rate limit istemeyebilir
+        if (path.startsWith("/actuator/health") || path.equals("/actuator/info")) {
+            chain.doFilter(req, res);
+            return;
         }
-        return repo.save(c);
+
+        Policy policy = resolvePolicy(path);
+        if (policy == null) {
+            chain.doFilter(req, res);
+            return;
+        }
+
+        String key = buildKey(req, policy);
+
+        Bucket bucket = buckets.get(key, k -> newBucket(policy));
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+
+        if (probe.isConsumed()) {
+            // observability: kalan quota header (debug için)
+            res.setHeader("X-RateLimit-Remaining", String.valueOf(probe.getRemainingTokens()));
+            chain.doFilter(req, res);
+            return;
+        }
+
+        long waitNanos = probe.getNanosToWaitForRefill();
+        long retryAfterSeconds = Math.max(1, TimeUnit.NANOSECONDS.toSeconds(waitNanos));
+
+        res.setStatus(429);
+        res.setContentType("application/json");
+        res.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
+
+        String body = """
+            {"code":"%s","message":"Too many requests","retryAfterSeconds":%d}
+            """.formatted(ApiErrorCode.RATE_LIMITED.name(), retryAfterSeconds);
+
+        res.getWriter().write(body);
     }
 
-    @Transactional(readOnly = true)
-    public Category getOrThrow(Long id) {
-        return repo.findById(id).orElseThrow(() ->
-                new ApiException(HttpStatus.NOT_FOUND, ApiErrorCode.NOT_FOUND, "Category not found"));
+    private Bucket newBucket(Policy p) {
+        // 1 dakikalık sabit refill (burst’ü kontrol eder)
+        Bandwidth bw = Bandwidth.classic(p.limitPerMinute(), Refill.intervally(p.limitPerMinute(), Duration.ofMinutes(1)));
+        return Bucket4j.builder().addLimit(bw).build();
     }
 
-    @Transactional
-    public Category update(Long id, String name) {
-        Category c = getOrThrow(id);
-        c.setName(name.trim());
-        return c;
+    private Policy resolvePolicy(String path) {
+        Map<String, Integer> cfg = props.getPolicies();
+        if (cfg == null) return null;
+
+        // 1) auth (login/register)
+        if (path.startsWith("/api/v1/auth/")) {
+            return Policy.ip("auth_ip", pick(cfg, "auth_ip_per_minute", 10));
+        }
+
+        // 2) webhook
+        if (path.startsWith("/api/v1/webhooks/")) {
+            return Policy.ip("webhook_ip", pick(cfg, "webhook_ip_per_minute", 120));
+        }
+
+        // 3) checkout/payments (kullanıcı bazlı daha sıkı)
+        if (path.startsWith("/api/v1/checkout/")) {
+            return Policy.userOrIp("checkout_user", pick(cfg, "checkout_user_per_minute", 20),
+                    "checkout_ip", pick(cfg, "api_ip_per_minute", 300));
+        }
+        if (path.startsWith("/api/v1/payments/")) {
+            return Policy.userOrIp("payment_user", pick(cfg, "payment_user_per_minute", 20),
+                    "payment_ip", pick(cfg, "api_ip_per_minute", 300));
+        }
+
+        // 4) genel API
+        if (path.startsWith("/api/v1/")) {
+            return Policy.userOrIp("api_user", pick(cfg, "api_user_per_minute", 120),
+                    "api_ip", pick(cfg, "api_ip_per_minute", 300));
+        }
+
+        return null;
     }
 
-    @Transactional
-    public void delete(Long id) {
-        // RESTRICT FK yüzünden category silmek fail edebilir (ürün bağlıysa)
-        repo.delete(getOrThrow(id));
+    private int pick(Map<String, Integer> cfg, String key, int def) {
+        Integer v = cfg.get(key);
+        return (v == null || v <= 0) ? def : v;
+    }
+
+    private String buildKey(HttpServletRequest req, Policy policy) {
+        String ip = clientIp(req);
+
+        String subject = null;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            subject = jwtAuth.getToken().getSubject(); // senin projede genelde email
+        }
+
+        return policy.key(ip, subject);
+    }
+
+    private String clientIp(HttpServletRequest req) {
+        // reverse proxy varsa X-Forwarded-For ile (proxy güvenli ayarlanmalı)
+        String xff = req.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].trim();
+        }
+        return req.getRemoteAddr();
+    }
+
+    // policy model
+    private record Policy(String mode, String name1, int lim1, String name2, int lim2) {
+        static Policy ip(String name, int perMin) { return new Policy("ip", name, perMin, null, 0); }
+        static Policy userOrIp(String userName, int userPerMin, String ipName, int ipPerMin) {
+            return new Policy("userOrIp", userName, userPerMin, ipName, ipPerMin);
+        }
+
+        int limitPerMinute() { return lim1; }
+
+        String key(String ip, String subject) {
+            if ("ip".equals(mode)) return name1 + ":" + ip;
+            if (subject != null && !subject.isBlank()) return name1 + ":" + subject;
+            return name2 + ":" + ip;
+        }
     }
 }
 ```
 
-### Controller (admin write, public read list)
+### Neden böyle?
 
-**`src/main/java/com/pehlione/web/api/category/CategoryController.java`**
+* **Auth/Webhook**: kimlik yok → IP bazlı.
+* **Checkout/Payment**: abuse en riskli alan → user bazlı daha sıkı.
+* **Genel API**: user bazlı, user yoksa IP bazlı.
+
+> İstersen “burst” + “sustained” (ör. 20/min + 500/day) gibi çift limit de ekleriz (Bucket4j ile çok kolay).
+
+---
+
+## 4.3 ConfigurationProperties enable
+
+**`src/main/java/com/pehlione/web/security/ratelimit/RateLimitConfig.java`**
 
 ```java
-package com.pehlione.web.api.category;
+package com.pehlione.web.security.ratelimit;
 
-import com.pehlione.web.category.Category;
-import com.pehlione.web.category.CategoryRepository;
-import com.pehlione.web.category.CategoryService;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+@Configuration
+@EnableConfigurationProperties(RateLimitProperties.class)
+public class RateLimitConfig {}
+```
 
-import static com.pehlione.web.api.category.CategoryDtos.*;
+---
 
-@RestController
-@RequestMapping("/api/v1/categories")
-public class CategoryController {
+# 5) SecurityConfig: Filter’ı doğru yere tak (API chain)
 
-    private final CategoryRepository repo;
-    private final CategoryService service;
+JWT auth sonrası user’ı görebilmek için **BearerTokenAuthenticationFilter’dan sonra** ekle.
 
-    public CategoryController(CategoryRepository repo, CategoryService service) {
-        this.repo = repo;
-        this.service = service;
+SecurityConfig’te API filter chain’de:
+
+```java
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+
+// ...
+http.addFilterAfter(rateLimitFilter, BearerTokenAuthenticationFilter.class);
+```
+
+`RateLimitFilter` bean zaten `@Component`. SecurityConfig constructor’ında inject et.
+
+---
+
+# 6) Security hardening: HTTP firewall + headers
+
+## 6.1 StrictHttpFirewall
+
+**`src/main/java/com/pehlione/web/security/FirewallConfig.java`**
+
+```java
+package com.pehlione.web.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+
+@Configuration
+public class FirewallConfig {
+
+    @Bean
+    public HttpFirewall httpFirewall() {
+        StrictHttpFirewall fw = new StrictHttpFirewall();
+        fw.setAllowBackSlash(false);
+        fw.setAllowUrlEncodedSlash(false);
+        fw.setAllowUrlEncodedDoubleSlash(false);
+        fw.setAllowUrlEncodedPercent(false);
+        fw.setAllowSemicolon(false);
+        return fw;
     }
 
-    // Public read
-    @GetMapping
-    public List<CategoryResponse> list() {
-        return repo.findAll().stream().map(CategoryResponse::from).toList();
-    }
-
-    // Admin write
-    @PostMapping
-    public CategoryResponse create(@Valid @RequestBody CreateCategoryRequest req) {
-        Category c = new Category();
-        c.setSlug(req.slug().trim());
-        c.setName(req.name().trim());
-        return CategoryResponse.from(service.create(c));
-    }
-
-    @PutMapping("/{id}")
-    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody UpdateCategoryRequest req) {
-        return CategoryResponse.from(service.update(id, req.name()));
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer(HttpFirewall firewall) {
+        return web -> web.httpFirewall(firewall);
     }
 }
 ```
 
----
+## 6.2 Security headers
 
-## 9) Security: categories GET public, write admin
-
-`SecurityConfig` API chain authorize’ya ekle:
+API chain’de:
 
 ```java
-.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/categories/**").permitAll()
-.requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
+http.headers(h -> h
+    .contentTypeOptions(c -> {})
+    .frameOptions(f -> f.sameOrigin())
+    .referrerPolicy(r -> r.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+);
+```
+
+> HSTS sadece HTTPS arkasındaysan anlamlı. Reverse proxy + TLS varsa ekleriz.
+
+---
+
+# 7) Bonus hardening (çok işe yarar)
+
+### 7.1 Forwarded headers (proxy arkasında doğru IP)
+
+`application.yml`:
+
+```yaml
+server:
+  forward-headers-strategy: framework
+```
+
+### 7.2 Webhook request body limit (abuse)
+
+Zaten multipart limit var; webhook JSON için ayrıca nginx/ingress’te de limit koymak iyi.
+
+### 7.3 CORS
+
+Frontend ayrı domain’den gelecekse `CorsConfigurationSource` ile whitelist + method/header set ederiz.
+
+---
+
+# 8) Test (hızlı)
+
+Auth endpoint’ini 10+ kez çağırınca 429 görmelisin:
+
+```bash
+for i in $(seq 1 20); do
+  curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8083/api/v1/auth/login
+done
+```
+
+Checkout için kullanıcı token’ı ile:
+
+```bash
+for i in $(seq 1 30); do
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -H "Authorization: Bearer <USER_ACCESS_TOKEN>" \
+    http://localhost:8083/api/v1/checkout/drafts/<DRAFT_ID>
+done
 ```
 
 ---
 
-## 10) Test (curl)
+## Product 14 (sonraki)
 
-### Admin create category
+Rate limit + hardening sonrası genelde şunlar gelir:
 
-```bash
-curl -i -X POST http://localhost:8083/api/v1/categories \
-  -H "Authorization: Bearer <ADMIN_ACCESS_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{"slug":"tshirts","name":"T-Shirts"}'
-```
+* **RFC7807 Problem Details** (hata formatını standardize)
+* **API versioning + deprecation strategy**
+* **Partial refunds + returns**
 
-### Admin create product with categoryIds
-
-```bash
-curl -i -X POST http://localhost:8083/api/v1/products \
-  -H "Authorization: Bearer <ADMIN_ACCESS_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sku":"SKU-002",
-    "name":"Basic Tee",
-    "description":"100% cotton",
-    "price":15.99,
-    "currency":"EUR",
-    "stockQuantity":50,
-    "status":"ACTIVE",
-    "categoryIds":[1]
-  }'
-```
-
-### Public filter
-
-```bash
-curl -s "http://localhost:8083/api/v1/products?category=tshirts"
-```
-
----
-
-## Product 3 (sonraki)
-
+“Product 14” dersen varsayılan olarak **Problem Details (RFC7807) + exception mapping** ile devam edeyim.

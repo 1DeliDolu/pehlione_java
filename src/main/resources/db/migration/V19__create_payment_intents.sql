@@ -1,0 +1,23 @@
+CREATE TABLE payment_intents (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  public_id CHAR(36) NOT NULL,
+  user_id BIGINT NOT NULL,
+  order_id BIGINT NOT NULL,
+  provider VARCHAR(16) NOT NULL,
+  status VARCHAR(24) NOT NULL,
+  currency CHAR(3) NOT NULL,
+  amount DECIMAL(19,2) NOT NULL,
+  idempotency_key VARCHAR(128) NULL,
+  provider_reference VARCHAR(128) NULL,
+  last_error VARCHAR(2000) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_pi_public_id (public_id),
+  UNIQUE KEY uk_pi_idempotency (idempotency_key),
+  KEY idx_pi_user (user_id),
+  KEY idx_pi_order (order_id),
+  KEY idx_pi_status (status),
+  CONSTRAINT fk_pi_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_pi_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
