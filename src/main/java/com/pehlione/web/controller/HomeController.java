@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HomeController {
 
-    @GetMapping("/")
-    public ResponseEntity<ApiStatus> home() {
+    @GetMapping("/api/v1/status")
+    public ResponseEntity<ApiStatus> status() {
         return ResponseEntity.ok(new ApiStatus("pehlione", "UP", OffsetDateTime.now()));
     }
 
