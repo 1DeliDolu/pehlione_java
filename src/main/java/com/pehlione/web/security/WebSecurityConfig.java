@@ -18,7 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/", "/home").permitAll()
@@ -32,12 +32,12 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    UserDetailsService userDetailsService(PasswordEncoder encoder) {
+    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
         UserDetails user = User.withUsername("user")
                 .password(encoder.encode("password"))
                 .roles("USER")
