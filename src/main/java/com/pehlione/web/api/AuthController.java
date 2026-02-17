@@ -38,8 +38,10 @@ import com.pehlione.web.security.SecurityPolicyService;
 import com.pehlione.web.user.User;
 import com.pehlione.web.user.UserRepository;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
+@Tag(name = "Auth", description = "Authentication endpoints")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {

@@ -21,6 +21,11 @@ import com.pehlione.web.auth.AuthSessionService;
 import com.pehlione.web.user.User;
 import com.pehlione.web.user.UserRepository;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Sessions", description = "Authentication session management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/sessions")
 public class SessionController {

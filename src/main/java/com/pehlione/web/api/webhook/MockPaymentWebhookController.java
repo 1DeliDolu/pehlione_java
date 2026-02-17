@@ -13,8 +13,16 @@ import com.pehlione.web.api.error.ApiException;
 import com.pehlione.web.webhook.PaymentWebhookService;
 import com.pehlione.web.webhook.WebhookSignatureVerifier;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import tools.jackson.databind.json.JsonMapper;
 
+@Tag(name = "Webhooks", description = "Inbound webhook endpoints")
 @RestController
 @RequestMapping("/api/v1/webhooks/mock-payment")
 public class MockPaymentWebhookController {
@@ -31,6 +39,19 @@ public class MockPaymentWebhookController {
 		this.service = service;
 	}
 
+	@Operation(
+			summary = "Mock payment webhook receiver",
+			description = "Validates HMAC signature via X-Signature and processes the webhook event.",
+			security = { @SecurityRequirement(name = "") })
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Accepted"),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Invalid signature",
+					content = @Content(
+							mediaType = "application/problem+json",
+							schema = @Schema(ref = "#/components/schemas/ApiProblem")))
+	})
 	@PostMapping
 	public void handle(
 			@RequestHeader(name = "X-Signature", required = false) String signature,

@@ -1,0 +1,14 @@
+{
+  "name": "pehlione-contract-tools",
+  "private": true,
+  "scripts": {
+    "contract:update": "bash scripts/update-openapi-contract.sh",
+    "contract:test": "./mvnw -Dcodegen.skip=true -Dtest=OpenApiContractTests test",
+    "generate:clients:java": "./mvnw -DskipTests generate-sources",
+    "generate:clients:ts": "bash scripts/generate-ts-clients.sh",
+    "generate:clients": "npm run generate:clients:java && npm run generate:clients:ts"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.25.0"
+  }
+}

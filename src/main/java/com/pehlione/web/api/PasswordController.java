@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pehlione.web.auth.PasswordResetService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@Tag(name = "Auth - Password", description = "Password reset endpoints")
 @RestController
 @RequestMapping("/api/v1/auth/password")
 public class PasswordController {

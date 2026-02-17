@@ -18,8 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pehlione.web.product.Product;
 import com.pehlione.web.product.ProductImageService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "Product Images", description = "Product image management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/products/{productId}/images")
 public class ProductImageController {
@@ -31,13 +35,13 @@ public class ProductImageController {
 	}
 
 	@PostMapping
-	public ProductResponse add(@PathVariable Long productId, @Valid @RequestBody AddImageRequest req) {
+	public ProductResponse add(@PathVariable("productId") Long productId, @Valid @RequestBody AddImageRequest req) {
 		Product p = service.addImage(productId, req.url(), req.altText());
 		return ProductResponse.from(p);
 	}
 
 	@PutMapping("/reorder")
-	public ProductResponse reorder(@PathVariable Long productId, @Valid @RequestBody ReorderRequest req) {
+	public ProductResponse reorder(@PathVariable("productId") Long productId, @Valid @RequestBody ReorderRequest req) {
 		var orderMap = new HashMap<Long, Integer>();
 		Long primaryId = null;
 
@@ -57,7 +61,7 @@ public class ProductImageController {
 	}
 
 	@DeleteMapping("/{imageId}")
-	public void delete(@PathVariable Long productId, @PathVariable Long imageId) {
+	public void delete(@PathVariable("productId") Long productId, @PathVariable("imageId") Long imageId) {
 		service.delete(productId, imageId);
 	}
 }

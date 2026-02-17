@@ -20,8 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pehlione.web.address.AddressService;
 import com.pehlione.web.address.UserAddress;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "Addresses", description = "User shipping address endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/addresses")
 public class AddressController {

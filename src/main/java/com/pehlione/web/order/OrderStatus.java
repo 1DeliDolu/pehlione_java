@@ -1,5 +1,8 @@
 package com.pehlione.web.order;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Order status lifecycle")
 public enum OrderStatus {
 	PENDING_PAYMENT,
 	PAID,

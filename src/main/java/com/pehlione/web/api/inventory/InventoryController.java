@@ -9,10 +9,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pehlione.web.inventory.InventoryService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+@Tag(name = "Inventory", description = "Inventory reservation endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/inventory")
 public class InventoryController {

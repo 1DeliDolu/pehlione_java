@@ -8,6 +8,7 @@ import com.pehlione.web.checkout.OrderDraft;
 import com.pehlione.web.checkout.OrderDraftItem;
 import com.pehlione.web.checkout.OrderDraftStatus;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 public class CheckoutDtos {
@@ -63,6 +64,11 @@ public class CheckoutDtos {
 	public record StartPaymentResponse(String paymentId, String orderId) {
 	}
 
-	public record PayRequest(@NotNull Long addressId) {
+	public record PayRequest(
+			@Schema(
+					description = "Shipping address id",
+					example = "1",
+					requiredMode = Schema.RequiredMode.REQUIRED)
+			@NotNull Long addressId) {
 	}
 }

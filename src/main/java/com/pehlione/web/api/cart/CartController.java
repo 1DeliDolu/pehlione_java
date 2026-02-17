@@ -20,8 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pehlione.web.cart.CartService;
 import com.pehlione.web.product.ProductImage;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "Cart", description = "Shopping cart endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/cart")
 public class CartController {

@@ -5,6 +5,8 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
@@ -179,6 +181,27 @@ class SessionControllerTests {
 		mockMvc.perform(post("/api/v1/auth/refresh")
 				.cookie(new Cookie("refresh_token", refreshToken2)))
 				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void unauthorizedSessionsListReturnsProblemDetails() throws Exception {
+		mockMvc.perform(get("/api/v1/sessions"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentTypeCompatibleWith("application/problem+json"))
+				.andExpect(jsonPath("$.type").value("urn:problem:unauthorized"))
+				.andExpect(jsonPath("$.status").value(401))
+				.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+	}
+
+	@Test
+	void notFoundEndpointReturnsProblemDetails() throws Exception {
+		mockMvc.perform(get("/api/v1/products/99999999"))
+				.andExpect(status().isNotFound())
+				.andExpect(content().contentTypeCompatibleWith("application/problem+json"))
+				.andExpect(jsonPath("$.type").value("urn:problem:not-found"))
+				.andExpect(jsonPath("$.status").value(404))
+				.andExpect(jsonPath("$.code").value("NOT_FOUND"))
+				.andExpect(jsonPath("$.instance").value("/api/v1/products/99999999"));
 	}
 
 	private String extractField(String jsonBody, String field) {

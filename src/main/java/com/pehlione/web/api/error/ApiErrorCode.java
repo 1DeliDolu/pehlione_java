@@ -7,5 +7,7 @@ public enum ApiErrorCode {
     CONFLICT,
     FORBIDDEN,
     UNAUTHORIZED,
-    INTERNAL
+    RATE_LIMITED,
+    INTERNAL,
+    INTERNAL_ERROR
 }

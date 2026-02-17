@@ -20,9 +20,13 @@ import com.pehlione.web.fulfillment.FulfillmentService;
 import com.pehlione.web.fulfillment.Shipment;
 import com.pehlione.web.user.UserRepository;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+@Tag(name = "Admin - Fulfillment", description = "Administrative shipment and fulfillment endpoints")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/v1/admin/orders")
 public class AdminFulfillmentController {

@@ -78,6 +78,21 @@
 					<groupId>org.thymeleaf.extras</groupId>
 					<artifactId>thymeleaf-extras-springsecurity6</artifactId>
 				</dependency>
+				<dependency>
+					<groupId>com.bucket4j</groupId>
+					<artifactId>bucket4j-core</artifactId>
+					<version>8.10.1</version>
+				</dependency>
+				<dependency>
+					<groupId>com.github.ben-manes.caffeine</groupId>
+					<artifactId>caffeine</artifactId>
+					<version>3.1.8</version>
+				</dependency>
+				<dependency>
+					<groupId>org.springdoc</groupId>
+					<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+					<version>3.0.1</version>
+				</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -177,6 +192,71 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>7.8.0</version>
+				<executions>
+					<execution>
+						<id>gen-java-public</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/api-contract/openapi-public.json</inputSpec>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<addCompileSourceRoot>false</addCompileSourceRoot>
+							<output>${project.build.directory}/generated-sources/openapi-public</output>
+							<apiPackage>com.pehlione.client.publicapi.api</apiPackage>
+							<modelPackage>com.pehlione.client.publicapi.model</modelPackage>
+							<invokerPackage>com.pehlione.client.publicapi.invoker</invokerPackage>
+							<configOptions>
+								<dateLibrary>java8</dateLibrary>
+								<useJakartaEe>true</useJakartaEe>
+								<openApiNullable>false</openApiNullable>
+								<hideGenerationTimestamp>true</hideGenerationTimestamp>
+							</configOptions>
+							<globalProperties>
+								<apiDocs>false</apiDocs>
+								<modelDocs>false</modelDocs>
+								<apiTests>false</apiTests>
+								<modelTests>false</modelTests>
+							</globalProperties>
+						</configuration>
+					</execution>
+					<execution>
+						<id>gen-java-admin</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/api-contract/openapi-admin.json</inputSpec>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<addCompileSourceRoot>false</addCompileSourceRoot>
+							<output>${project.build.directory}/generated-sources/openapi-admin</output>
+							<apiPackage>com.pehlione.client.adminapi.api</apiPackage>
+							<modelPackage>com.pehlione.client.adminapi.model</modelPackage>
+							<invokerPackage>com.pehlione.client.adminapi.invoker</invokerPackage>
+							<configOptions>
+								<dateLibrary>java8</dateLibrary>
+								<useJakartaEe>true</useJakartaEe>
+								<openApiNullable>false</openApiNullable>
+								<hideGenerationTimestamp>true</hideGenerationTimestamp>
+							</configOptions>
+							<globalProperties>
+								<apiDocs>false</apiDocs>
+								<modelDocs>false</modelDocs>
+								<apiTests>false</apiTests>
+								<modelTests>false</modelTests>
+							</globalProperties>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

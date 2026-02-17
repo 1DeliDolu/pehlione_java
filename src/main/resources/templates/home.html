@@ -1,11 +1,1537 @@
-<!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org">
+<!doctype html>
+<html lang="tr">
 <head>
-  <title>Spring Security Example</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pehlione Shop</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-a: #fff5e8;
+      --bg-b: #ecf9f3;
+      --ink: #132027;
+      --muted: #5c6a70;
+      --line: rgba(19, 32, 39, 0.12);
+      --brand: #0c8f7a;
+      --brand-strong: #0a6b5c;
+      --brand-soft: rgba(12, 143, 122, 0.14);
+      --warn: #ff8f3d;
+    }
+
+    body {
+      font-family: "Source Sans 3", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 550px at 10% -10%, #ffe1b8 0%, transparent 70%),
+        radial-gradient(1000px 500px at 90% 0%, #ccefe0 0%, transparent 70%),
+        linear-gradient(180deg, var(--bg-a) 0%, var(--bg-b) 100%);
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, .navbar-brand, .offcanvas-title, .modal-title {
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .navbar.glass {
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.78);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(12, 143, 122, 0.11), rgba(255, 143, 61, 0.1));
+      border: 1px solid var(--line);
+      border-radius: 1.4rem;
+    }
+
+    .status-card {
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .badge-soft {
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      border: 1px solid rgba(12, 143, 122, 0.2);
+    }
+
+    .card.product {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      transition: transform .16s ease, box-shadow .16s ease;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .card.product:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 36px rgba(19, 32, 39, 0.12);
+    }
+
+    .price {
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #ebedf0 10%, #f8f9fa 35%, #ebedf0 60%);
+      background-size: 220% 100%;
+      animation: shimmer 1.1s linear infinite;
+    }
+
+    .skeleton-card {
+      height: 220px;
+      border-radius: 14px;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 999px;
+    }
+
+    .rounded-xl {
+      border-radius: 1rem;
+    }
+
+    .btn-brand {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .btn-brand:hover,
+    .btn-brand:focus {
+      background: var(--brand-strong);
+      border-color: var(--brand-strong);
+      color: #fff;
+    }
+
+    .pulse-up {
+      animation: pulseIn .45s ease;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 220% 0; }
+      100% { background-position: -220% 0; }
+    }
+
+    @keyframes pulseIn {
+      0% { transform: scale(0.98); opacity: 0.65; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome!</h1>
-  <p>Click <a th:href="@{/hello}">here</a> to see a greeting.</p>
-  <p>Try <a th:href="@{/greeting(name='Ali')}">greeting</a> page.</p>
+  <nav class="navbar navbar-expand-lg sticky-top glass">
+    <div class="container py-2">
+      <a class="navbar-brand fw-bold" href="/">
+        <i class="bi bi-bag-heart me-2"></i>Pehlione Shop
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navBar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div id="navBar" class="collapse navbar-collapse">
+        <form class="d-flex ms-lg-4 me-auto mt-3 mt-lg-0" role="search" onsubmit="return false;">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input id="searchInput" class="form-control" type="search" placeholder="Urun ara (isim / sku)" autocomplete="off">
+          </div>
+        </form>
+
+        <div class="d-flex gap-2 align-items-center mt-3 mt-lg-0">
+          <span id="authState" class="small muted d-none d-lg-inline"></span>
+
+          <button id="openLoginBtn" class="btn btn-outline-dark" type="button">
+            <i class="bi bi-person-circle me-1"></i>Giris
+          </button>
+
+          <div id="profileMenuWrap" class="dropdown d-none">
+            <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle me-1"></i><span id="profileName">Profil</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 id="profileRolePill" class="dropdown-header">ROLE_USER</h6></li>
+              <li>
+                <button id="openDashboardBtn" class="dropdown-item" type="button">
+                  <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button id="logoutMenuBtn" class="dropdown-item text-danger" type="button">
+                  <i class="bi bi-box-arrow-right me-2"></i>Cikis yap
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <button class="btn btn-dark position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartCanvas">
+            <i class="bi bi-cart3 me-1"></i>Sepet
+            <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <header class="container my-4">
+    <div class="hero p-4 p-lg-5 pulse-up">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <span class="badge badge-soft rounded-pill px-3 py-2 mb-3">Bootstrap 5 | API first | Fast checkout</span>
+          <h1 class="display-6 fw-bold mb-2">Kesfet, sepete ekle, odeme akisini baslat.</h1>
+          <p class="muted mb-4">
+            Bu ekran dogrudan backend endpointleriyle calisir: products -> cart -> reserve/pay -> payment confirm.
+          </p>
+          <div class="d-flex gap-2 flex-wrap">
+            <button id="reloadProductsBtn" class="btn btn-brand" type="button">
+              <i class="bi bi-arrow-repeat me-1"></i>Urunleri yenile
+            </button>
+            <button id="openAddressesBtn" class="btn btn-outline-success" type="button">
+              <i class="bi bi-geo-alt me-1"></i>Adresler
+            </button>
+            <a class="btn btn-outline-dark" href="/swagger-ui/index.html" target="_blank" rel="noreferrer">
+              <i class="bi bi-braces me-1"></i>Swagger
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="status-card p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold">Hizli Durum</div>
+                <div class="small muted">Token / cart / API</div>
+              </div>
+              <span id="healthPill" class="badge rounded-pill text-bg-secondary">unknown</span>
+            </div>
+            <hr>
+            <div class="small">
+              <div class="d-flex justify-content-between"><span class="muted">Auth</span><span id="authPill">-</span></div>
+              <div class="d-flex justify-content-between"><span class="muted">Cart Items</span><span id="cartItemsPill">0</span></div>
+              <div class="d-flex justify-content-between"><span class="muted">API</span><span id="apiBasePill">/api/v1</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container pb-5">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <div>
+        <h2 class="h4 fw-bold mb-1">Urunler</h2>
+        <div class="small muted" id="resultInfo">Yukleniyor...</div>
+      </div>
+      <div class="d-flex gap-2">
+        <select id="sortSelect" class="form-select form-select-sm" style="max-width: 210px;">
+          <option value="relevance">Siralama: Varsayilan</option>
+          <option value="priceAsc">Fiyat: Artan</option>
+          <option value="priceDesc">Fiyat: Azalan</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="productGrid" class="row g-3"></div>
+  </main>
+
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="cartCanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title"><i class="bi bi-cart3 me-2"></i>Sepet</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column gap-3">
+      <div id="cartEmpty" class="text-center muted py-5 d-none">
+        <i class="bi bi-bag-x fs-1 d-block mb-2"></i>
+        Sepet bos
+      </div>
+
+      <div id="cartList" class="d-flex flex-column gap-2"></div>
+
+      <div class="mt-auto border-top pt-3">
+        <div class="d-flex justify-content-between">
+          <span class="muted">Ara toplam</span>
+          <span class="price" id="cartSubtotal">0.00</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="muted">Para birimi</span>
+          <span id="cartCurrency">EUR</span>
+        </div>
+        <div class="d-grid gap-2 mt-3">
+          <button id="clearCartBtn" class="btn btn-outline-dark" type="button">
+            <i class="bi bi-trash3 me-1"></i>Sepeti temizle
+          </button>
+          <button id="openCheckoutBtn" class="btn btn-brand" type="button">
+            <i class="bi bi-credit-card me-1"></i>Checkout
+          </button>
+        </div>
+        <div class="small muted mt-2">
+          Odeme adiminda local sepet otomatik olarak server cart'a senkronize edilir.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-xl">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-shield-lock me-2"></i>Giris</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info small mb-3">
+            Login cevabindaki access token localStorage'a yazilir ve API cagrilarinda Bearer olarak kullanilir.
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Email</label>
+            <input id="loginEmail" class="form-control" placeholder="user@example.com" autocomplete="username" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input id="loginPassword" type="password" class="form-control" placeholder="********" autocomplete="current-password" />
+          </div>
+
+          <div class="d-grid">
+            <button id="loginSubmitBtn" class="btn btn-dark" type="button">
+              <i class="bi bi-box-arrow-in-right me-1"></i>Giris yap
+            </button>
+          </div>
+
+          <div class="small muted mt-3">
+            Endpoint: <code>POST /api/v1/auth/login</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="dashboardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content rounded-xl">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-light border small mb-3">
+            <div><strong>Kullanici:</strong> <span id="dashboardUserEmail">-</span></div>
+            <div><strong>Roller:</strong> <span id="dashboardRoleList">-</span></div>
+          </div>
+
+          <div id="dashboardUserSection" class="border rounded-xl p-3 bg-white mb-3">
+            <h6 class="mb-2">Kullanici Bolumu</h6>
+            <div class="small muted mb-2">Siparis, odeme ve adres islemleri</div>
+            <div class="d-flex flex-wrap gap-2">
+              <button id="dashboardAddressesBtn" class="btn btn-sm btn-outline-success" type="button">
+                <i class="bi bi-geo-alt me-1"></i>Adreslerim
+              </button>
+              <button id="dashboardCheckoutBtn" class="btn btn-sm btn-outline-dark" type="button">
+                <i class="bi bi-credit-card me-1"></i>Checkout
+              </button>
+            </div>
+          </div>
+
+          <div id="dashboardAdminSection" class="border rounded-xl p-3 bg-white mb-3 d-none">
+            <h6 class="mb-2">Admin Bolumu</h6>
+            <div class="small muted mb-2">Yonetim islemleri</div>
+            <div class="d-flex flex-wrap gap-2">
+              <a class="btn btn-sm btn-outline-dark" href="/admin">Admin Panel</a>
+              <a class="btn btn-sm btn-outline-dark" href="/swagger-ui/index.html" target="_blank" rel="noreferrer">Admin API</a>
+            </div>
+          </div>
+
+          <div id="dashboardWorkerSection" class="border rounded-xl p-3 bg-white d-none">
+            <h6 class="mb-2">Calisan Bolumu</h6>
+            <div class="small muted">Operasyon/Fulfillment gorevleri burada gorunecek.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addressesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content rounded-xl">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-geo-alt me-2"></i>Adresler</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="muted small">Checkout'ta teslimat adresi secimi icin kullanilir.</div>
+            <button id="openNewAddressBtn" class="btn btn-sm btn-brand" type="button">
+              <i class="bi bi-plus-lg me-1"></i>Yeni adres
+            </button>
+          </div>
+          <div id="addressesList" class="row g-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-xl">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Checkout</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-lg-7">
+              <div class="fw-semibold mb-2">Teslimat adresi</div>
+              <div id="checkoutAddresses" class="d-flex flex-column gap-2"></div>
+              <div class="small muted mt-2">Adres yoksa once ekleyin.</div>
+            </div>
+            <div class="col-lg-5">
+              <div class="bg-light rounded-xl p-3">
+                <div class="fw-semibold mb-2">Ozet</div>
+                <div class="d-flex justify-content-between"><span class="muted">Toplam</span><span class="price" id="checkoutTotal">0.00</span></div>
+                <div class="d-flex justify-content-between"><span class="muted">Para birimi</span><span id="checkoutCurrency">EUR</span></div>
+                <hr>
+                <div class="d-grid gap-2">
+                  <button id="startPaymentBtn" class="btn btn-brand" type="button">
+                    <i class="bi bi-credit-card me-1"></i>Odemeyi baslat
+                  </button>
+                  <button id="confirmPaymentBtn" class="btn btn-outline-dark" type="button">
+                    <i class="bi bi-check2-circle me-1"></i>Mock confirm (dev)
+                  </button>
+                </div>
+                <div class="small muted mt-2">
+                  Akis: cart sync -> reserve -> pay -> payment id
+                </div>
+                <div class="alert alert-secondary small mt-3 mb-0">
+                  paymentId: <span id="lastPaymentId" class="fw-semibold">-</span><br>
+                  orderId: <span id="lastOrderId" class="fw-semibold">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="newAddressModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-xl">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni adres</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Label</label>
+              <input id="addrLabel" class="form-control" placeholder="Home" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Full name</label>
+              <input id="addrFullName" class="form-control" placeholder="Ali Veli" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone</label>
+              <input id="addrPhone" class="form-control" placeholder="+90..." />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Country code</label>
+              <input id="addrCountry" class="form-control" placeholder="TR" />
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Line 1</label>
+              <input id="addrLine1" class="form-control" placeholder="Street 1" />
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Line 2</label>
+              <input id="addrLine2" class="form-control" placeholder="Apt 3" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              <input id="addrCity" class="form-control" placeholder="Istanbul" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">State</label>
+              <input id="addrState" class="form-control" placeholder="Marmara" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Postal code</label>
+              <input id="addrPostal" class="form-control" placeholder="34000" />
+            </div>
+            <div class="col-12 mt-2">
+              <div class="form-check">
+                <input id="addrDefault" class="form-check-input" type="checkbox" checked />
+                <label class="form-check-label">Default yap</label>
+              </div>
+            </div>
+          </div>
+          <div class="d-grid mt-3">
+            <button id="createAddressBtn" class="btn btn-brand" type="button">
+              <i class="bi bi-save me-1"></i>Kaydet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div id="toastBody" class="toast-body">-</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (() => {
+      const API = {
+        products: "/api/v1/products",
+        login: "/api/v1/auth/login",
+        logout: "/api/v1/auth/logout",
+        addresses: "/api/v1/addresses",
+        cart: "/api/v1/cart",
+        cartItems: "/api/v1/cart/items",
+        reserveDraft: "/api/v1/checkout/reserve",
+        payDraft: (draftId) => `/api/v1/checkout/drafts/${draftId}/pay`,
+        confirmMock: (paymentId) => `/api/v1/payments/${paymentId}/confirm-mock`,
+        health: "/api/v1/products?page=0&size=1"
+      };
+
+      const LS_TOKEN = "auth.token";
+      const LS_CART = "cart.v1";
+
+      let products = [];
+      let addresses = [];
+      let selectedAddressId = null;
+      let lastDraftId = null;
+      let lastPaymentId = null;
+      let lastOrderId = null;
+      let currentIdentity = null;
+
+      const els = {
+        productGrid: null,
+        resultInfo: null,
+        searchInput: null,
+        sortSelect: null,
+        cartCount: null,
+        cartItemsPill: null,
+        cartList: null,
+        cartEmpty: null,
+        cartSubtotal: null,
+        cartCurrency: null,
+        checkoutTotal: null,
+        checkoutCurrency: null,
+        loginEmail: null,
+        loginPassword: null,
+        authPill: null,
+        authState: null,
+        healthPill: null,
+        addressesList: null,
+        checkoutAddresses: null,
+        lastPaymentId: null,
+        lastOrderId: null,
+        openLoginBtn: null,
+        profileMenuWrap: null,
+        profileName: null,
+        profileRolePill: null,
+        openDashboardBtn: null,
+        logoutMenuBtn: null,
+        reloadProductsBtn: null,
+        openAddressesBtn: null,
+        clearCartBtn: null,
+        openCheckoutBtn: null,
+        loginSubmitBtn: null,
+        openNewAddressBtn: null,
+        createAddressBtn: null,
+        startPaymentBtn: null,
+        confirmPaymentBtn: null,
+        loginModal: null,
+        dashboardModal: null,
+        addressesModal: null,
+        checkoutModal: null,
+        newAddressModal: null,
+        dashboardUserEmail: null,
+        dashboardRoleList: null,
+        dashboardUserSection: null,
+        dashboardAdminSection: null,
+        dashboardWorkerSection: null,
+        dashboardAddressesBtn: null,
+        dashboardCheckoutBtn: null,
+        addrLabel: null,
+        addrFullName: null,
+        addrPhone: null,
+        addrCountry: null,
+        addrLine1: null,
+        addrLine2: null,
+        addrCity: null,
+        addrState: null,
+        addrPostal: null,
+        addrDefault: null
+      };
+
+      function cacheElements() {
+        els.productGrid = document.getElementById("productGrid");
+        els.resultInfo = document.getElementById("resultInfo");
+        els.searchInput = document.getElementById("searchInput");
+        els.sortSelect = document.getElementById("sortSelect");
+        els.cartCount = document.getElementById("cartCount");
+        els.cartItemsPill = document.getElementById("cartItemsPill");
+        els.cartList = document.getElementById("cartList");
+        els.cartEmpty = document.getElementById("cartEmpty");
+        els.cartSubtotal = document.getElementById("cartSubtotal");
+        els.cartCurrency = document.getElementById("cartCurrency");
+        els.checkoutTotal = document.getElementById("checkoutTotal");
+        els.checkoutCurrency = document.getElementById("checkoutCurrency");
+        els.loginEmail = document.getElementById("loginEmail");
+        els.loginPassword = document.getElementById("loginPassword");
+        els.authPill = document.getElementById("authPill");
+        els.authState = document.getElementById("authState");
+        els.healthPill = document.getElementById("healthPill");
+        els.addressesList = document.getElementById("addressesList");
+        els.checkoutAddresses = document.getElementById("checkoutAddresses");
+        els.lastPaymentId = document.getElementById("lastPaymentId");
+        els.lastOrderId = document.getElementById("lastOrderId");
+        els.openLoginBtn = document.getElementById("openLoginBtn");
+        els.profileMenuWrap = document.getElementById("profileMenuWrap");
+        els.profileName = document.getElementById("profileName");
+        els.profileRolePill = document.getElementById("profileRolePill");
+        els.openDashboardBtn = document.getElementById("openDashboardBtn");
+        els.logoutMenuBtn = document.getElementById("logoutMenuBtn");
+        els.reloadProductsBtn = document.getElementById("reloadProductsBtn");
+        els.openAddressesBtn = document.getElementById("openAddressesBtn");
+        els.clearCartBtn = document.getElementById("clearCartBtn");
+        els.openCheckoutBtn = document.getElementById("openCheckoutBtn");
+        els.loginSubmitBtn = document.getElementById("loginSubmitBtn");
+        els.openNewAddressBtn = document.getElementById("openNewAddressBtn");
+        els.createAddressBtn = document.getElementById("createAddressBtn");
+        els.startPaymentBtn = document.getElementById("startPaymentBtn");
+        els.confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+        els.loginModal = document.getElementById("loginModal");
+        els.dashboardModal = document.getElementById("dashboardModal");
+        els.addressesModal = document.getElementById("addressesModal");
+        els.checkoutModal = document.getElementById("checkoutModal");
+        els.newAddressModal = document.getElementById("newAddressModal");
+        els.dashboardUserEmail = document.getElementById("dashboardUserEmail");
+        els.dashboardRoleList = document.getElementById("dashboardRoleList");
+        els.dashboardUserSection = document.getElementById("dashboardUserSection");
+        els.dashboardAdminSection = document.getElementById("dashboardAdminSection");
+        els.dashboardWorkerSection = document.getElementById("dashboardWorkerSection");
+        els.dashboardAddressesBtn = document.getElementById("dashboardAddressesBtn");
+        els.dashboardCheckoutBtn = document.getElementById("dashboardCheckoutBtn");
+        els.addrLabel = document.getElementById("addrLabel");
+        els.addrFullName = document.getElementById("addrFullName");
+        els.addrPhone = document.getElementById("addrPhone");
+        els.addrCountry = document.getElementById("addrCountry");
+        els.addrLine1 = document.getElementById("addrLine1");
+        els.addrLine2 = document.getElementById("addrLine2");
+        els.addrCity = document.getElementById("addrCity");
+        els.addrState = document.getElementById("addrState");
+        els.addrPostal = document.getElementById("addrPostal");
+        els.addrDefault = document.getElementById("addrDefault");
+      }
+
+      function toast(message) {
+        document.getElementById("toastBody").textContent = message;
+        bootstrap.Toast.getOrCreateInstance(document.getElementById("toast"), { delay: 2300 }).show();
+      }
+
+      function showModal(el) {
+        bootstrap.Modal.getOrCreateInstance(el).show();
+      }
+
+      function hideModal(el) {
+        bootstrap.Modal.getOrCreateInstance(el).hide();
+      }
+
+      function getToken() {
+        return localStorage.getItem(LS_TOKEN);
+      }
+
+      function setToken(value) {
+        if (!value) {
+          localStorage.removeItem(LS_TOKEN);
+          return;
+        }
+        localStorage.setItem(LS_TOKEN, value);
+      }
+
+      function parseJwtPayload(token) {
+        if (!token) {
+          return null;
+        }
+        const parts = token.split(".");
+        if (parts.length < 2) {
+          return null;
+        }
+
+        try {
+          const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+          const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+          return JSON.parse(atob(padded));
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function extractRolesFromClaims(claims) {
+        if (!claims) {
+          return [];
+        }
+
+        const raw = [];
+        if (typeof claims.scope === "string") {
+          raw.push(...claims.scope.split(/\s+/));
+        }
+        if (Array.isArray(claims.scope)) {
+          raw.push(...claims.scope);
+        }
+        if (Array.isArray(claims.scp)) {
+          raw.push(...claims.scp);
+        }
+        if (typeof claims.authorities === "string") {
+          raw.push(...claims.authorities.split(/\s+/));
+        }
+        if (Array.isArray(claims.authorities)) {
+          raw.push(...claims.authorities);
+        }
+
+        return [...new Set(raw.map((it) => String(it || "").trim()).filter(Boolean))];
+      }
+
+      function resolveIdentity() {
+        const token = getToken();
+        if (!token) {
+          return null;
+        }
+
+        const claims = parseJwtPayload(token);
+        const roles = extractRolesFromClaims(claims);
+
+        return {
+          email: claims && claims.sub ? String(claims.sub) : "authenticated",
+          roles
+        };
+      }
+
+      function hasRole(identity, roleName) {
+        if (!identity) {
+          return false;
+        }
+        return identity.roles.includes(roleName);
+      }
+
+      function isWorker(identity) {
+        if (!identity) {
+          return false;
+        }
+        return identity.roles.some((role) =>
+          role === "ROLE_WORKER" || role === "ROLE_EMPLOYEE" || role === "ROLE_STAFF");
+      }
+
+      function roleLabel(identity) {
+        if (hasRole(identity, "ROLE_ADMIN")) {
+          return "ADMIN";
+        }
+        if (isWorker(identity)) {
+          return "CALISAN";
+        }
+        if (identity && identity.roles.length) {
+          return identity.roles[0];
+        }
+        return "USER";
+      }
+
+      function renderDashboard(identity) {
+        const roles = identity ? identity.roles : [];
+        const isAdmin = hasRole(identity, "ROLE_ADMIN");
+        const worker = isWorker(identity);
+
+        els.dashboardUserEmail.textContent = identity ? identity.email : "-";
+        els.dashboardRoleList.textContent = roles.length ? roles.join(", ") : "-";
+
+        els.dashboardUserSection.classList.toggle("d-none", !identity);
+        els.dashboardAdminSection.classList.toggle("d-none", !isAdmin);
+        els.dashboardWorkerSection.classList.toggle("d-none", !worker);
+      }
+
+      function openDashboard() {
+        if (!currentIdentity) {
+          toast("Dashboard icin once giris yapin");
+          showModal(els.loginModal);
+          return;
+        }
+        renderDashboard(currentIdentity);
+        showModal(els.dashboardModal);
+      }
+
+      async function apiFetch(url, options = {}) {
+        const opts = { ...options };
+        const headers = new Headers(opts.headers || {});
+        headers.set("Accept", "application/json");
+
+        if (opts.json !== undefined) {
+          headers.set("Content-Type", "application/json");
+          opts.body = JSON.stringify(opts.json);
+          delete opts.json;
+        }
+
+        const authToken = getToken();
+        if (authToken) {
+          headers.set("Authorization", `Bearer ${authToken}`);
+        }
+
+        const response = await fetch(url, { ...opts, headers });
+
+        if (!response.ok) {
+          let message = `HTTP ${response.status}`;
+          try {
+            const contentType = response.headers.get("content-type") || "";
+            if (contentType.includes("application/json") || contentType.includes("problem+json")) {
+              const payload = await response.json();
+              message = payload.detail || payload.message || payload.title || message;
+            } else {
+              const text = await response.text();
+              if (text) {
+                message = text;
+              }
+            }
+          } catch (_) {
+            // keep fallback status message
+          }
+          throw new Error(message);
+        }
+
+        if (response.status === 204) {
+          return null;
+        }
+
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json") || contentType.includes("problem+json")) {
+          return response.json();
+        }
+        return response.text();
+      }
+
+      function formatMoney(amount, currency = "EUR") {
+        const value = Number(amount || 0);
+        try {
+          return new Intl.NumberFormat("tr-TR", { style: "currency", currency }).format(value);
+        } catch (_) {
+          return `${value.toFixed(2)} ${currency}`;
+        }
+      }
+
+      function getCart() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(LS_CART));
+          if (parsed && Array.isArray(parsed.items)) {
+            return parsed;
+          }
+        } catch (_) {
+          // ignore parse issue
+        }
+        return { currency: "EUR", items: [] };
+      }
+
+      function setCart(cart) {
+        localStorage.setItem(LS_CART, JSON.stringify(cart));
+        renderCart();
+      }
+
+      function cartItemCount() {
+        return getCart().items.reduce((sum, item) => sum + item.qty, 0);
+      }
+
+      function cartSubtotal() {
+        return getCart().items.reduce((sum, item) => sum + Number(item.price) * item.qty, 0);
+      }
+
+      function addToCart(product) {
+        const cart = getCart();
+        const existing = cart.items.find((item) => item.id === product.id);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          cart.items.push({
+            id: product.id,
+            name: product.name,
+            price: Number(product.price || 0),
+            currency: product.currency || "EUR",
+            qty: 1
+          });
+        }
+        cart.currency = product.currency || cart.currency || "EUR";
+        setCart(cart);
+        toast("Sepete eklendi");
+      }
+
+      function removeFromCart(productId) {
+        const cart = getCart();
+        cart.items = cart.items.filter((item) => item.id !== productId);
+        setCart(cart);
+      }
+
+      function changeCartQty(productId, delta) {
+        const cart = getCart();
+        const item = cart.items.find((it) => it.id === productId);
+        if (!item) {
+          return;
+        }
+        item.qty += delta;
+        if (item.qty <= 0) {
+          cart.items = cart.items.filter((it) => it.id !== productId);
+        }
+        setCart(cart);
+      }
+
+      function clearCart() {
+        setCart({ currency: "EUR", items: [] });
+        toast("Sepet temizlendi");
+      }
+
+      function normalizeProductsResponse(data) {
+        if (Array.isArray(data)) {
+          return data;
+        }
+        if (data && Array.isArray(data.items)) {
+          return data.items;
+        }
+        if (data && Array.isArray(data.content)) {
+          return data.content;
+        }
+        return [];
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[ch]));
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replace(/`/g, "&#96;");
+      }
+
+      function renderSkeleton() {
+        els.productGrid.innerHTML = "";
+        for (let i = 0; i < 8; i += 1) {
+          const col = document.createElement("div");
+          col.className = "col-12 col-sm-6 col-lg-3";
+          col.innerHTML = `
+            <div class="bg-white border rounded-xl p-3">
+              <div class="skeleton skeleton-card mb-3"></div>
+              <div class="skeleton skeleton-line w-75 mb-2"></div>
+              <div class="skeleton skeleton-line w-50"></div>
+            </div>
+          `;
+          els.productGrid.appendChild(col);
+        }
+      }
+
+      function renderProducts(list) {
+        els.productGrid.innerHTML = "";
+
+        if (!list.length) {
+          els.productGrid.innerHTML = '<div class="col-12"><div class="alert alert-light border">Urun bulunamadi.</div></div>';
+          els.resultInfo.textContent = "0 urun";
+          return;
+        }
+
+        list.forEach((product) => {
+          const col = document.createElement("div");
+          col.className = "col-12 col-sm-6 col-lg-3";
+
+          col.innerHTML = `
+            <div class="card product h-100">
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-semibold text-truncate" title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</div>
+                  <span class="badge text-bg-light border">${escapeHtml(product.sku || "SKU")}</span>
+                </div>
+                <div class="small muted mb-3">${escapeHtml(product.description || "Aciklama eklenmemis")}</div>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                  <div class="price">${formatMoney(product.price, product.currency)}</div>
+                  <button
+                    class="btn btn-sm btn-dark"
+                    type="button"
+                    data-add-to-cart="1"
+                    data-id="${escapeAttr(product.id)}"
+                    data-name="${escapeAttr(product.name)}"
+                    data-price="${Number(product.price || 0)}"
+                    data-currency="${escapeAttr(product.currency || "EUR")}">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          els.productGrid.appendChild(col);
+        });
+
+        els.resultInfo.textContent = `${list.length} urun listelendi`;
+      }
+
+      function renderCart() {
+        const cart = getCart();
+        els.cartList.innerHTML = "";
+
+        const count = cartItemCount();
+        els.cartCount.textContent = String(count);
+        els.cartItemsPill.textContent = String(count);
+
+        if (!cart.items.length) {
+          els.cartEmpty.classList.remove("d-none");
+        } else {
+          els.cartEmpty.classList.add("d-none");
+          cart.items.forEach((item) => {
+            const row = document.createElement("div");
+            row.className = "border rounded-xl p-2 bg-white";
+            row.innerHTML = `
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="me-2">
+                  <div class="fw-semibold">${escapeHtml(item.name)}</div>
+                  <div class="small muted">${formatMoney(item.price, item.currency)} x ${item.qty}</div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" type="button" data-cart-action="remove" data-id="${escapeAttr(item.id)}">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button class="btn btn-outline-dark" type="button" data-cart-action="dec" data-id="${escapeAttr(item.id)}">-</button>
+                  <button class="btn btn-outline-dark disabled" type="button">${item.qty}</button>
+                  <button class="btn btn-outline-dark" type="button" data-cart-action="inc" data-id="${escapeAttr(item.id)}">+</button>
+                </div>
+                <div class="price">${formatMoney(Number(item.price) * item.qty, item.currency)}</div>
+              </div>
+            `;
+            els.cartList.appendChild(row);
+          });
+        }
+
+        els.cartCurrency.textContent = cart.currency || "EUR";
+        els.cartSubtotal.textContent = formatMoney(cartSubtotal(), cart.currency || "EUR");
+        els.checkoutTotal.textContent = formatMoney(cartSubtotal(), cart.currency || "EUR");
+        els.checkoutCurrency.textContent = cart.currency || "EUR";
+      }
+
+      function applySearchSort() {
+        const query = (els.searchInput.value || "").trim().toLowerCase();
+        let list = products.filter((product) => {
+          if (!query) {
+            return true;
+          }
+          const name = String(product.name || "").toLowerCase();
+          const sku = String(product.sku || "").toLowerCase();
+          return name.includes(query) || sku.includes(query);
+        });
+
+        const sort = els.sortSelect.value;
+        if (sort === "priceAsc") {
+          list.sort((a, b) => Number(a.price) - Number(b.price));
+        }
+        if (sort === "priceDesc") {
+          list.sort((a, b) => Number(b.price) - Number(a.price));
+        }
+
+        renderProducts(list);
+      }
+
+      async function reloadProducts() {
+        renderSkeleton();
+        try {
+          const data = await apiFetch(API.products);
+          products = normalizeProductsResponse(data).map((row) => ({
+            id: row.id ?? row.productId ?? row.publicId,
+            sku: row.sku,
+            name: row.name,
+            description: row.description,
+            price: Number(row.price ?? row.unitPrice ?? 0),
+            currency: row.currency || "EUR"
+          })).filter((row) => Number.isFinite(Number(row.id)));
+
+          applySearchSort();
+          toast("Urunler yuklendi");
+        } catch (error) {
+          els.productGrid.innerHTML = `<div class="col-12"><div class="alert alert-danger">Urunler yuklenemedi: ${escapeHtml(error.message)}</div></div>`;
+          els.resultInfo.textContent = "Yukleme hatasi";
+        }
+      }
+
+      function updateAuthUi() {
+        const authToken = getToken();
+        currentIdentity = resolveIdentity();
+
+        els.authPill.textContent = authToken ? "Bearer OK" : "-";
+
+        if (currentIdentity) {
+          const shortName = currentIdentity.email.includes("@")
+            ? currentIdentity.email.split("@")[0]
+            : currentIdentity.email;
+
+          els.authState.textContent = currentIdentity.email;
+          els.authState.classList.remove("d-none");
+
+          els.openLoginBtn.classList.add("d-none");
+          els.profileMenuWrap.classList.remove("d-none");
+          els.profileName.textContent = shortName;
+          els.profileRolePill.textContent = roleLabel(currentIdentity);
+        } else {
+          els.authState.textContent = "";
+          els.authState.classList.add("d-none");
+
+          els.openLoginBtn.classList.remove("d-none");
+          els.profileMenuWrap.classList.add("d-none");
+          els.profileName.textContent = "Profil";
+          els.profileRolePill.textContent = "ROLE_USER";
+        }
+
+        renderDashboard(currentIdentity);
+      }
+
+      async function login() {
+        const email = els.loginEmail.value.trim();
+        const password = els.loginPassword.value;
+
+        if (!email || !password) {
+          toast("Email ve password gerekli");
+          return;
+        }
+
+        try {
+          const data = await apiFetch(API.login, {
+            method: "POST",
+            json: { email, password }
+          });
+
+          const accessToken = data && (data.accessToken || data.token || data.jwt);
+          if (!accessToken) {
+            throw new Error("Login response icinde accessToken bulunamadi");
+          }
+
+          setToken(accessToken);
+          updateAuthUi();
+          hideModal(els.loginModal);
+          toast("Giris basarili");
+        } catch (error) {
+          toast(`Giris basarisiz: ${error.message}`);
+        }
+      }
+
+      async function logout() {
+        try {
+          await apiFetch(API.logout, { method: "POST" });
+        } catch (_) {
+          // ignore logout API errors and still clear local token
+        }
+        setToken(null);
+        hideModal(els.dashboardModal);
+        updateAuthUi();
+        toast("Cikis yapildi");
+      }
+
+      async function loadAddresses() {
+        try {
+          const data = await apiFetch(API.addresses);
+          addresses = Array.isArray(data) ? data : [];
+          renderAddresses();
+        } catch (error) {
+          addresses = [];
+          els.addressesList.innerHTML = `<div class="col-12"><div class="alert alert-warning">Adresler yuklenemedi: ${escapeHtml(error.message)}</div></div>`;
+        }
+      }
+
+      function renderAddresses() {
+        els.addressesList.innerHTML = "";
+
+        if (!addresses.length) {
+          els.addressesList.innerHTML = '<div class="col-12"><div class="alert alert-light border">Kayitli adres yok.</div></div>';
+          return;
+        }
+
+        addresses.forEach((address) => {
+          const col = document.createElement("div");
+          col.className = "col-12 col-md-6";
+          col.innerHTML = `
+            <div class="border bg-white rounded-xl p-3 h-100">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-semibold">
+                    ${escapeHtml(address.label || "Address")}
+                    ${address.isDefault ? '<span class="badge text-bg-success ms-1">Default</span>' : ""}
+                  </div>
+                  <div class="small muted">${escapeHtml(address.fullName || "")} - ${escapeHtml(address.phone || "")}</div>
+                </div>
+                <button class="btn btn-sm btn-outline-dark" type="button" data-set-default="${escapeAttr(address.id)}">Default</button>
+              </div>
+              <div class="small mt-2">
+                ${escapeHtml(address.line1 || "")} ${escapeHtml(address.line2 || "")}<br>
+                ${escapeHtml(address.postalCode || "")} ${escapeHtml(address.city || "")} ${escapeHtml(address.state || "")}<br>
+                ${escapeHtml(address.countryCode || "")}
+              </div>
+            </div>
+          `;
+          els.addressesList.appendChild(col);
+        });
+      }
+
+      function renderCheckoutAddresses() {
+        els.checkoutAddresses.innerHTML = "";
+
+        if (!addresses.length) {
+          els.checkoutAddresses.innerHTML = '<div class="alert alert-light border">Adres yok. Once adres ekleyin.</div>';
+          selectedAddressId = null;
+          return;
+        }
+
+        const defaultAddress = addresses.find((address) => address.isDefault) || addresses[0];
+        if (!selectedAddressId) {
+          selectedAddressId = Number(defaultAddress.id);
+        }
+
+        addresses.forEach((address) => {
+          const id = Number(address.id);
+          const checked = id === Number(selectedAddressId) ? "checked" : "";
+
+          const row = document.createElement("div");
+          row.className = "border rounded-xl p-3 bg-white";
+          row.innerHTML = `
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="checkoutAddress" value="${id}" id="addr_${id}" ${checked}>
+              <label class="form-check-label" for="addr_${id}">
+                <div class="fw-semibold">
+                  ${escapeHtml(address.label || "Address")}
+                  ${address.isDefault ? '<span class="badge text-bg-success ms-1">Default</span>' : ""}
+                </div>
+                <div class="small muted">${escapeHtml(address.fullName || "")} - ${escapeHtml(address.phone || "")}</div>
+                <div class="small">${escapeHtml(address.line1 || "")} ${escapeHtml(address.line2 || "")} - ${escapeHtml(address.postalCode || "")} ${escapeHtml(address.city || "")} (${escapeHtml(address.countryCode || "")})</div>
+              </label>
+            </div>
+          `;
+
+          els.checkoutAddresses.appendChild(row);
+        });
+      }
+
+      async function setDefaultAddress(id) {
+        try {
+          await apiFetch(`${API.addresses}/${id}/default`, { method: "POST" });
+          toast("Default adres guncellendi");
+          await loadAddresses();
+          renderCheckoutAddresses();
+        } catch (error) {
+          toast(`Default adres guncellenemedi: ${error.message}`);
+        }
+      }
+
+      async function createAddress() {
+        const payload = {
+          label: normalizeText(els.addrLabel.value),
+          fullName: normalizeText(els.addrFullName.value),
+          phone: normalizeText(els.addrPhone.value),
+          line1: normalizeText(els.addrLine1.value),
+          line2: normalizeText(els.addrLine2.value),
+          city: normalizeText(els.addrCity.value),
+          state: normalizeText(els.addrState.value),
+          postalCode: normalizeText(els.addrPostal.value),
+          countryCode: (normalizeText(els.addrCountry.value) || "TR").toUpperCase(),
+          makeDefault: !!els.addrDefault.checked
+        };
+
+        if (!payload.fullName || !payload.line1 || !payload.city || !payload.postalCode || !payload.countryCode) {
+          toast("Adres icin zorunlu alanlari doldurun");
+          return;
+        }
+
+        try {
+          await apiFetch(API.addresses, {
+            method: "POST",
+            json: payload
+          });
+          toast("Adres kaydedildi");
+          hideModal(els.newAddressModal);
+          await loadAddresses();
+          renderCheckoutAddresses();
+        } catch (error) {
+          toast(`Adres eklenemedi: ${error.message}`);
+        }
+      }
+
+      function normalizeText(value) {
+        if (value == null) {
+          return null;
+        }
+        const trimmed = String(value).trim();
+        return trimmed.length ? trimmed : null;
+      }
+
+      async function syncCartToServer() {
+        const authToken = getToken();
+        if (!authToken) {
+          throw new Error("Checkout icin giris gerekli");
+        }
+
+        const cart = getCart();
+        if (!cart.items.length) {
+          throw new Error("Sepet bos");
+        }
+
+        await apiFetch(API.cart, { method: "DELETE" });
+
+        for (const item of cart.items) {
+          const productId = Number(item.id);
+          if (!Number.isFinite(productId)) {
+            throw new Error("Sepette gecersiz urun id var");
+          }
+
+          await apiFetch(API.cartItems, {
+            method: "POST",
+            json: {
+              productId,
+              quantity: item.qty
+            }
+          });
+        }
+      }
+
+      async function startPayment() {
+        if (!getToken()) {
+          toast("Once giris yapin");
+          showModal(els.loginModal);
+          return;
+        }
+
+        if (!selectedAddressId) {
+          toast("Teslimat adresi secin");
+          return;
+        }
+
+        try {
+          await syncCartToServer();
+
+          const reserveResponse = await apiFetch(API.reserveDraft, {
+            method: "POST",
+            json: {}
+          });
+
+          lastDraftId = reserveResponse && (reserveResponse.draftId || reserveResponse.id || reserveResponse.publicId);
+          if (!lastDraftId) {
+            throw new Error("Reserve response icinde draft id bulunamadi");
+          }
+
+          const payResponse = await apiFetch(API.payDraft(lastDraftId), {
+            method: "POST",
+            headers: {
+              "Idempotency-Key": `pay-${lastDraftId}-1`
+            },
+            json: {
+              addressId: Number(selectedAddressId)
+            }
+          });
+
+          lastPaymentId = payResponse && payResponse.paymentId;
+          lastOrderId = payResponse && payResponse.orderId;
+
+          els.lastPaymentId.textContent = lastPaymentId || "-";
+          els.lastOrderId.textContent = lastOrderId || "-";
+
+          toast("Odeme baslatildi");
+        } catch (error) {
+          toast(`Checkout basarisiz: ${error.message}`);
+        }
+      }
+
+      async function confirmMockPayment() {
+        if (!lastPaymentId) {
+          toast("Once odeme baslatin");
+          return;
+        }
+
+        try {
+          await apiFetch(API.confirmMock(lastPaymentId), {
+            method: "POST"
+          });
+          try {
+            await apiFetch(API.cart, { method: "DELETE" });
+          } catch (_) {
+            // local clear still enough for UI
+          }
+          clearCart();
+          toast("Mock payment confirmed");
+        } catch (error) {
+          toast(`Mock confirm basarisiz: ${error.message}`);
+        }
+      }
+
+      async function openAddresses() {
+        if (!getToken()) {
+          toast("Adresler icin once giris yapin");
+          showModal(els.loginModal);
+          return;
+        }
+
+        await loadAddresses();
+        showModal(els.addressesModal);
+      }
+
+      async function openCheckout() {
+        if (!getToken()) {
+          toast("Checkout icin once giris yapin");
+          showModal(els.loginModal);
+          return;
+        }
+
+        await loadAddresses();
+        renderCheckoutAddresses();
+        showModal(els.checkoutModal);
+      }
+
+      async function checkApiHealth() {
+        try {
+          await apiFetch(API.health);
+          els.healthPill.className = "badge rounded-pill text-bg-success";
+          els.healthPill.textContent = "UP";
+        } catch (_) {
+          els.healthPill.className = "badge rounded-pill text-bg-danger";
+          els.healthPill.textContent = "DOWN";
+        }
+      }
+
+      function handleProductGridClick(event) {
+        const btn = event.target.closest("[data-add-to-cart]");
+        if (!btn) {
+          return;
+        }
+
+        const productId = Number(btn.dataset.id);
+        if (!Number.isFinite(productId)) {
+          toast("Gecersiz urun id");
+          return;
+        }
+
+        addToCart({
+          id: productId,
+          name: btn.dataset.name || "Urun",
+          price: Number(btn.dataset.price || 0),
+          currency: btn.dataset.currency || "EUR"
+        });
+      }
+
+      function handleCartListClick(event) {
+        const btn = event.target.closest("[data-cart-action]");
+        if (!btn) {
+          return;
+        }
+
+        const action = btn.dataset.cartAction;
+        const productId = Number(btn.dataset.id);
+        if (!Number.isFinite(productId)) {
+          return;
+        }
+
+        if (action === "remove") {
+          removeFromCart(productId);
+        }
+        if (action === "dec") {
+          changeCartQty(productId, -1);
+        }
+        if (action === "inc") {
+          changeCartQty(productId, 1);
+        }
+      }
+
+      function wireEvents() {
+        els.searchInput.addEventListener("input", applySearchSort);
+        els.sortSelect.addEventListener("change", applySearchSort);
+
+        els.openLoginBtn.addEventListener("click", () => showModal(els.loginModal));
+        els.openDashboardBtn.addEventListener("click", openDashboard);
+        els.logoutMenuBtn.addEventListener("click", logout);
+        els.reloadProductsBtn.addEventListener("click", reloadProducts);
+        els.openAddressesBtn.addEventListener("click", openAddresses);
+        els.clearCartBtn.addEventListener("click", clearCart);
+        els.openCheckoutBtn.addEventListener("click", openCheckout);
+
+        els.loginSubmitBtn.addEventListener("click", login);
+
+        els.openNewAddressBtn.addEventListener("click", () => showModal(els.newAddressModal));
+        els.createAddressBtn.addEventListener("click", createAddress);
+        els.dashboardAddressesBtn.addEventListener("click", async () => {
+          hideModal(els.dashboardModal);
+          await openAddresses();
+        });
+        els.dashboardCheckoutBtn.addEventListener("click", async () => {
+          hideModal(els.dashboardModal);
+          await openCheckout();
+        });
+
+        els.startPaymentBtn.addEventListener("click", startPayment);
+        els.confirmPaymentBtn.addEventListener("click", confirmMockPayment);
+
+        els.productGrid.addEventListener("click", handleProductGridClick);
+        els.cartList.addEventListener("click", handleCartListClick);
+
+        els.addressesList.addEventListener("click", (event) => {
+          const btn = event.target.closest("[data-set-default]");
+          if (!btn) {
+            return;
+          }
+          const id = Number(btn.dataset.setDefault);
+          if (Number.isFinite(id)) {
+            setDefaultAddress(id);
+          }
+        });
+
+        els.checkoutAddresses.addEventListener("change", (event) => {
+          if (event.target && event.target.name === "checkoutAddress") {
+            selectedAddressId = Number(event.target.value);
+          }
+        });
+
+        [els.loginEmail, els.loginPassword].forEach((field) => {
+          field.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              login();
+            }
+          });
+        });
+      }
+
+      function init() {
+        cacheElements();
+        wireEvents();
+        updateAuthUi();
+        renderCart();
+        checkApiHealth();
+        reloadProducts();
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    })();
+  </script>
 </body>
 </html>

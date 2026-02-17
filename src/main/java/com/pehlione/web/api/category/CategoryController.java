@@ -20,8 +20,11 @@ import com.pehlione.web.category.Category;
 import com.pehlione.web.category.CategoryRepository;
 import com.pehlione.web.category.CategoryService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "Categories", description = "Product category endpoints")
 @RestController
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
@@ -39,6 +42,7 @@ public class CategoryController {
 		return repo.findAll().stream().map(CategoryResponse::from).toList();
 	}
 
+	@SecurityRequirement(name = "bearerAuth")
 	@PostMapping
 	public CategoryResponse create(@Valid @RequestBody CreateCategoryRequest req) {
 		Category c = new Category();
@@ -47,13 +51,15 @@ public class CategoryController {
 		return CategoryResponse.from(service.create(c));
 	}
 
+	@SecurityRequirement(name = "bearerAuth")
 	@PutMapping("/{id}")
-	public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody UpdateCategoryRequest req) {
+	public CategoryResponse update(@PathVariable("id") Long id, @Valid @RequestBody UpdateCategoryRequest req) {
 		return CategoryResponse.from(service.update(id, req.name()));
 	}
 
+	@SecurityRequirement(name = "bearerAuth")
 	@DeleteMapping("/{id}")
-	public void delete(@PathVariable Long id) {
+	public void delete(@PathVariable("id") Long id) {
 		service.delete(id);
 	}
 }

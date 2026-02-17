@@ -4,14 +4,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+
+import com.pehlione.web.security.ratelimit.RateLimitFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -20,7 +21,9 @@ public class SecurityConfig {
     @Order(1)
     SecurityFilterChain apiSecurity(
             HttpSecurity http,
-            AuthRateLimitFilter authRateLimitFilter,
+            RateLimitFilter rateLimitFilter,
+            ProblemAuthenticationEntryPoint problemAuthenticationEntryPoint,
+            ProblemAccessDeniedHandler problemAccessDeniedHandler,
             SessionTouchFilter sessionTouchFilter) throws Exception {
         http
                 .securityMatcher("/api/**")
@@ -42,13 +45,20 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/categories", "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(problemAuthenticationEntryPoint)
+                        .accessDeniedHandler(problemAccessDeniedHandler))
+                .headers(headers -> headers
+                        .contentTypeOptions(contentType -> {
+                        })
+                        .frameOptions(frame -> frame.sameOrigin())
+                        .referrerPolicy(policy -> policy.policy(ReferrerPolicy.NO_REFERRER)))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
-                .addFilterBefore(authRateLimitFilter, BearerTokenAuthenticationFilter.class)
-                .addFilterAfter(sessionTouchFilter, BearerTokenAuthenticationFilter.class);
+                .addFilterAfter(rateLimitFilter, BearerTokenAuthenticationFilter.class)
+                .addFilterAfter(sessionTouchFilter, RateLimitFilter.class);
 
         return http.build();
     }
@@ -59,6 +69,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/", "/home", "/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
