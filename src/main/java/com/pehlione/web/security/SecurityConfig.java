@@ -69,9 +69,23 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/style.css", "/script.js", "/favicon.ico").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/", "/home", "/login").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/",
+                                "/home",
+                                "/products",
+                                "/login",
+                                "/register",
+                                "/impressum",
+                                "/datenschutz",
+                                "/agb",
+                                "/widerruf",
+                                "/versand-zahlung",
+                                "/kontakt",
+                                "/error")
+                        .permitAll()
+                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

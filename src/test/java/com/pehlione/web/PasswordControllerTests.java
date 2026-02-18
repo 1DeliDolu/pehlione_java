@@ -33,6 +33,7 @@ import com.pehlione.web.auth.TokenHash;
 @SpringBootTest
 class PasswordControllerTests {
 
+	private static final Pattern ACCESS_TOKEN_PATTERN = Pattern.compile("\"accessToken\"\\s*:\\s*\"([^\"]+)\"");
 	private static final Pattern REFRESH_COOKIE_PATTERN = Pattern.compile("refresh_token=([^;]*)");
 
 	@Autowired
@@ -166,7 +167,75 @@ class PasswordControllerTests {
 				.content("""
 						{"token":"invalid-token","newPassword":"NewPassw0rd!"}
 						"""))
+					.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void mePasswordChangeWithValidCurrentPasswordUpdatesPassword() throws Exception {
+		MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"email":"user@pehlione.com","password":"password"}
+						"""))
+				.andExpect(status().isOk())
+				.andReturn();
+		String accessToken = extractAccessToken(loginResult.getResponse().getContentAsString());
+
+		mockMvc.perform(post("/api/v1/me/password")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+							"currentPassword":"password",
+							"newPassword":"MyN3wPassw0rd!",
+							"confirmNewPassword":"MyN3wPassw0rd!"
+						}
+						"""))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/v1/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"email":"user@pehlione.com","password":"password"}
+						"""))
+				.andExpect(status().isUnauthorized());
+
+		mockMvc.perform(post("/api/v1/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"email":"user@pehlione.com","password":"MyN3wPassw0rd!"}
+						"""))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void mePasswordChangeRejectsWrongCurrentPassword() throws Exception {
+		MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"email":"user@pehlione.com","password":"password"}
+						"""))
+				.andExpect(status().isOk())
+				.andReturn();
+		String accessToken = extractAccessToken(loginResult.getResponse().getContentAsString());
+
+		mockMvc.perform(post("/api/v1/me/password")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+							"currentPassword":"wrong-password",
+							"newPassword":"MyN3wPassw0rd!",
+							"confirmNewPassword":"MyN3wPassw0rd!"
+						}
+						"""))
 				.andExpect(status().isBadRequest());
+	}
+
+	private String extractAccessToken(String body) {
+		Matcher matcher = ACCESS_TOKEN_PATTERN.matcher(body);
+		assertThat(matcher.find()).isTrue();
+		return matcher.group(1);
 	}
 
 	private String extractRefreshToken(String setCookieHeader) {

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Versand und Zahlung | Pehlione Shop</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" th:href="@{/style.css}" />
+  </head>
+  <body class="page-legal" data-page="versand-zahlung">
+        <div th:replace="~{nav :: main('legal','versand-zahlung')}"></div>
+
+    <main class="container legal-shell">
+      <section class="legal-card p-4 p-lg-5">
+        <span class="badge badge-soft rounded-pill px-3 py-2 mb-3">Logistics</span>
+        <h1 class="h3 fw-bold mb-3">Versand und Zahlung</h1>
+
+        <h2>Versandgebiet</h2>
+        <p>Wir liefern innerhalb Deutschlands und in ausgewählte EU-Laender.</p>
+
+        <h2>Lieferzeiten</h2>
+        <p>
+          Standardlieferzeit innerhalb Deutschlands: 2-4 Werktage nach
+          Zahlungseingang. Fuer internationale Lieferungen gelten abweichende
+          Zeiten.
+        </p>
+
+        <h2>Versandkosten</h2>
+        <p>
+          Die Versandkosten werden im Checkout transparent ausgewiesen.
+          Ab bestimmten Warenkorbwerten kann kostenloser Versand angeboten
+          werden.
+        </p>
+
+        <h2>Zahlungsarten</h2>
+        <p>
+          Kreditkarte, Debitkarte und PayPal stehen als Zahlungsmethoden zur
+          Verfuegung.
+        </p>
+      </section>
+    </main>
+
+    <div th:replace="~{footer :: main('compact')}"></div>
+  </body>
+</html>

@@ -6,6 +6,9 @@ import static com.pehlione.web.api.checkout.CheckoutDtos.ReserveRequest;
 import static com.pehlione.web.api.checkout.CheckoutDtos.StartPaymentResponse;
 import static com.pehlione.web.api.checkout.CheckoutDtos.SubmitResponse;
 
+import java.time.YearMonth;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pehlione.web.api.error.ApiErrorCode;
+import com.pehlione.web.api.error.ApiException;
 import com.pehlione.web.checkout.CheckoutService;
 import com.pehlione.web.auth.ClientInfo;
 
@@ -106,6 +111,7 @@ public class CheckoutController {
 			HttpServletRequest request,
 			@Parameter(description = "Idempotency key for safe retries", example = "checkout-42")
 			@RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKey) {
+		validateCardFieldsIfProvided(req);
 		String sid = jwt.getClaimAsString("sid");
 		var result = checkoutService.startPayment(
 				jwt.getSubject(),
@@ -115,5 +121,56 @@ public class CheckoutController {
 				idempotencyKey,
 				req.addressId());
 		return new StartPaymentResponse(result.paymentId(), result.orderId());
+	}
+
+	private void validateCardFieldsIfProvided(PayRequest req) {
+		boolean anyCardFieldProvided =
+				!isBlank(req.cardHolderName())
+						|| !isBlank(req.cardNumber())
+						|| req.expiryMonth() != null
+						|| req.expiryYear() != null
+						|| !isBlank(req.cvc());
+		if (!anyCardFieldProvided) {
+			return;
+		}
+
+		if (isBlank(req.cardHolderName()) || isBlank(req.cardNumber()) || req.expiryMonth() == null
+				|| req.expiryYear() == null || isBlank(req.cvc())) {
+			throw validation("All card fields are required when card data is provided");
+		}
+
+		String normalizedCardNumber = req.cardNumber().replaceAll("[\\s-]", "");
+		if (!normalizedCardNumber.matches("\\d{13,19}")) {
+			throw validation("cardNumber must be 13-19 digits");
+		}
+
+		int expiryMonth = req.expiryMonth();
+		if (expiryMonth < 1 || expiryMonth > 12) {
+			throw validation("expiryMonth must be between 1 and 12");
+		}
+
+		int expiryYear = req.expiryYear();
+		YearMonth now = YearMonth.now();
+		if (expiryYear < now.getYear() || expiryYear > now.getYear() + 30) {
+			throw validation("expiryYear is out of allowed range");
+		}
+
+		YearMonth expiry = YearMonth.of(expiryYear, expiryMonth);
+		if (expiry.isBefore(now)) {
+			throw validation("Card is expired");
+		}
+
+		String normalizedCvc = req.cvc().replaceAll("\\s+", "");
+		if (!normalizedCvc.matches("\\d{3,4}")) {
+			throw validation("cvc must be 3-4 digits");
+		}
+	}
+
+	private boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
+	}
+
+	private ApiException validation(String message) {
+		return new ApiException(HttpStatus.BAD_REQUEST, ApiErrorCode.VALIDATION_FAILED, message);
 	}
 }

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="tr" xmlns:th="https://www.thymeleaf.org">
+<html lang="de" xmlns:th="https://www.thymeleaf.org">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pehlione Shop</title>
+    <title>Pehlione Shop | Produkte</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,23 +22,22 @@
     />
     <link rel="stylesheet" href="/style.css" th:href="@{/style.css}" />
   </head>
-  <body class="page-storefront page-home" data-page="storefront">
-        <div th:replace="~{nav :: main('storefront','home')}"></div>
+  <body class="page-storefront page-products" data-page="storefront">
+        <div th:replace="~{nav :: main('storefront','products')}"></div>
 
     <header class="container my-4">
       <div class="hero p-4 p-lg-5 pulse-up">
         <div class="row align-items-center g-4">
           <div class="col-lg-7">
             <span class="badge badge-soft rounded-pill px-3 py-2 mb-3"
-              >Pehlione | Company Overview</span
+              >Pehlione | Firmenübersicht</span
             >
             <h1 class="display-6 fw-bold mb-2">
-              Modern e-commerce ve operasyon platformu
+              Moderne E‑Commerce- und Betriebsplattform
             </h1>
             <p class="muted mb-4">
-              Pehlione; urun yonetimi, odeme, siparis, iade ve fulfillment
-              sureclerini tek merkezden yonetmek icin tasarlanmis kurumsal bir
-              ticaret altyapisidir.
+              Pehlione wurde entwickelt, um Produktverwaltung, Zahlung, Bestellungen,
+              Rückgaben und Fulfillment-Prozesse zentral zu steuern.
             </p>
             <div class="d-flex gap-2 flex-wrap">
               <button
@@ -46,14 +45,14 @@
                 class="btn btn-brand"
                 type="button"
               >
-                <i class="bi bi-grid me-1"></i>Products Catalog
+                <i class="bi bi-grid me-1"></i>Produktkatalog
               </button>
               <button
                 id="openAddressesBtn"
                 class="btn btn-outline-success"
                 type="button"
               >
-                <i class="bi bi-geo-alt me-1"></i>Addresses
+                <i class="bi bi-geo-alt me-1"></i>Adressen
               </button>
               <a
                 class="btn btn-outline-dark"
@@ -70,31 +69,31 @@
             <div class="status-card p-4">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="fw-semibold">Company Facts</div>
+                  <div class="fw-semibold">Firmenfakten</div>
                   <div class="small muted">Pehlione Commerce Systems</div>
                 </div>
                 <span
                   id="healthPill"
                   class="badge rounded-pill text-bg-secondary"
-                  >unknown</span
+                  >unbekannt</span
                 >
               </div>
               <hr />
               <div class="small">
                 <div class="d-flex justify-content-between">
-                  <span class="muted">Founded</span><span>2020</span>
+                  <span class="muted">Gegründet</span><span>2020</span>
                 </div>
                 <div class="d-flex justify-content-between">
                   <span class="muted">HQ</span><span>Berlin, DE</span>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <span class="muted">Platform</span><span>B2C / B2B</span>
+                  <span class="muted">Plattform</span><span>B2C / B2B</span>
                 </div>
                 <div class="d-flex justify-content-between">
                   <span class="muted">Auth</span><span id="authPill">-</span>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <span class="muted">Cart Items</span
+                  <span class="muted">Warenkorb-Artikel</span
                   ><span id="cartItemsPill">0</span>
                 </div>
                 <div class="d-flex justify-content-between">
@@ -113,29 +112,28 @@
         <div class="row g-4 mb-4">
           <div class="col-lg-8">
             <div class="company-panel p-4 h-100">
-              <h2 class="h4 fw-bold mb-2">Pehlione Hakkinda</h2>
+              <h2 class="h4 fw-bold mb-2">Über Pehlione</h2>
               <p class="muted mb-3">
-                Pehlione, e-commerce operasyonlarinda catalog yonetimi, siparis
-                orkestrasyonu, odeme ve lojistik adimlarini tek bir platformda
-                birlestiren modern bir teknoloji sirketidir.
+                Pehlione vereint Katalogverwaltung, Bestellorchestrierung, Zahlung und Logistik
+                in einer modernen Plattform.
               </p>
               <div class="row g-2">
                 <div class="col-md-4">
                   <div class="company-kpi">
                     <div class="value">99.9%</div>
-                    <div class="label">Platform Uptime</div>
+                    <div class="label">Plattform-Verfügbarkeit</div>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="company-kpi">
                     <div class="value">24/7</div>
-                    <div class="label">Operational Monitoring</div>
+                    <div class="label">Betriebsüberwachung</div>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="company-kpi">
                     <div class="value">EU</div>
-                    <div class="label">Data & Compliance Focus</div>
+                    <div class="label">Datenschutz & Compliance</div>
                   </div>
                 </div>
               </div>
@@ -143,18 +141,15 @@
           </div>
           <div class="col-lg-4">
             <div class="company-panel p-4 h-100">
-              <h3 class="h5 fw-bold mb-2">Temel Degerler</h3>
+              <h3 class="h5 fw-bold mb-2">Grundwerte</h3>
               <div class="small mb-2">
-                <strong>Security First:</strong> Her adimda guvenli kimlik ve
-                yetki yonetimi.
+                <strong>Sicherheit zuerst:</strong> Sichere Identitäts- und Zugriffsverwaltung.
               </div>
               <div class="small mb-2">
-                <strong>Operational Speed:</strong> Siparisten teslimata hizli
-                surec tasarimi.
+                <strong>Betriebliche Geschwindigkeit:</strong> Schnelle Prozesse von Bestellung bis Lieferung.
               </div>
               <div class="small">
-                <strong>Scalable Architecture:</strong> Buyumeye uygun servis ve
-                veri modeli.
+                <strong>Skalierbare Architektur:</strong> Dienste und Datenmodell für Wachstum.
               </div>
             </div>
           </div>
@@ -163,27 +158,23 @@
         <div class="row g-4">
           <div class="col-lg-6">
             <div class="company-panel p-4 h-100">
-              <h3 class="h5 fw-bold mb-2">Departman Yapisi</h3>
+              <h3 class="h5 fw-bold mb-2">Abteilungsstruktur</h3>
               <div class="small muted mb-2">
-                Admin, calisan ve kullanici rollerine uygun panel ayrimi ile
-                calisir.
+                Getrennte Panels für Admin, Mitarbeiter und Benutzer.
               </div>
               <div class="small">
-                Admin panelinde urun/stock/siparis/iade operasyonlari tek yerden
-                yonetilir.
+                Im Admin-Panel werden Produkt-, Lager-, Bestell- und Rückgabe-Operationen zentral verwaltet.
               </div>
             </div>
           </div>
           <div class="col-lg-6">
             <div class="company-panel p-4 h-100">
-              <h3 class="h5 fw-bold mb-2">Odeme ve Bildirim</h3>
+              <h3 class="h5 fw-bold mb-2">Zahlung & Benachrichtigung</h3>
               <div class="small muted mb-2">
-                Checkout, step-by-step kurguda calisir ve odeme akisi
-                dogrulanir.
+                Der Checkout läuft Schritt für Schritt und die Zahlung wird validiert.
               </div>
               <div class="small">
-                Siparis, odeme ve iade durumlari Mailhog/SMTP uzerinden
-                kullaniciya bildirilir.
+                Bestell- und Rückgabe-Status werden per Mailhog/SMTP an Nutzer gesendet.
               </div>
             </div>
           </div>
@@ -197,27 +188,27 @@
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-                <h2 class="h6 fw-bold mb-0">Filters</h2>
+                <h2 class="h6 fw-bold mb-0">Filter</h2>
                 <button
                   id="clearFiltersBtn"
                   class="btn btn-sm btn-outline-dark"
                   type="button"
                 >
-                  Reset
+                  Zurücksetzen
                 </button>
               </div>
               <div class="mb-3">
-                <label class="form-label form-label-sm mb-1">Category</label>
+                <label class="form-label form-label-sm mb-1">Kategorie</label>
                 <div
                   id="categoryFilterList"
                   class="d-flex flex-column gap-2 small"
                 >
-                  <div class="muted">Loading categories...</div>
+                  <div class="muted">Kategorien werden geladen...</div>
                 </div>
               </div>
               <div class="row g-2">
                 <div class="col-6">
-                  <label class="form-label form-label-sm mb-1">Min Price</label>
+                  <label class="form-label form-label-sm mb-1">Min. Preis</label>
                   <input
                     id="filterPriceMin"
                     type="number"
@@ -228,7 +219,7 @@
                   />
                 </div>
                 <div class="col-6">
-                  <label class="form-label form-label-sm mb-1">Max Price</label>
+                  <label class="form-label form-label-sm mb-1">Max. Preis</label>
                   <input
                     id="filterPriceMax"
                     type="number"
@@ -245,8 +236,8 @@
           <section id="productsSection" class="col-lg-9">
             <div class="d-flex justify-content-between align-items-end mb-3">
               <div>
-                <h2 class="h4 fw-bold mb-1">Products</h2>
-                <div class="small muted" id="resultInfo">Yukleniyor...</div>
+                <h2 class="h4 fw-bold mb-1">Produkte</h2>
+                <div class="small muted" id="resultInfo">Lädt...</div>
               </div>
               <div class="d-flex gap-2">
                 <button
@@ -254,16 +245,16 @@
                   class="btn btn-sm btn-outline-dark"
                   type="button"
                 >
-                  <i class="bi bi-arrow-repeat me-1"></i>Refresh
+                  <i class="bi bi-arrow-repeat me-1"></i>Aktualisieren
                 </button>
                 <select
                   id="sortSelect"
                   class="form-select form-select-sm"
                   style="max-width: 210px"
                 >
-                  <option value="relevance">Sort: Default</option>
-                  <option value="priceAsc">Price: Low to High</option>
-                  <option value="priceDesc">Price: High to Low</option>
+                  <option value="relevance">Sortierung: Standard</option>
+                  <option value="priceAsc">Preis: Niedrig → Hoch</option>
+                  <option value="priceDesc">Preis: Hoch → Niedrig</option>
                 </select>
               </div>
             </div>
@@ -278,7 +269,7 @@
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="cartCanvas">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title"><i class="bi bi-cart3 me-2"></i>Sepet</h5>
+        <h5 class="offcanvas-title"><i class="bi bi-cart3 me-2"></i>Warenkorb</h5>
         <button
           type="button"
           class="btn-close"
@@ -288,18 +279,18 @@
       <div class="offcanvas-body d-flex flex-column gap-3">
         <div id="cartEmpty" class="text-center muted py-5 d-none">
           <i class="bi bi-bag-x fs-1 d-block mb-2"></i>
-          Sepet bos
+          Warenkorb leer
         </div>
 
         <div id="cartList" class="d-flex flex-column gap-2"></div>
 
         <div class="mt-auto border-top pt-3">
           <div class="d-flex justify-content-between">
-            <span class="muted">Ara toplam</span>
+            <span class="muted">Zwischensumme</span>
             <span class="price" id="cartSubtotal">0.00</span>
           </div>
           <div class="d-flex justify-content-between">
-            <span class="muted">Para birimi</span>
+            <span class="muted">Währung</span>
             <span id="cartCurrency">EUR</span>
           </div>
           <div class="d-grid gap-2 mt-3">
@@ -308,15 +299,14 @@
               class="btn btn-outline-dark"
               type="button"
             >
-              <i class="bi bi-trash3 me-1"></i>Sepeti temizle
+              <i class="bi bi-trash3 me-1"></i>Warenkorb leeren
             </button>
             <button id="openCheckoutBtn" class="btn btn-brand" type="button">
               <i class="bi bi-credit-card me-1"></i>Checkout
             </button>
           </div>
           <div class="small muted mt-2">
-            Odeme adiminda local sepet otomatik olarak server cart'a senkronize
-            edilir.
+            Beim Checkout wird der lokale Warenkorb automatisch mit dem Server-Warenkorb synchronisiert.
           </div>
         </div>
       </div>
@@ -327,7 +317,7 @@
         <div class="modal-content rounded-xl">
           <div class="modal-header">
             <h5 class="modal-title">
-              <i class="bi bi-shield-lock me-2"></i>Giris
+              <i class="bi bi-shield-lock me-2"></i>Anmelden
             </h5>
             <button
               type="button"
@@ -337,8 +327,7 @@
           </div>
           <div class="modal-body">
             <div class="alert alert-info small mb-3">
-              Login cevabindaki access token localStorage'a yazilir ve API
-              cagrilarinda Bearer olarak kullanilir.
+              Das Access-Token aus der Login-Antwort wird in localStorage gespeichert und als Bearer-Token für API-Aufrufe verwendet.
             </div>
 
             <div class="mb-2">
@@ -351,7 +340,7 @@
               />
             </div>
             <div class="mb-3">
-              <label class="form-label">Password</label>
+              <label class="form-label">Passwort</label>
               <input
                 id="loginPassword"
                 type="password"
@@ -363,7 +352,7 @@
 
             <div class="d-grid">
               <button id="loginSubmitBtn" class="btn btn-dark" type="button">
-                <i class="bi bi-box-arrow-in-right me-1"></i>Giris yap
+                <i class="bi bi-box-arrow-in-right me-1"></i>Anmelden
               </button>
             </div>
 
@@ -371,8 +360,8 @@
               Endpoint: <code>POST /api/v1/auth/login</code>
             </div>
             <div class="small mt-2">
-              New account?
-              <a href="/register" th:href="@{/register}">Create here</a>
+              Neues Konto?
+              <a href="/register" th:href="@{/register}">Hier erstellen</a>
             </div>
           </div>
         </div>
@@ -400,11 +389,11 @@
           <div class="modal-body">
             <div class="alert alert-light border small mb-3">
               <div>
-                <strong>Kullanici:</strong>
+                <strong>Benutzer:</strong>
                 <span id="dashboardUserEmail">-</span>
               </div>
               <div>
-                <strong>Roller:</strong> <span id="dashboardRoleList">-</span>
+                <strong>Rollen:</strong> <span id="dashboardRoleList">-</span>
               </div>
             </div>
 
@@ -412,21 +401,20 @@
               id="dashboardUserSection"
               class="border rounded-xl p-3 bg-white mb-3"
             >
-              <h6 class="mb-2">User Section</h6>
+              <h6 class="mb-2">Benutzerbereich</h6>
               <div class="small muted mb-3">
-                View account details and manage password, address, and payment
-                card.
+                Kontodaten ansehen und Passwort, Adresse sowie Zahlungskarte verwalten.
               </div>
               <div class="row g-3">
                 <div class="col-lg-4">
                   <div class="border rounded p-3 h-100">
-                    <h6 class="mb-2">Profile Info</h6>
+                    <h6 class="mb-2">Profilinfo</h6>
                     <div class="small mb-1">
                       <strong>Email:</strong>
                       <span id="profileEmailValue">-</span>
                     </div>
                     <div class="small mb-1">
-                      <strong>Roles:</strong>
+                      <strong>Rollen:</strong>
                       <span id="profileRolesValue">-</span>
                     </div>
                     <div class="small mb-1">
@@ -434,7 +422,7 @@
                       <span id="profileStatusValue">-</span>
                     </div>
                     <div class="small">
-                      <strong>Member Since:</strong>
+                      <strong>Mitglied seit:</strong>
                       <span id="profileCreatedAtValue">-</span>
                     </div>
                     <div class="d-grid gap-2 mt-3">
@@ -443,7 +431,7 @@
                         class="btn btn-sm btn-outline-success"
                         type="button"
                       >
-                        <i class="bi bi-geo-alt me-1"></i>My Addresses
+                        <i class="bi bi-geo-alt me-1"></i>Meine Adressen
                       </button>
                       <button
                         id="dashboardCheckoutBtn"
@@ -457,11 +445,11 @@
                 </div>
                 <div class="col-lg-8">
                   <div class="border rounded p-3 mb-3">
-                    <h6 class="mb-2">Change Password</h6>
+                    <h6 class="mb-2">Passwort ändern</h6>
                     <div class="row g-2">
                       <div class="col-md-4">
                         <label class="form-label form-label-sm mb-1"
-                          >Current Password</label
+                          >Aktuelles Passwort</label
                         >
                         <input
                           id="profileCurrentPassword"
@@ -472,7 +460,7 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label form-label-sm mb-1"
-                          >New Password</label
+                          >Neues Passwort</label
                         >
                         <input
                           id="profileNewPassword"
@@ -483,7 +471,7 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label form-label-sm mb-1"
-                          >Confirm New Password</label
+                          >Neues Passwort bestätigen</label
                         >
                         <input
                           id="profileConfirmPassword"
@@ -499,23 +487,23 @@
                         class="btn btn-sm btn-outline-dark"
                         type="button"
                       >
-                        Update Password
+                        Passwort aktualisieren
                       </button>
                     </div>
                   </div>
 
                   <div class="border rounded p-3 mb-3">
-                    <h6 class="mb-2">Update Address</h6>
+                    <h6 class="mb-2">Adresse aktualisieren</h6>
                     <div class="row g-2 mb-2">
                       <div class="col-md-8">
                         <label class="form-label form-label-sm mb-1"
-                          >Saved Address</label
+                          >Gespeicherte Adresse</label
                         >
                         <select
                           id="profileAddressSelect"
                           class="form-select form-select-sm"
                         >
-                          <option value="">No address selected</option>
+                          <option value="">Keine Adresse ausgewählt</option>
                         </select>
                       </div>
                       <div class="col-md-4 d-grid">
@@ -527,24 +515,24 @@
                           class="btn btn-sm btn-outline-secondary"
                           type="button"
                         >
-                          Load
+                          Laden
                         </button>
                       </div>
                     </div>
                     <div class="row g-2">
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >Label</label
+                          >Bezeichnung</label
                         >
                         <input
                           id="profileAddrLabel"
                           class="form-control form-control-sm"
-                          placeholder="Home"
+                          placeholder="Zuhause"
                         />
                       </div>
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >Full Name</label
+                          >Vollständiger Name</label
                         >
                         <input
                           id="profileAddrFullName"
@@ -554,7 +542,7 @@
                       </div>
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >Phone</label
+                          >Telefon</label
                         >
                         <input
                           id="profileAddrPhone"
@@ -564,7 +552,7 @@
                       </div>
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >Country Code</label
+                          >Ländercode</label
                         >
                         <input
                           id="profileAddrCountry"
@@ -575,7 +563,7 @@
                       </div>
                       <div class="col-md-8">
                         <label class="form-label form-label-sm mb-1"
-                          >Street</label
+                          >Straße</label
                         >
                         <input
                           id="profileAddrStreet"
@@ -585,7 +573,7 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label form-label-sm mb-1"
-                          >House Number</label
+                          >Hausnummer</label
                         >
                         <input
                           id="profileAddrHouseNumber"
@@ -595,17 +583,17 @@
                       </div>
                       <div class="col-md-12">
                         <label class="form-label form-label-sm mb-1"
-                          >Address Line 2 (Optional)</label
+                          >Adresszusatz (Optional)</label
                         >
                         <input
                           id="profileAddrLine2"
                           class="form-control form-control-sm"
-                          placeholder="Apartment, floor, etc."
+                          placeholder="Apartment, Stockwerk, etc."
                         />
                       </div>
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >City</label
+                          >Stadt</label
                         >
                         <input
                           id="profileAddrCity"
@@ -615,7 +603,7 @@
                       </div>
                       <div class="col-md-3">
                         <label class="form-label form-label-sm mb-1"
-                          >State (Optional)</label
+                          >Bundesland (Optional)</label
                         >
                         <input
                           id="profileAddrState"
@@ -625,7 +613,7 @@
                       </div>
                       <div class="col-md-3">
                         <label class="form-label form-label-sm mb-1"
-                          >Postal Code</label
+                          >Postleitzahl</label
                         >
                         <input
                           id="profileAddrPostal"
@@ -641,7 +629,7 @@
                         type="checkbox"
                       />
                       <label class="form-check-label small"
-                        >Set as default</label
+                        >Als Standard setzen</label
                       >
                     </div>
                     <div class="d-flex justify-content-end mt-2">
@@ -650,7 +638,7 @@
                         class="btn btn-sm btn-outline-primary"
                         type="button"
                       >
-                        Update Address
+                        Adresse aktualisieren
                       </button>
                     </div>
                     <div id="profileAddressResult" class="small muted mt-2">
@@ -659,15 +647,14 @@
                   </div>
 
                   <div class="border rounded p-3">
-                    <h6 class="mb-2">Saved Card (Mock)</h6>
+                    <h6 class="mb-2">Gespeicherte Karte (Mock)</h6>
                     <div class="small muted mb-2">
-                      Card is stored locally on this browser for checkout
-                      autofill. CVC is not saved.
+                      Die Karte wird lokal im Browser für Checkout-Autofill gespeichert. CVC wird nicht gespeichert.
                     </div>
                     <div class="row g-2">
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >Cardholder Name</label
+                          >Karteninhaber</label
                         >
                         <input
                           id="profileCardHolderName"
@@ -677,7 +664,7 @@
                       </div>
                       <div class="col-md-6">
                         <label class="form-label form-label-sm mb-1"
-                          >Card Number</label
+                          >Kartennummer</label
                         >
                         <input
                           id="profileCardNumber"
@@ -688,7 +675,7 @@
                       </div>
                       <div class="col-md-3">
                         <label class="form-label form-label-sm mb-1"
-                          >Exp. Month</label
+                          >Ablauf Monat</label
                         >
                         <input
                           id="profileCardExpMonth"
@@ -700,7 +687,7 @@
                       </div>
                       <div class="col-md-3">
                         <label class="form-label form-label-sm mb-1"
-                          >Exp. Year</label
+                          >Ablauf Jahr</label
                         >
                         <input
                           id="profileCardExpYear"
@@ -716,19 +703,19 @@
                           class="btn btn-sm btn-outline-dark"
                           type="button"
                         >
-                          Save Card
+                          Karte speichern
                         </button>
                         <button
                           id="profileCardClearBtn"
                           class="btn btn-sm btn-outline-danger"
                           type="button"
                         >
-                          Clear
+                          Löschen
                         </button>
                       </div>
                     </div>
                     <div id="profileCardResult" class="small muted mt-2">
-                      No saved card
+                      Keine gespeicherte Karte
                     </div>
                   </div>
                 </div>
@@ -739,9 +726,9 @@
               id="dashboardAdminSection"
               class="border rounded-xl p-3 bg-white mb-3 d-none"
             >
-              <h6 class="mb-2">Admin Bolumu</h6>
+              <h6 class="mb-2">Admin Bereich</h6>
               <div class="small muted mb-3">
-                Tum yonetim yetkileri bu panelden kullanilabilir.
+                Alle Verwaltungsfunktionen sind in diesem Panel verfügbar.
               </div>
 
               <ul class="nav nav-pills flex-wrap gap-2 mb-3" role="tablist">
@@ -831,7 +818,7 @@
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >User Email</label
+                        >Benutzer Email</label
                       >
                       <input
                         id="adminOrderEmail"
@@ -841,7 +828,7 @@
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Order Id</label
+                        >Bestellnummer</label
                       >
                       <input
                         id="adminOrderQuery"
@@ -855,7 +842,7 @@
                         class="btn btn-sm btn-outline-dark"
                         type="button"
                       >
-                        Listele
+                        Auflisten
                       </button>
                     </div>
                   </div>
@@ -868,13 +855,13 @@
                           <th>Status</th>
                           <th>User</th>
                           <th>Total</th>
-                          <th>Actions</th>
+                          <th>Aktionen</th>
                         </tr>
                       </thead>
                       <tbody id="adminOrdersBody">
                         <tr>
                           <td colspan="5" class="small muted">
-                            Liste hazir degil
+                            Liste nicht verfügbar
                           </td>
                         </tr>
                       </tbody>
@@ -915,7 +902,7 @@
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Cancel Reason</label
+                        >Stornogrund</label
                       >
                       <input
                         id="adminCancelReason"
@@ -930,28 +917,28 @@
                       class="btn btn-sm btn-outline-dark"
                       type="button"
                     >
-                      Detay
+                      Detail
                     </button>
                     <button
                       id="adminShipBtn"
                       class="btn btn-sm btn-outline-primary"
                       type="button"
                     >
-                      Ship
+                      Versenden
                     </button>
                     <button
                       id="adminDeliverBtn"
                       class="btn btn-sm btn-outline-success"
                       type="button"
                     >
-                      Deliver
+                      Zustellen
                     </button>
                     <button
                       id="adminCancelBtn"
                       class="btn btn-sm btn-outline-danger"
                       type="button"
                     >
-                      Cancel
+                      Stornieren
                     </button>
                   </div>
                   <pre
@@ -959,7 +946,7 @@
                     class="small bg-light border rounded p-2 mb-0"
                     style="max-height: 220px; overflow: auto"
                   >
-Order detail burada gorunecek.</pre
+Bestelldetail wird hier angezeigt.</pre
                   >
                 </div>
 
@@ -971,7 +958,7 @@ Order detail burada gorunecek.</pre
                   <div class="row g-2 align-items-end mb-2">
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Product Id</label
+                        >Produkt Id</label
                       >
                       <input
                         id="adminInventoryProductId"
@@ -983,7 +970,7 @@ Order detail burada gorunecek.</pre
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Restock Qty</label
+                        >Nachfüllmenge</label
                       >
                       <input
                         id="adminRestockQty"
@@ -995,7 +982,7 @@ Order detail burada gorunecek.</pre
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Adjust Delta</label
+                        >Anpassung (Delta)</label
                       >
                       <input
                         id="adminAdjustDelta"
@@ -1006,12 +993,12 @@ Order detail burada gorunecek.</pre
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Reason</label
+                        >Grund</label
                       >
                       <input
                         id="adminInventoryReason"
                         class="form-control form-control-sm"
-                        placeholder="manual correction"
+                        placeholder="manuelle Korrektur"
                       />
                     </div>
                   </div>
@@ -1021,21 +1008,21 @@ Order detail burada gorunecek.</pre
                       class="btn btn-sm btn-outline-primary"
                       type="button"
                     >
-                      Restock
+                      Nachfüllen
                     </button>
                     <button
                       id="adminAdjustBtn"
                       class="btn btn-sm btn-outline-warning"
                       type="button"
                     >
-                      Adjust
+                      Anpassen
                     </button>
                   </div>
                   <pre
                     id="adminInventoryResult"
                     class="small bg-light border rounded p-2 mb-0"
                   >
-Inventory sonucu burada gorunecek.</pre
+Inventory-Ergebnis wird hier angezeigt.</pre
                   >
                 </div>
 
@@ -1062,7 +1049,7 @@ Inventory sonucu burada gorunecek.</pre
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >User Email</label
+                        >Benutzer Email</label
                       >
                       <input
                         id="adminRefundEmail"
@@ -1072,7 +1059,7 @@ Inventory sonucu burada gorunecek.</pre
                     </div>
                     <div class="col-md-3">
                       <label class="form-label form-label-sm mb-1"
-                        >Order Id</label
+                        >Bestellnummer</label
                       >
                       <input
                         id="adminRefundOrderId"
@@ -1086,7 +1073,7 @@ Inventory sonucu burada gorunecek.</pre
                         class="btn btn-sm btn-outline-dark"
                         type="button"
                       >
-                        Listele
+                        Auflisten
                       </button>
                     </div>
                   </div>
@@ -1098,13 +1085,13 @@ Inventory sonucu burada gorunecek.</pre
                           <th>Status</th>
                           <th>User</th>
                           <th>Order</th>
-                          <th>Amount</th>
+                          <th>Betrag</th>
                         </tr>
                       </thead>
                       <tbody id="adminRefundsBody">
                         <tr>
                           <td colspan="5" class="small muted">
-                            Liste hazir degil
+                            Liste nicht verfügbar
                           </td>
                         </tr>
                       </tbody>
@@ -1145,7 +1132,7 @@ Inventory sonucu burada gorunecek.</pre
                         class="btn btn-sm btn-outline-dark"
                         type="button"
                       >
-                        Listele
+                        Auflisten
                       </button>
                     </div>
                   </div>
@@ -1156,13 +1143,13 @@ Inventory sonucu burada gorunecek.</pre
                           <th>Provider</th>
                           <th>Event Id</th>
                           <th>Payload Hash</th>
-                          <th>Received</th>
+                          <th>Empfangen</th>
                         </tr>
                       </thead>
                       <tbody id="adminWebhookBody">
                         <tr>
                           <td colspan="4" class="small muted">
-                            Liste hazir degil
+                            Liste nicht verfügbar
                           </td>
                         </tr>
                       </tbody>
@@ -1177,7 +1164,7 @@ Inventory sonucu burada gorunecek.</pre
                   role="tabpanel"
                 >
                   <div class="border rounded p-2 mb-2">
-                    <h6 class="mb-2">Category CRUD</h6>
+                    <h6 class="mb-2">Kategorie CRUD</h6>
                     <div class="row g-2 align-items-end">
                       <div class="col-md-2">
                         <label class="form-label form-label-sm mb-1">Id</label>
@@ -1216,42 +1203,42 @@ Inventory sonucu burada gorunecek.</pre
                         class="btn btn-sm btn-outline-primary"
                         type="button"
                       >
-                        Create
+                        Erstellen
                       </button>
                       <button
                         id="adminCategoryUpdateBtn"
                         class="btn btn-sm btn-outline-warning"
                         type="button"
                       >
-                        Update
+                        Aktualisieren
                       </button>
                       <button
                         id="adminCategoryDeleteBtn"
                         class="btn btn-sm btn-outline-danger"
                         type="button"
                       >
-                        Delete
+                        Löschen
                       </button>
                     </div>
                     <pre
                       id="adminCategoryResult"
                       class="small bg-light border rounded p-2 mt-2 mb-0"
                     >
-Category sonucu burada gorunecek.</pre
+Kategorie-Ergebnis wird hier angezeigt.</pre
                     >
                   </div>
 
                   <div class="border rounded p-2 mb-2">
-                    <h6 class="mb-2">Product CRUD</h6>
+                    <h6 class="mb-2">Produkt CRUD</h6>
                     <div class="row g-2 align-items-end mb-2">
                       <div class="col-md-9">
                         <label class="form-label form-label-sm mb-1"
-                          >Search</label
+                          >Suche</label
                         >
                         <input
                           id="adminProductSearch"
                           class="form-control form-control-sm"
-                          placeholder="name / sku"
+                          placeholder="Name / SKU"
                         />
                       </div>
                       <div class="col-md-3 d-grid">
@@ -1260,7 +1247,7 @@ Category sonucu burada gorunecek.</pre
                           class="btn btn-sm btn-outline-dark"
                           type="button"
                         >
-                          Urunleri Listele
+                          Produkte auflisten
                         </button>
                       </div>
                     </div>
@@ -1272,14 +1259,14 @@ Category sonucu burada gorunecek.</pre
                             <th>SKU</th>
                             <th>Name</th>
                             <th>Status</th>
-                            <th>Price</th>
+                            <th>Preis</th>
                             <th></th>
                           </tr>
                         </thead>
                         <tbody id="adminProductsBody">
                           <tr>
                             <td colspan="6" class="small muted">
-                              Liste hazir degil
+                              Liste nicht verfügbar
                             </td>
                           </tr>
                         </tbody>
@@ -1290,7 +1277,7 @@ Category sonucu burada gorunecek.</pre
                     <div class="row g-2 align-items-end">
                       <div class="col-md-2">
                         <label class="form-label form-label-sm mb-1"
-                          >Product Id</label
+                          >Produkt Id</label
                         >
                         <input
                           id="adminProductId"
@@ -1315,12 +1302,12 @@ Category sonucu burada gorunecek.</pre
                         <input
                           id="adminProductName"
                           class="form-control form-control-sm"
-                          placeholder="Product name"
+                          placeholder="Produktname"
                         />
                       </div>
                       <div class="col-md-2">
                         <label class="form-label form-label-sm mb-1"
-                          >Price</label
+                          >Preis</label
                         >
                         <input
                           id="adminProductPrice"
@@ -1333,7 +1320,7 @@ Category sonucu burada gorunecek.</pre
                       </div>
                       <div class="col-md-2">
                         <label class="form-label form-label-sm mb-1"
-                          >Currency</label
+                          >Währung</label
                         >
                         <input
                           id="adminProductCurrency"
@@ -1343,7 +1330,7 @@ Category sonucu burada gorunecek.</pre
                       </div>
                       <div class="col-md-2">
                         <label class="form-label form-label-sm mb-1"
-                          >Stock</label
+                          >Lager</label
                         >
                         <input
                           id="adminProductStock"
@@ -1368,7 +1355,7 @@ Category sonucu burada gorunecek.</pre
                       </div>
                       <div class="col-md-7">
                         <label class="form-label form-label-sm mb-1"
-                          >Category Ids (comma)</label
+                          >Kategorie-Ids (Komma)</label
                         >
                         <input
                           id="adminProductCategoryIds"
@@ -1378,13 +1365,13 @@ Category sonucu burada gorunecek.</pre
                       </div>
                       <div class="col-12">
                         <label class="form-label form-label-sm mb-1"
-                          >Description</label
+                          >Beschreibung</label
                         >
                         <textarea
                           id="adminProductDescription"
                           class="form-control form-control-sm"
                           rows="2"
-                          placeholder="Optional description"
+                          placeholder="Optionale Beschreibung"
                         ></textarea>
                       </div>
                     </div>
@@ -1394,37 +1381,37 @@ Category sonucu burada gorunecek.</pre
                         class="btn btn-sm btn-outline-primary"
                         type="button"
                       >
-                        Create
+                        Erstellen
                       </button>
                       <button
                         id="adminProductUpdateBtn"
                         class="btn btn-sm btn-outline-warning"
                         type="button"
                       >
-                        Update
+                        Aktualisieren
                       </button>
                       <button
                         id="adminProductDeleteBtn"
                         class="btn btn-sm btn-outline-danger"
                         type="button"
                       >
-                        Delete
+                        Löschen
                       </button>
                     </div>
                     <pre
                       id="adminProductResult"
                       class="small bg-light border rounded p-2 mt-2 mb-0"
                     >
-Product sonucu burada gorunecek.</pre
+Produkt-Ergebnis wird hier angezeigt.</pre
                     >
                   </div>
 
                   <div class="border rounded p-2">
-                    <h6 class="mb-2">Product Image</h6>
+                    <h6 class="mb-2">Produktbild</h6>
                     <div class="row g-2 align-items-end">
                       <div class="col-md-3">
                         <label class="form-label form-label-sm mb-1"
-                          >Product Id</label
+                          >Produkt Id</label
                         >
                         <input
                           id="adminImageProductId"
@@ -1436,7 +1423,7 @@ Product sonucu burada gorunecek.</pre
                       </div>
                       <div class="col-md-5">
                         <label class="form-label form-label-sm mb-1"
-                          >Image URL</label
+                          >Bild-URL</label
                         >
                         <input
                           id="adminImageUrl"
@@ -1446,17 +1433,17 @@ Product sonucu burada gorunecek.</pre
                       </div>
                       <div class="col-md-4">
                         <label class="form-label form-label-sm mb-1"
-                          >Alt Text</label
+                          >Alt-Text</label
                         >
                         <input
                           id="adminImageAlt"
                           class="form-control form-control-sm"
-                          placeholder="front view"
+                          placeholder="Frontansicht"
                         />
                       </div>
                       <div class="col-md-3">
                         <label class="form-label form-label-sm mb-1"
-                          >Image Id (delete)</label
+                          >Bild-Id (löschen)</label
                         >
                         <input
                           id="adminImageId"
@@ -1472,14 +1459,14 @@ Product sonucu burada gorunecek.</pre
                           class="btn btn-sm btn-outline-primary"
                           type="button"
                         >
-                          Add Image
+                          Bild hinzufügen
                         </button>
                         <button
                           id="adminImageDeleteBtn"
                           class="btn btn-sm btn-outline-danger"
                           type="button"
                         >
-                          Delete Image
+                          Bild löschen
                         </button>
                       </div>
                     </div>
@@ -1487,7 +1474,7 @@ Product sonucu burada gorunecek.</pre
                       id="adminImageResult"
                       class="small bg-light border rounded p-2 mt-2 mb-0"
                     >
-Image sonucu burada gorunecek.</pre
+Bild-Ergebnis wird hier angezeigt.</pre
                     >
                   </div>
                 </div>
@@ -1498,9 +1485,9 @@ Image sonucu burada gorunecek.</pre
               id="dashboardWorkerSection"
               class="border rounded-xl p-3 bg-white d-none"
             >
-              <h6 class="mb-2">Calisan Bolumu</h6>
+              <h6 class="mb-2">Mitarbeiterbereich</h6>
               <div class="small muted">
-                Operasyon/Fulfillment gorevleri burada gorunecek.
+                Operative/Fulfillment-Aufgaben werden hier angezeigt.
               </div>
             </div>
           </div>
@@ -1513,7 +1500,7 @@ Image sonucu burada gorunecek.</pre
         <div class="modal-content rounded-xl">
           <div class="modal-header">
             <h5 class="modal-title">
-              <i class="bi bi-receipt me-2"></i>Siparislerim
+              <i class="bi bi-receipt me-2"></i>Meine Bestellungen
             </h5>
             <button
               type="button"
@@ -1524,14 +1511,14 @@ Image sonucu burada gorunecek.</pre
           <div class="modal-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div class="small muted">
-                Hesabinizdaki siparisler (en yeni ustte)
+                Ihre Bestellungen (neueste oben)
               </div>
               <button
                 id="ordersLoadBtn"
                 class="btn btn-sm btn-outline-dark"
                 type="button"
               >
-                Yenile
+                Aktualisieren
               </button>
             </div>
             <div class="table-responsive border rounded mb-2">
@@ -1541,13 +1528,13 @@ Image sonucu burada gorunecek.</pre
                     <th>Order</th>
                     <th>Status</th>
                     <th>Total</th>
-                    <th>Created</th>
+                    <th>Erstellt</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody id="ordersBody">
                   <tr>
-                    <td colspan="5" class="small muted">Liste hazir degil</td>
+                    <td colspan="5" class="small muted">Liste nicht verfügbar</td>
                   </tr>
                 </tbody>
               </table>
@@ -1558,7 +1545,7 @@ Image sonucu burada gorunecek.</pre
               class="small bg-light border rounded p-2 mb-0"
               style="max-height: 320px; overflow: auto"
             >
-              <div class="muted">Siparis detayi burada gorunecek.</div>
+              <div class="muted">Bestelldetails werden hier angezeigt.</div>
             </div>
           </div>
         </div>
@@ -1575,7 +1562,7 @@ Image sonucu burada gorunecek.</pre
         <div class="modal-content rounded-xl">
           <div class="modal-header">
             <h5 class="modal-title">
-              <i class="bi bi-geo-alt me-2"></i>Addresses
+              <i class="bi bi-geo-alt me-2"></i>Adressen
             </h5>
             <button
               type="button"
@@ -1586,14 +1573,14 @@ Image sonucu burada gorunecek.</pre
           <div class="modal-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div class="muted small">
-                Used to select the delivery address during checkout.
+                Zur Auswahl der Lieferadresse beim Checkout.
               </div>
               <button
                 id="openNewAddressBtn"
                 class="btn btn-sm btn-brand"
                 type="button"
               >
-                <i class="bi bi-plus-lg me-1"></i>New Address
+                <i class="bi bi-plus-lg me-1"></i>Neue Adresse
               </button>
             </div>
             <div id="addressesList" class="row g-2"></div>
@@ -1617,7 +1604,7 @@ Image sonucu burada gorunecek.</pre
           </div>
           <div class="modal-body">
             <div class="small muted mb-2">
-              Step <span id="checkoutStepIndicator">1</span>/5
+              Schritt <span id="checkoutStepIndicator">1</span>/5
             </div>
             <div class="progress mb-3">
               <div
@@ -1638,21 +1625,21 @@ Image sonucu burada gorunecek.</pre
                   class="border rounded-xl p-3 mb-2 checkout-step"
                   data-checkout-step="1"
                 >
-                  <div class="fw-semibold mb-2">1. Account Check</div>
-                  <div id="checkoutLoginStatus" class="small">Checking...</div>
+                  <div class="fw-semibold mb-2">1. Konto prüfen</div>
+                  <div id="checkoutLoginStatus" class="small">Überprüfung...</div>
                 </div>
 
                 <div
                   class="border rounded-xl p-3 mb-2 d-none checkout-step"
                   data-checkout-step="2"
                 >
-                  <div class="fw-semibold mb-2">2. Delivery Address</div>
+                  <div class="fw-semibold mb-2">2. Lieferadresse</div>
                   <div
                     id="checkoutAddresses"
                     class="d-flex flex-column gap-2"
                   ></div>
                   <div class="small muted mt-2">
-                    If no address exists, add one first.
+                    Falls keine Adresse vorhanden ist, zuerst eine hinzufügen.
                   </div>
                 </div>
 
@@ -1660,11 +1647,11 @@ Image sonucu burada gorunecek.</pre
                   class="border rounded-xl p-3 mb-2 d-none checkout-step"
                   data-checkout-step="3"
                 >
-                  <div class="fw-semibold mb-2">3. Invoice Information</div>
+                  <div class="fw-semibold mb-2">3. Rechnungsinformationen</div>
                   <div class="row g-2">
                     <div class="col-md-6">
                       <label class="form-label form-label-sm mb-1"
-                        >Billing Full Name</label
+                        >Rechnungsname</label
                       >
                       <input
                         id="invoiceFullName"
@@ -1674,7 +1661,7 @@ Image sonucu burada gorunecek.</pre
                     </div>
                     <div class="col-md-6">
                       <label class="form-label form-label-sm mb-1"
-                        >Billing Email</label
+                        >Rechnungs-Email</label
                       >
                       <input
                         id="invoiceEmail"
@@ -1684,19 +1671,19 @@ Image sonucu burada gorunecek.</pre
                     </div>
                     <div class="col-md-6">
                       <label class="form-label form-label-sm mb-1"
-                        >Invoice Type</label
+                        >Rechnungstyp</label
                       >
                       <select
                         id="invoiceType"
                         class="form-select form-select-sm"
                       >
-                        <option value="PERSONAL">Personal</option>
-                        <option value="COMPANY">Company</option>
+                        <option value="PERSONAL">Privat</option>
+                        <option value="COMPANY">Firma</option>
                       </select>
                     </div>
                     <div class="col-md-6">
                       <label class="form-label form-label-sm mb-1"
-                        >Tax Number (Optional)</label
+                        >Steuernummer (Optional)</label
                       >
                       <input
                         id="invoiceTaxNumber"
@@ -1706,13 +1693,13 @@ Image sonucu burada gorunecek.</pre
                     </div>
                     <div class="col-12">
                       <label class="form-label form-label-sm mb-1"
-                        >Invoice Note (Optional)</label
+                        >Rechnungsnotiz (Optional)</label
                       >
                       <textarea
                         id="invoiceNote"
                         class="form-control form-control-sm"
                         rows="2"
-                        placeholder="Optional invoice note"
+                        placeholder="Optionale Rechnungsnotiz"
                       ></textarea>
                     </div>
                   </div>
@@ -1722,7 +1709,7 @@ Image sonucu burada gorunecek.</pre
                   class="border rounded-xl p-3 mb-2 d-none checkout-step"
                   data-checkout-step="4"
                 >
-                  <div class="fw-semibold mb-2">4. Payment Method</div>
+                  <div class="fw-semibold mb-2">4. Zahlungsmethode</div>
                   <div class="d-flex flex-column gap-2 mb-3">
                     <label class="form-check border rounded p-2">
                       <input
@@ -1733,7 +1720,7 @@ Image sonucu burada gorunecek.</pre
                         value="CREDIT_CARD"
                         checked
                       />
-                      <span class="fw-semibold">Credit Card</span>
+                      <span class="fw-semibold">Kreditkarte</span>
                     </label>
                     <label class="form-check border rounded p-2">
                       <input
@@ -1743,7 +1730,7 @@ Image sonucu burada gorunecek.</pre
                         name="paymentMethod"
                         value="DEBIT_CARD"
                       />
-                      <span class="fw-semibold">Debit Card</span>
+                      <span class="fw-semibold">Debitkarte</span>
                     </label>
                     <label class="form-check border rounded p-2">
                       <input
@@ -1759,7 +1746,7 @@ Image sonucu burada gorunecek.</pre
 
                   <div id="paymentCardFields" class="row g-2">
                     <div class="col-12">
-                      <label class="form-label">Cardholder Name</label>
+                      <label class="form-label">Karteninhaber</label>
                       <input
                         id="cardHolderName"
                         class="form-control"
@@ -1768,7 +1755,7 @@ Image sonucu burada gorunecek.</pre
                       />
                     </div>
                     <div class="col-12">
-                      <label class="form-label">Card Number</label>
+                      <label class="form-label">Kartennummer</label>
                       <input
                         id="cardNumber"
                         class="form-control"
@@ -1778,7 +1765,7 @@ Image sonucu burada gorunecek.</pre
                       />
                     </div>
                     <div class="col-4">
-                      <label class="form-label">Exp. Month</label>
+                      <label class="form-label">Ablauf Monat</label>
                       <input
                         id="cardExpMonth"
                         class="form-control"
@@ -1788,7 +1775,7 @@ Image sonucu burada gorunecek.</pre
                       />
                     </div>
                     <div class="col-4">
-                      <label class="form-label">Exp. Year</label>
+                      <label class="form-label">Ablauf Jahr</label>
                       <input
                         id="cardExpYear"
                         class="form-control"
@@ -1814,12 +1801,12 @@ Image sonucu burada gorunecek.</pre
                   class="border rounded-xl p-3 d-none checkout-step"
                   data-checkout-step="5"
                 >
-                  <div class="fw-semibold mb-2">5. Review & Confirm</div>
+                  <div class="fw-semibold mb-2">5. Überprüfen & Bestätigen</div>
                   <pre
                     id="checkoutReviewBox"
                     class="small bg-light border rounded p-2 mb-2"
                   >
-Review will appear here.</pre
+Überprüfung wird hier angezeigt.</pre
                   >
                   <div class="form-check">
                     <input
@@ -1828,7 +1815,7 @@ Review will appear here.</pre
                       type="checkbox"
                     />
                     <label class="form-check-label small"
-                      >I accept the general terms and privacy policy.</label
+                      >Ich akzeptiere die AGB und die Datenschutzerklärung.</label
                     >
                   </div>
                 </div>
@@ -1839,27 +1826,27 @@ Review will appear here.</pre
                     class="btn btn-outline-dark btn-sm"
                     type="button"
                   >
-                    Back
+                    Zurück
                   </button>
                   <button
                     id="checkoutNextBtn"
                     class="btn btn-brand btn-sm"
                     type="button"
                   >
-                    Next
+                    Weiter
                   </button>
                 </div>
               </div>
 
               <div class="col-lg-4">
                 <div class="bg-light rounded-xl p-3">
-                  <div class="fw-semibold mb-2">Summary</div>
+                  <div class="fw-semibold mb-2">Zusammenfassung</div>
                   <div class="d-flex justify-content-between">
-                    <span class="muted">Total</span
+                    <span class="muted">Gesamt</span
                     ><span class="price" id="checkoutTotal">0.00</span>
                   </div>
                   <div class="d-flex justify-content-between">
-                    <span class="muted">Currency</span
+                    <span class="muted">Währung</span
                     ><span id="checkoutCurrency">EUR</span>
                   </div>
                   <hr />
@@ -1869,20 +1856,18 @@ Review will appear here.</pre
                       class="btn btn-brand"
                       type="button"
                     >
-                      <i class="bi bi-credit-card me-1"></i>Confirm & Start
-                      Payment
+                      <i class="bi bi-credit-card me-1"></i>Bestätigen & Zahlung starten
                     </button>
                     <button
                       id="confirmPaymentBtn"
                       class="btn btn-outline-dark"
                       type="button"
                     >
-                      <i class="bi bi-check2-circle me-1"></i>Mock confirm (dev)
+                      <i class="bi bi-check2-circle me-1"></i>Mock bestätigen (dev)
                     </button>
                   </div>
                   <div class="small muted mt-2">
-                    Flow: login check -> address -> invoice -> payment ->
-                    review.
+                    Ablauf: Konto prüfen -> Adresse -> Rechnung -> Zahlung -> Überprüfung.
                   </div>
                   <div class="alert alert-secondary small mt-3 mb-0">
                     paymentId:
@@ -1894,7 +1879,7 @@ Review will appear here.</pre
             </div>
           </div>
         </div>
-      </div>
+      </div> 
     </div>
 
     <div
@@ -1907,7 +1892,7 @@ Review will appear here.</pre
         <div class="modal-content rounded-xl">
           <div class="modal-header">
             <h5 class="modal-title">
-              <i class="bi bi-plus-circle me-2"></i>New Address
+              <i class="bi bi-plus-circle me-2"></i>Neue Adresse
             </h5>
             <button
               type="button"
@@ -1918,11 +1903,11 @@ Review will appear here.</pre
           <div class="modal-body">
             <div class="row g-2">
               <div class="col-md-6">
-                <label class="form-label">Label</label>
-                <input id="addrLabel" class="form-control" placeholder="Home" />
+                <label class="form-label">Bezeichnung</label>
+                <input id="addrLabel" class="form-control" placeholder="Zuhause" />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Full name</label>
+                <label class="form-label">Vollständiger Name</label>
                 <input
                   id="addrFullName"
                   class="form-control"
@@ -1930,7 +1915,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Phone</label>
+                <label class="form-label">Telefon</label>
                 <input
                   id="addrPhone"
                   class="form-control"
@@ -1938,7 +1923,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Country Code</label>
+                <label class="form-label">Ländercode</label>
                 <input
                   id="addrCountry"
                   class="form-control"
@@ -1947,7 +1932,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-8">
-                <label class="form-label">Street</label>
+                <label class="form-label">Straße</label>
                 <input
                   id="addrStreet"
                   class="form-control"
@@ -1955,7 +1940,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-4">
-                <label class="form-label">House Number</label>
+                <label class="form-label">Hausnummer</label>
                 <input
                   id="addrHouseNumber"
                   class="form-control"
@@ -1963,7 +1948,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-12">
-                <label class="form-label">Address Line 2 (Optional)</label>
+                <label class="form-label">Adresszusatz (Optional)</label>
                 <input
                   id="addrLine2"
                   class="form-control"
@@ -1971,7 +1956,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-4">
-                <label class="form-label">City</label>
+                <label class="form-label">Stadt</label>
                 <input
                   id="addrCity"
                   class="form-control"
@@ -1979,7 +1964,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-4">
-                <label class="form-label">State (Bundesland)</label>
+                <label class="form-label">Bundesland</label>
                 <input
                   id="addrState"
                   class="form-control"
@@ -1987,7 +1972,7 @@ Review will appear here.</pre
                 />
               </div>
               <div class="col-md-4">
-                <label class="form-label">Postal Code</label>
+                <label class="form-label">Postleitzahl</label>
                 <input
                   id="addrPostal"
                   class="form-control"
@@ -2002,13 +1987,13 @@ Review will appear here.</pre
                     type="checkbox"
                     checked
                   />
-                  <label class="form-check-label">Set as default</label>
+                  <label class="form-check-label">Als Standard setzen</label>
                 </div>
               </div>
             </div>
             <div class="d-grid mt-3">
               <button id="createAddressBtn" class="btn btn-brand" type="button">
-                <i class="bi bi-save me-1"></i>Save
+                <i class="bi bi-save me-1"></i>Speichern
               </button>
             </div>
           </div>

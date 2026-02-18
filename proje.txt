@@ -1,0 +1,576 @@
+
+---
+
+# 1) Proje kimliği (Maven coordinates)
+
+* **GroupId:** `com.pehlione`
+* **ArtifactId:** `pehlione`
+* **Name:** `pehlione.com`
+* **Packaging:** `jar`
+* **Java:** 21 (öneri)
+* **Spring Boot:** güncel stabil (senin pom’unda 4.x kullanıyorsun; aynı çizgide kal)
+
+---
+
+# 2) Zorunlu Spring Boot starter’ları (MVP + kurumsal temel)
+
+## API & Validation
+
+* **spring-boot-starter-web** (REST/MVC)
+* **spring-boot-starter-validation** (Bean Validation)
+
+## Database
+
+* **spring-boot-starter-data-jpa**
+* **mysql-connector-j**
+* **Flyway** (veya Liquibase) → **ben Flyway öneririm** (migration şart)
+
+## Security
+
+* **spring-boot-starter-security**
+* **JWT kütüphanesi** (token üretme/parse için)
+
+## Gözlenebilirlik & Dokümantasyon
+
+* **spring-boot-starter-actuator**
+* **springdoc-openapi-starter-webmvc-ui** (Swagger UI)
+
+## Test
+
+* **spring-boot-starter-test**
+* (opsiyonel) **testcontainers + mysql** (DB entegrasyon testinde çok iyi)
+
+## Opsiyonel ama pratik
+
+* **lombok** (isteğe bağlı)
+* (opsiyonel) **mapstruct** (DTO mapping büyüyünce iyi gelir)
+
+---
+
+# 3) Proje paket / klasör iskeleti (MVC + feature bazlı)
+
+Bu iskelet, senin departman akışını ve tier sistemini “dağılmadan” taşır:
+
+```
+com.pehlione
+ ├─ PehlioneApplication
+ ├─ shared
+ │   ├─ config          (OpenAPI, Jackson, CORS vs.)
+ │   ├─ security        (JWT, security config, auth utils)
+ │   ├─ exception       (global handler, error model)
+ │   ├─ validation      (custom validators)
+ │   ├─ audit           (kim ne yaptı log)
+ │   └─ util
+ ├─ iam                 (role/permission/department)
+ ├─ hr                  (employee + dept bağları)
+ ├─ user                (customer + tier)
+ ├─ catalog
+ ├─ pricing
+ ├─ inventory
+ ├─ cart
+ ├─ order               (state machine burada)
+ ├─ payment
+ ├─ shipping
+ ├─ support
+ ├─ notification        (email)
+ └─ reporting
+```
+
+**Her modül içinde (MVC):**
+
+* `controller/`
+* `service/`
+* `repository/`
+* `entity/`
+* `dto/`
+
+---
+
+# 4) Konfigürasyon dosyaları (ilk günden düzen)
+
+## application.yml (common)
+
+* `spring.application.name = pehlione`
+* logging seviyeleri
+* openapi ayarları
+* actuator exposure
+
+## application-dev.yml
+
+* MySQL local bağlantı
+* Flyway enabled
+* JPA: `ddl-auto=validate` (migration varken create/update istemiyoruz)
+* debug log opsiyonel
+
+## application-prod.yml
+
+* DB ve JWT secret env’den
+* daha sıkı logging
+* actuator güvenliği
+
+> **Kural:** Production’da secret hiçbir zaman dosyada durmaz.
+
+---
+
+# 5) MySQL ve Migration (Flyway) – başlangıç standardı
+
+* DB adı: **`pehlione_com`**
+* Migration dizini: `db/migration`
+* İlk migration: IAM + user + customer tier alanları
+* İkinci migration: catalog + inventory
+* Üçüncü migration: cart + order + payment + shipping
+* Dördüncü: support + audit + reporting view’leri (opsiyonel)
+
+**Neden böyle?** Çünkü önce kimlik/yetki → sonra ürün → sonra sipariş akışı.
+
+---
+
+# 6) Security model (senin departman ihtiyacına uygun)
+
+## Kullanıcı türleri
+
+* Backoffice: ADMIN / EMPLOYEE (departman bazlı)
+* Customer: Bronze/Silver/Gold tier
+
+## Yetkilendirme yaklaşımı (önerilen)
+
+* **Authentication:** JWT
+* **Authorization:** Role + Permission (+ Department check)
+
+Minimum permission örnekleri:
+
+* `USER_DEPARTMENT_ASSIGN` (IT’nin departman değiştirme yetkisi)
+* `ORDER_SALES_APPROVE`
+* `ORDER_WAREHOUSE_APPROVE`
+* `ORDER_SHIP`
+* `CATALOG_WRITE`
+* `PRICING_WRITE`
+* `SUPPORT_MANAGE`
+
+> “Sadece role” yetmeyebilir; departman bazlı akışta permission daha temiz olur.
+
+---
+
+# 7) Sipariş akışı (taslak gereksinim olarak projeye koy)
+
+Senin tanımladığın akışın “minimum” hali:
+
+* Order created → **SALES_REVIEW**
+* Sales approve → **WAREHOUSE_PREP**
+* Warehouse approve → (paid ise) **READY_FOR_SHIPMENT** / (unpaid ise) bekler
+* Payment success → eğer warehouse approved ise **READY_FOR_SHIPMENT**
+* Shipping ship → **SHIPPED**
+
+Bunu proje dokümanına “state machine” olarak koymalısın (en baştan).
+
+---
+
+# 8) Tier sistemi (Bronze/Silver/Gold) – projede zorunlu yerler
+
+* Para birimi: **EUR**
+* Tier hesap: son 12 ay harcama
+* Snapshot: `order.customer_tier_at_purchase`
+
+Tier etkileri:
+
+* Pricing: otomatik indirim
+* Shipping: ücretsiz kargo eşiği
+* Support: SLA
+* Warehouse: öncelik
+
+---
+
+# 9) “Taslak proje” oluştururken ilk yapılacaklar (doğru sıra)
+
+1. Maven projesi + paket iskeleti
+2. Spring Web + Validation + OpenAPI
+3. MySQL bağlantı + Flyway migration çalışıyor mu?
+4. Global exception handler (shared/exception)
+5. Security iskeleti (JWT + role/permission modeli)
+6. IAM (role/permission/department) + IT departman değişikliği için audit
+7. Order modülünde status enum + geçiş kuralları dokümanı (kod değil, tasarım)
+
+Bu noktada “iskelet” hazır olur; sonra modülleri tek tek doldurursun.
+
+---
+
+# 10) Minimum “Done” kriterleri (taslak için)
+
+Taslak proje tamam sayılmadan şunlar olmalı:
+
+* Uygulama ayağa kalkıyor
+* Swagger UI açılıyor
+* DB migration’lar çalışıyor
+* Health endpoint (actuator) çalışıyor
+* Security: public endpoint + protected endpoint ayrımı mevcut
+* IAM tabloları ve temel seed (admin user) planı hazır
+
+---
+
+
+Tamam. Şimdi sana **pehlione.com** için, konuştuğumuz her şeyi (Maven + Spring Boot + MySQL + Departmanlar + Tier sistemi + Modern şirket yapısı) göz önünde bulundurarak, bu projenin gerçekten “kurumsal seviyede” olması için neler içermesi gerektiğini sistematik şekilde anlatıyorum.
+
+Bu bir **tam proje gereksinim ve mimari çerçeve dokümanı** gibi düşünebilirsin.
+
+---
+
+# 1) PROJE VİZYONU
+
+**pehlione.com**
+Modern, departman bazlı yönetilen, rol kontrollü, tier sistemli, EUR para birimli bir e-commerce backend sistemi.
+
+* Backend: Spring Boot (Maven)
+* Database: MySQL
+* Mimari: Modüler Monolith (feature/domain bazlı)
+* Güvenlik: Role & Permission bazlı
+* Müşteri Segmenti: Bronze / Silver / Gold
+* Şirket Yapısı: Admin + Departman bazlı Employee
+
+---
+
+# 2) TEKNİK TEMEL GEREKSİNİMLER
+
+## 2.1 Altyapı
+
+* Spring Boot
+* Spring Web
+* Spring Data JPA
+* MySQL Driver
+* Validation
+* Spring Security
+* JWT
+* Flyway (migration zorunlu)
+* OpenAPI (Swagger)
+* Actuator
+
+## 2.2 Konfigürasyon
+
+* application.yml (common)
+* application-dev.yml
+* application-prod.yml
+* Secret’lar env variable
+
+## 2.3 Logging
+
+* Request logging
+* Error logging
+* Audit log (kim ne yaptı?)
+
+---
+
+# 3) MİMARİ YAPI (MODÜLER MONOLITH)
+
+```
+com.pehlione
+ ├── shared
+ ├── user
+ ├── iam
+ ├── hr
+ ├── catalog
+ ├── pricing
+ ├── inventory
+ ├── cart
+ ├── order
+ ├── payment
+ ├── shipping
+ ├── support
+ ├── notification
+ ├── reporting
+ └── admin
+```
+
+---
+
+# 4) KULLANICI TİPLERİ
+
+## 4.1 Backoffice
+
+### SUPER_ADMIN
+
+* Tüm yetkiler
+
+### ADMIN
+
+* Çoğu yönetim işlemi
+
+### EMPLOYEE (Departman bazlı)
+
+Departmanlar:
+
+* HR
+* CATALOG
+* PRICING
+* WAREHOUSE
+* SUPPORT
+* FINANCE
+* IT
+
+Her departmanın endpoint erişimi farklı olmalı.
+
+---
+
+## 4.2 Müşteri
+
+### Tier:
+
+* BRONZE
+* SILVER
+* GOLD
+
+### Tier Model:
+
+* Son 12 ay EUR harcama
+* Otomatik güncellenir
+* Downgrade destekli
+
+---
+
+# 5) CORE BUSINESS MODÜLLERİ
+
+## 5.1 User / Customer
+
+* Register / Login
+* Tier
+* Harcama metrikleri
+* Adres yönetimi
+
+---
+
+## 5.2 IAM (Identity & Access Management)
+
+* Role
+* Permission
+* Department
+* Yetki matrisi
+
+Bu kurumsal projede zorunludur.
+
+---
+
+## 5.3 Catalog
+
+* Product
+* Category
+* Product status (DRAFT → PUBLISHED)
+* Pagination
+* Filtreleme
+
+---
+
+## 5.4 Pricing
+
+* Ürün fiyatı
+* Tier bazlı indirim
+* Kampanya
+* Kupon
+* Fiyat snapshot mantığı
+
+---
+
+## 5.5 Inventory
+
+* available_qty
+* reserved_qty
+* Stok rezervasyonu
+* Stok iadesi
+
+---
+
+## 5.6 Cart
+
+* Sepet
+* Sepet kalemleri
+* Güncelleme
+
+---
+
+## 5.7 Order
+
+Sipariş durum makinesi:
+
+PENDING_PAYMENT
+→ PAID
+→ PACKING
+→ SHIPPED
+→ DELIVERED
+→ CANCELLED
+→ RETURN_REQUESTED
+→ REFUNDED
+
+Order içinde:
+
+* tier snapshot
+* fiyat snapshot
+* toplam tutar
+* ödeme durumu
+
+---
+
+## 5.8 Payment
+
+* Mock ödeme
+* Payment status
+* Transaction ref
+* Refund
+
+---
+
+## 5.9 Shipping
+
+* Carrier
+* Tracking no
+* Status
+
+---
+
+## 5.10 Support
+
+* Ticket
+* Ticket status
+* SLA (tier’a göre)
+
+---
+
+## 5.11 HR
+
+* Employee
+* Department
+* Position
+* Employee status
+
+---
+
+## 5.12 Reporting
+
+* Günlük satış
+* Tier bazlı gelir
+* İade oranı
+* Ciro
+
+---
+
+# 6) TIER SİSTEMİNİN PROJEYE ENTEGRASYONU
+
+Tier şu modülleri etkiler:
+
+| Modül     | Etki          |
+| --------- | ------------- |
+| Pricing   | İndirim       |
+| Shipping  | Kargo kuralı  |
+| Support   | SLA           |
+| Warehouse | Öncelik       |
+| Finance   | Refund süresi |
+
+Tier hesaplama:
+
+* Order → PAID
+* Refund → yeniden hesaplama
+* Snapshot zorunlu
+
+---
+
+# 7) DATABASE GEREKSİNİMLERİ
+
+DB adı: `pehlione_com`
+
+Zorunlu tablolar:
+
+* users
+* roles
+* departments
+* employees
+* customers
+* products
+* categories
+* inventory
+* carts
+* cart_items
+* orders
+* order_items
+* payments
+* shipments
+* tickets
+* coupons
+* audit_logs
+
+Para alanları: DECIMAL(19,4)
+
+Index zorunlu alanlar:
+
+* email
+* sku
+* order_id
+* product_id
+* customer_id
+
+---
+
+# 8) GÜVENLİK GEREKSİNİMLERİ
+
+* JWT authentication
+* Role based authorization
+* Department based restriction
+* Endpoint security
+* Password hashing (BCrypt)
+* Rate limiting (opsiyonel ama profesyonel)
+
+---
+
+# 9) PROFESYONEL SEVİYE GEREKENLER
+
+* Global exception handler
+* Validation layer
+* DTO - Entity ayrımı
+* Transaction boundary doğru tasarım
+* Event tabanlı tetikleme (OrderPaidEvent)
+* Audit trail
+* Soft delete (ürün için)
+
+---
+
+# 10) PROJEYE NEREDEN BAŞLAMALISIN?
+
+Sıralama çok önemli.
+
+### 1️⃣ Altyapı
+
+* Maven setup
+* Paket yapısı
+* MySQL bağlantı
+* Flyway
+* Security temel yapı
+
+### 2️⃣ IAM + User
+
+* Role
+* Department
+* Tier enum
+* Login
+
+### 3️⃣ Catalog
+
+### 4️⃣ Inventory
+
+### 5️⃣ Cart
+
+### 6️⃣ Order + Payment (mock)
+
+### 7️⃣ Tier recalculation
+
+### 8️⃣ Support
+
+### 9️⃣ Reporting
+
+---
+
+# 11) Bu proje hangi seviyede?
+
+Bu yapı:
+
+* Junior demo değil
+* Gerçek kurumsal e-commerce mimarisi
+* Monolith ama enterprise-ready
+
+---
+
+

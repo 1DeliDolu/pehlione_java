@@ -69,6 +69,16 @@ public class CheckoutDtos {
 					description = "Shipping address id",
 					example = "1",
 					requiredMode = Schema.RequiredMode.REQUIRED)
-			@NotNull Long addressId) {
+			@NotNull Long addressId,
+			@Schema(description = "Card holder full name", example = "Max Mustermann")
+			String cardHolderName,
+			@Schema(description = "Card number digits (can include spaces/hyphens)", example = "4242 4242 4242 4242")
+			String cardNumber,
+			@Schema(description = "Card expiration month (1-12)", example = "12")
+			Integer expiryMonth,
+			@Schema(description = "Card expiration year (YYYY)", example = "2030")
+			Integer expiryYear,
+			@Schema(description = "Card security code", example = "123")
+			String cvc) {
 	}
 }

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Adress Settings | Pehlione Shop</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" th:href="@{/style.css}" />
+  </head>
+  <body class="page-settings" data-page="settings-address">
+        <div th:replace="~{nav :: main('settings','adress')}"></div>
+
+    <main class="container settings-shell">
+      <div class="row g-4">
+        <aside class="col-lg-4">
+          <div class="settings-card p-4 h-100">
+            <span class="badge badge-soft rounded-pill px-3 py-2 mb-3"
+              >Account</span
+            >
+            <h1 class="h4 fw-bold mb-3">Adress Settings</h1>
+
+            <div class="settings-kv">
+              <div class="small muted">Signed in user</div>
+              <div id="settingsUserEmail" class="fw-semibold">-</div>
+            </div>
+            <div class="settings-kv mt-2">
+              <div class="small muted">Roles</div>
+              <div id="settingsUserRoles" class="small">-</div>
+            </div>
+
+            <hr />
+            <div class="small muted mb-1">German format reminder</div>
+            <div class="small">Country code is fixed to <strong>DE</strong>.</div>
+            <div class="small">Postal code must be <strong>5 digits</strong>.</div>
+          </div>
+        </aside>
+
+        <section class="col-lg-8">
+          <div class="settings-card p-4 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h2 class="h5 fw-bold mb-0">Saved Addresses</h2>
+              <button id="refreshAddressesBtn" class="btn btn-sm btn-outline-dark" type="button">
+                <i class="bi bi-arrow-repeat me-1"></i>Refresh
+              </button>
+            </div>
+            <div class="table-responsive border rounded">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Label</th>
+                    <th>Full Name</th>
+                    <th>Address</th>
+                    <th>Default</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="addressRows">
+                  <tr>
+                    <td colspan="5" class="small muted">Loading addresses...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="settings-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h2 class="h5 fw-bold mb-0">Create / Update Address</h2>
+              <button id="addressNewBtn" class="btn btn-sm btn-outline-secondary" type="button">
+                New Form
+              </button>
+            </div>
+
+            <form id="addressForm">
+              <input id="addressId" type="hidden" />
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm mb-1">Label</label>
+                  <input id="addrLabel" class="form-control form-control-sm" placeholder="Home" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm mb-1">Full Name *</label>
+                  <input id="addrFullName" class="form-control form-control-sm" placeholder="Ali Veli" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm mb-1">Phone</label>
+                  <input id="addrPhone" class="form-control form-control-sm" placeholder="+49..." />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm mb-1">Country Code *</label>
+                  <input id="addrCountry" class="form-control form-control-sm" value="DE" placeholder="DE" required />
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label form-label-sm mb-1">Street *</label>
+                  <input id="addrStreet" class="form-control form-control-sm" placeholder="Musterstrasse" required />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label form-label-sm mb-1">House Number *</label>
+                  <input id="addrHouseNumber" class="form-control form-control-sm" placeholder="12a" required />
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label form-label-sm mb-1">Address Line 2</label>
+                  <input id="addrLine2" class="form-control form-control-sm" placeholder="Apartment / c/o" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm mb-1">City *</label>
+                  <input id="addrCity" class="form-control form-control-sm" placeholder="Berlin" required />
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label form-label-sm mb-1">State</label>
+                  <input id="addrState" class="form-control form-control-sm" placeholder="BE" />
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label form-label-sm mb-1">Postal Code *</label>
+                  <input id="addrPostal" class="form-control form-control-sm" placeholder="10115" required />
+                </div>
+              </div>
+
+              <div class="form-check mt-2">
+                <input id="addrDefault" class="form-check-input" type="checkbox" />
+                <label class="form-check-label small">Set as default address</label>
+              </div>
+
+              <div class="d-flex justify-content-end mt-3">
+                <button id="addressSaveBtn" class="btn btn-brand" type="submit">
+                  <i class="bi bi-save me-1"></i>Save Address
+                </button>
+              </div>
+            </form>
+
+            <div id="addressResult" class="small muted mt-2">-</div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div th:replace="~{footer :: main('compact')}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/settings.js" th:src="@{/js/settings.js}"></script>
+  </body>
+</html>

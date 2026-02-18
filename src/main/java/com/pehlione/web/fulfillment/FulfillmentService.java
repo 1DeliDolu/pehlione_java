@@ -3,6 +3,7 @@ package com.pehlione.web.fulfillment;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,8 @@ import com.pehlione.web.api.error.ApiErrorCode;
 import com.pehlione.web.api.error.ApiException;
 import com.pehlione.web.audit.AuditService;
 import com.pehlione.web.auth.ClientInfo;
+import com.pehlione.web.notification.OrderDeliveredEvent;
+import com.pehlione.web.notification.OrderShippedEvent;
 import com.pehlione.web.order.Order;
 import com.pehlione.web.order.OrderRepository;
 import com.pehlione.web.order.OrderStatus;
@@ -24,16 +27,19 @@ public class FulfillmentService {
 	private final ShipmentRepository shipmentRepo;
 	private final AuditService auditService;
 	private final OrderTransitionService transitionService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public FulfillmentService(
 			OrderRepository orderRepo,
 			ShipmentRepository shipmentRepo,
 			AuditService auditService,
-			OrderTransitionService transitionService) {
+			OrderTransitionService transitionService,
+			ApplicationEventPublisher eventPublisher) {
 		this.orderRepo = orderRepo;
 		this.shipmentRepo = shipmentRepo;
 		this.auditService = auditService;
 		this.transitionService = transitionService;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Transactional
@@ -79,6 +85,7 @@ public class FulfillmentService {
 				order.getPublicId(),
 				client,
 				"carrier=" + shipment.getCarrier() + " tracking=" + shipment.getTrackingNumber());
+		eventPublisher.publishEvent(OrderShippedEvent.from(order, shipment, shipment.getShippedAt()));
 		return shipment;
 	}
 
@@ -108,6 +115,7 @@ public class FulfillmentService {
 				order.getPublicId(),
 				client,
 				"delivered");
+		eventPublisher.publishEvent(OrderDeliveredEvent.from(order, shipment, shipment.getDeliveredAt()));
 	}
 
 	@Transactional

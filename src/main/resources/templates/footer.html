@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+  <body>
+    <th:block th:fragment="main(mode)">
+      <footer
+        class="site-footer"
+        th:classappend="${mode == 'compact'} ? ' site-footer-compact' : ''"
+      >
+        <th:block th:if="${mode != 'compact'}">
+          <div class="container py-4 py-lg-5">
+            <div class="row g-4">
+              <div class="col-lg-4">
+                <div class="h5 fw-bold mb-2">Pehlione Shop</div>
+                <div class="small muted mb-2">
+                  Modern commerce platform with Germany-ready legal and checkout
+                  standards.
+                </div>
+                <div class="small">
+                  Pehlione Commerce GmbH<br />
+                  Friedrichstrasse 101<br />
+                  10117 Berlin, Germany
+                </div>
+              </div>
+
+              <div class="col-6 col-lg-2">
+                <div class="small fw-semibold text-uppercase mb-2">Legal</div>
+                <div class="d-flex flex-column gap-1">
+                  <a class="footer-link" href="/impressum" th:href="@{/impressum}"
+                    >Impressum</a
+                  >
+                  <a
+                    class="footer-link"
+                    href="/datenschutz"
+                    th:href="@{/datenschutz}"
+                    >Datenschutz</a
+                  >
+                  <a class="footer-link" href="/agb" th:href="@{/agb}">AGB</a>
+                  <a class="footer-link" href="/widerruf" th:href="@{/widerruf}"
+                    >Widerrufsrecht</a
+                  >
+                </div>
+              </div>
+
+              <div class="col-6 col-lg-3">
+                <div class="small fw-semibold text-uppercase mb-2">Service</div>
+                <div class="d-flex flex-column gap-1">
+                  <a
+                    class="footer-link"
+                    href="/versand-zahlung"
+                    th:href="@{/versand-zahlung}"
+                    >Versand & Zahlung</a
+                  >
+                  <a class="footer-link" href="/adress" th:href="@{/adress}"
+                    >Adress Settings</a
+                  >
+                  <a class="footer-link" href="/kontakt" th:href="@{/kontakt}"
+                    >Kontakt</a
+                  >
+                  <a class="footer-link" href="/products" th:href="@{/products}"
+                    >Produktkatalog</a
+                  >
+                  <a class="footer-link" href="/swagger-ui/index.html"
+                    >Swagger API</a
+                  >
+                </div>
+              </div>
+
+              <div class="col-lg-3">
+                <div class="small fw-semibold text-uppercase mb-2">Compliance</div>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  <span class="footer-pill">TMG §5</span>
+                  <span class="footer-pill">DSGVO</span>
+                  <span class="footer-pill">BGB 312g</span>
+                </div>
+                <div class="small muted">
+                  EU dispute resolution platform:
+                  <a
+                    class="footer-link"
+                    href="https://ec.europa.eu/consumers/odr/"
+                    target="_blank"
+                    rel="noreferrer"
+                    >ec.europa.eu/consumers/odr</a
+                  >
+                </div>
+              </div>
+            </div>
+            <hr class="my-3" />
+            <div class="d-flex flex-wrap justify-content-between gap-2 small muted">
+              <span>© 2026 Pehlione Commerce GmbH</span>
+              <span>All prices include VAT unless stated otherwise.</span>
+            </div>
+          </div>
+        </th:block>
+
+        <th:block th:if="${mode == 'compact'}">
+          <div class="container py-3">
+            <div class="d-flex flex-column flex-lg-row gap-2 justify-content-between">
+              <div class="small muted">© 2026 Pehlione Commerce GmbH, Berlin</div>
+              <div class="d-flex flex-wrap gap-3 small">
+                <a class="footer-link" href="/impressum" th:href="@{/impressum}"
+                  >Impressum</a
+                >
+                <a class="footer-link" href="/datenschutz" th:href="@{/datenschutz}"
+                  >Datenschutz</a
+                >
+                <a class="footer-link" href="/agb" th:href="@{/agb}">AGB</a>
+                <a class="footer-link" href="/kontakt" th:href="@{/kontakt}"
+                  >Kontakt</a
+                >
+              </div>
+            </div>
+          </div>
+        </th:block>
+      </footer>
+    </th:block>
+  </body>
+</html>

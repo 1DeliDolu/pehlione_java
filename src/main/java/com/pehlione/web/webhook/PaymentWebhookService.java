@@ -1,7 +1,9 @@
 package com.pehlione.web.webhook;
 
+import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,9 @@ import com.pehlione.web.api.error.ApiException;
 import com.pehlione.web.checkout.OrderDraftRepository;
 import com.pehlione.web.checkout.OrderDraftStatus;
 import com.pehlione.web.inventory.InventoryService;
+import com.pehlione.web.notification.OrderPaidEvent;
+import com.pehlione.web.notification.PaymentFailedEvent;
+import com.pehlione.web.notification.RefundSucceededEvent;
 import com.pehlione.web.order.Order;
 import com.pehlione.web.order.OrderItem;
 import com.pehlione.web.order.OrderRepository;
@@ -36,6 +41,7 @@ public class PaymentWebhookService {
 	private final InventoryService inventoryService;
 	private final OrderDraftRepository draftRepo;
 	private final OrderTransitionService transitionService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public PaymentWebhookService(
 			PaymentWebhookEventRepository eventRepo,
@@ -44,7 +50,8 @@ public class PaymentWebhookService {
 			RefundRepository refundRepo,
 			InventoryService inventoryService,
 			OrderDraftRepository draftRepo,
-			OrderTransitionService transitionService) {
+			OrderTransitionService transitionService,
+			ApplicationEventPublisher eventPublisher) {
 		this.eventRepo = eventRepo;
 		this.paymentRepo = paymentRepo;
 		this.orderRepo = orderRepo;
@@ -52,6 +59,7 @@ public class PaymentWebhookService {
 		this.inventoryService = inventoryService;
 		this.draftRepo = draftRepo;
 		this.transitionService = transitionService;
+		this.eventPublisher = eventPublisher;
 	}
 
 	public record WebhookEvent(
@@ -136,6 +144,7 @@ public class PaymentWebhookService {
 					pi.setStatus(PaymentStatus.FAILED);
 					pi.setLastError(ex.getMessage());
 					moveDraftToCancelled(order, pi.getUser().getId());
+					eventPublisher.publishEvent(PaymentFailedEvent.from(order, pi, pi.getLastError(), Instant.now()));
 					return;
 				}
 				throw ex;
@@ -148,6 +157,7 @@ public class PaymentWebhookService {
 			pi.setProviderReference("mock_" + UUID.randomUUID());
 		}
 		moveDraftToSubmitted(order, pi.getUser().getId());
+		eventPublisher.publishEvent(OrderPaidEvent.from(order, pi, Instant.now()));
 	}
 
 	private void onPaymentFailed(String paymentId, String orderPublicId, String error) {
@@ -184,6 +194,7 @@ public class PaymentWebhookService {
 		pi.setStatus(PaymentStatus.FAILED);
 		pi.setLastError(trunc(error));
 		moveDraftToCancelled(order, pi.getUser().getId());
+		eventPublisher.publishEvent(PaymentFailedEvent.from(order, pi, pi.getLastError(), Instant.now()));
 	}
 
 	private void onRefundSucceeded(String refundPublicId) {
@@ -205,6 +216,7 @@ public class PaymentWebhookService {
 			refund.setProviderReference("mock_ref_" + UUID.randomUUID());
 		}
 		transitionService.transition(order, OrderStatus.REFUNDED, "webhook-refund-succeeded");
+		eventPublisher.publishEvent(RefundSucceededEvent.from(refund, Instant.now()));
 	}
 
 	private void onRefundFailed(String refundPublicId, String error) {

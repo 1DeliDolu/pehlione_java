@@ -237,7 +237,14 @@ class CartCheckoutControllerTests {
 				.header("Idempotency-Key", "idem-" + draftId)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
-						{"addressId":%d}
+						{
+							"addressId":%d,
+							"cardHolderName":"Max Mustermann",
+							"cardNumber":"4242 4242 4242 4242",
+							"expiryMonth":12,
+							"expiryYear":2032,
+							"cvc":"123"
+						}
 						""".formatted(addressId)))
 				.andExpect(status().isOk())
 				.andReturn()
@@ -251,7 +258,14 @@ class CartCheckoutControllerTests {
 				.header("Idempotency-Key", "idem-" + draftId)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
-						{"addressId":%d}
+						{
+							"addressId":%d,
+							"cardHolderName":"Max Mustermann",
+							"cardNumber":"4242 4242 4242 4242",
+							"expiryMonth":12,
+							"expiryYear":2032,
+							"cvc":"123"
+						}
 						""".formatted(addressId)))
 				.andExpect(status().isOk())
 				.andReturn()
@@ -324,6 +338,47 @@ class CartCheckoutControllerTests {
 		assertThat(orderStatus).isEqualTo("PAID");
 		assertThat(paymentStatus).isEqualTo("SUCCEEDED");
 		assertThat(stockAfterConfirm).isEqualTo(10);
+	}
+
+	@Test
+	void payRejectsIncompleteCardPayload() throws Exception {
+		Long productId = insertProduct("SKU-CHECK-3B", "Pay Validation Tee", 5);
+		String userAccess = loginAndGetAccessToken("user@pehlione.com", "password");
+
+		mockMvc.perform(post("/api/v1/cart/items")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + userAccess)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"productId":%d,"quantity":1}
+						""".formatted(productId)))
+				.andExpect(status().isOk());
+
+		String reserveBody = mockMvc.perform(post("/api/v1/checkout/reserve")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + userAccess)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{}"))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		String draftId = extractField(reserveBody, DRAFT_ID_PATTERN);
+		Long addressId = createAddressAndReturnId(userAccess, "Validation Home");
+
+		String responseBody = mockMvc.perform(post("/api/v1/checkout/drafts/{draftId}/pay", draftId)
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + userAccess)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{
+							"addressId":%d,
+							"cardNumber":"4242 4242 4242 4242"
+						}
+						""".formatted(addressId)))
+				.andExpect(status().isBadRequest())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		assertThat(responseBody).contains("All card fields are required");
 	}
 
 	@Test

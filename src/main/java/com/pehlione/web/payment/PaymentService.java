@@ -1,7 +1,9 @@
 package com.pehlione.web.payment;
 
+import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,9 @@ import com.pehlione.web.auth.ClientInfo;
 import com.pehlione.web.checkout.OrderDraftRepository;
 import com.pehlione.web.checkout.OrderDraftStatus;
 import com.pehlione.web.inventory.InventoryService;
+import com.pehlione.web.notification.OrderPaidEvent;
+import com.pehlione.web.notification.PaymentFailedEvent;
+import com.pehlione.web.notification.RefundRequestedEvent;
 import com.pehlione.web.order.Order;
 import com.pehlione.web.order.OrderItem;
 import com.pehlione.web.order.OrderRepository;
@@ -30,6 +35,7 @@ public class PaymentService {
 	private final OrderDraftRepository draftRepo;
 	private final RefundRepository refundRepo;
 	private final OrderTransitionService transitionService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public PaymentService(
 			PaymentIntentRepository repo,
@@ -38,7 +44,8 @@ public class PaymentService {
 			AuditService auditService,
 			OrderDraftRepository draftRepo,
 			RefundRepository refundRepo,
-			OrderTransitionService transitionService) {
+			OrderTransitionService transitionService,
+			ApplicationEventPublisher eventPublisher) {
 		this.repo = repo;
 		this.orderRepo = orderRepo;
 		this.inventoryService = inventoryService;
@@ -46,6 +53,7 @@ public class PaymentService {
 		this.draftRepo = draftRepo;
 		this.refundRepo = refundRepo;
 		this.transitionService = transitionService;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Transactional
@@ -139,6 +147,7 @@ public class PaymentService {
 				saved.getPublicId(),
 				null,
 				"order=" + order.getPublicId() + " amount=" + saved.getAmount() + " " + saved.getCurrency());
+		eventPublisher.publishEvent(RefundRequestedEvent.from(saved, Instant.now()));
 		return saved;
 	}
 
@@ -182,6 +191,7 @@ public class PaymentService {
 				pi.getPublicId(),
 				client,
 				"order=" + order.getPublicId());
+		eventPublisher.publishEvent(OrderPaidEvent.from(order, pi, Instant.now()));
 	}
 
 	@Transactional
@@ -208,6 +218,7 @@ public class PaymentService {
 			draftRepo.findForUpdateByPublicIdAndUserId(order.getSourceDraftPublicId(), pi.getUser().getId())
 					.ifPresent(d -> d.setStatus(OrderDraftStatus.CANCELLED));
 		}
+		eventPublisher.publishEvent(PaymentFailedEvent.from(order, pi, pi.getLastError(), Instant.now()));
 	}
 
 	private String normalizeKey(String key) {
