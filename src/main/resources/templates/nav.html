@@ -1,5 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<html
+  lang="en"
+  xmlns:th="https://www.thymeleaf.org"
+  xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+>
   <body>
     <th:block th:fragment="main(mode, active)">
       <nav class="navbar navbar-expand-lg sticky-top glass">
@@ -189,6 +193,21 @@
                 href="/karte"
                 th:href="@{/karte}"
                 >Karte</a
+              >
+              <a
+                class="btn"
+                th:classappend="${active == 'password'} ? ' btn-brand' : ' btn-outline-dark'"
+                href="/password"
+                th:href="@{/password}"
+                >Password</a
+              >
+              <a
+                sec:authorize="hasRole('ADMIN')"
+                class="btn"
+                th:classappend="${active == 'admin-product-create'} ? ' btn-brand' : ' btn-outline-dark'"
+                href="/admin-product-create"
+                th:href="@{/admin-product-create}"
+                >Product Create</a
               >
             </div>
           </th:block>

@@ -140,9 +140,11 @@
       tabindex="-1"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content rounded-xl">
-          <div class="modal-header">
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable dashboard-dialog"
+      >
+        <div class="modal-content rounded-xl dashboard-surface">
+          <div class="modal-header dashboard-header">
             <h5 class="modal-title">
               <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </h5>
@@ -152,13 +154,13 @@
               data-bs-dismiss="modal"
             ></button>
           </div>
-          <div class="modal-body">
-            <div class="alert alert-light border small mb-3">
-              <div>
+          <div class="modal-body dashboard-body">
+            <div class="dashboard-summary mb-3">
+              <div class="dashboard-kv">
                 <strong th:text="#{dashboard.user}">User:</strong>
                 <span id="dashboardUserEmail">-</span>
               </div>
-              <div>
+              <div class="dashboard-kv">
                 <strong th:text="#{dashboard.roles}">Roles:</strong>
                 <span id="dashboardRoleList">-</span>
               </div>
@@ -167,7 +169,7 @@
             <!-- User Section -->
             <div
               id="dashboardUserSection"
-              class="border rounded-xl p-3 bg-white mb-3"
+              class="dashboard-panel dashboard-panel-user mb-3"
             >
               <h6 class="mb-2" th:text="#{dashboard.user-section}">
                 User Section
@@ -181,7 +183,7 @@
               </div>
               <div class="row g-3">
                 <div class="col-lg-4">
-                  <div class="border rounded p-3 h-100">
+                  <div class="dashboard-card h-100">
                     <h6 class="mb-2" th:text="#{dashboard.profile-info}">
                       Profile Info
                     </h6>
@@ -206,7 +208,7 @@
                     <div class="d-grid gap-2 mt-3">
                       <button
                         id="dashboardAddressesBtn"
-                        class="btn btn-sm btn-outline-success"
+                        class="btn btn-sm btn-brand"
                         type="button"
                       >
                         <i class="bi bi-geo-alt me-1"></i
@@ -226,10 +228,19 @@
                 </div>
                 <div class="col-lg-8">
                   <!-- Change Password -->
-                  <div class="border rounded p-3 mb-3">
-                    <h6 class="mb-2" th:text="#{dashboard.change-password}">
-                      Change Password
-                    </h6>
+                  <div class="dashboard-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="mb-0" th:text="#{dashboard.change-password}">
+                        Change Password
+                      </h6>
+                      <button
+                        id="openPasswordSettingsBtn"
+                        class="btn btn-sm btn-outline-dark"
+                        type="button"
+                      >
+                        Password Page
+                      </button>
+                    </div>
                     <div class="row g-2">
                       <div class="col-md-4">
                         <label
@@ -274,7 +285,7 @@
                     <div class="d-flex justify-content-end mt-2">
                       <button
                         id="profilePasswordChangeBtn"
-                        class="btn btn-sm btn-outline-dark"
+                        class="btn btn-sm btn-brand"
                         type="button"
                         th:text="#{dashboard.update-password}"
                       >
@@ -284,10 +295,19 @@
                   </div>
 
                   <!-- Update Address -->
-                  <div class="border rounded p-3 mb-3">
-                    <h6 class="mb-2" th:text="#{dashboard.update-address}">
-                      Update Address
-                    </h6>
+                  <div class="dashboard-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="mb-0" th:text="#{dashboard.update-address}">
+                        Update Address
+                      </h6>
+                      <button
+                        id="openAddressSettingsBtn"
+                        class="btn btn-sm btn-outline-dark"
+                        type="button"
+                      >
+                        Address Page
+                      </button>
+                    </div>
                     <div class="row g-2 mb-2">
                       <div class="col-md-8">
                         <label
@@ -456,7 +476,7 @@
                     <div class="d-flex justify-content-end mt-2">
                       <button
                         id="profileAddressUpdateBtn"
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-sm btn-brand"
                         type="button"
                         th:text="#{dashboard.update-address}"
                       >
@@ -469,10 +489,19 @@
                   </div>
 
                   <!-- Saved Card -->
-                  <div class="border rounded p-3">
-                    <h6 class="mb-2" th:text="#{dashboard.saved-card}">
-                      Saved Card (Mock)
-                    </h6>
+                  <div class="dashboard-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="mb-0" th:text="#{dashboard.saved-card}">
+                        Saved Card (Mock)
+                      </h6>
+                      <button
+                        id="openCardSettingsBtn"
+                        class="btn btn-sm btn-outline-dark"
+                        type="button"
+                      >
+                        Card Page
+                      </button>
+                    </div>
                     <div
                       class="small muted mb-2"
                       th:text="#{dashboard.saved-card-hint}"
@@ -537,7 +566,7 @@
                       <div class="col-md-6 d-flex align-items-end gap-2">
                         <button
                           id="profileCardSaveBtn"
-                          class="btn btn-sm btn-outline-dark"
+                          class="btn btn-sm btn-brand"
                           type="button"
                           th:text="#{card.save}"
                         >
@@ -568,7 +597,7 @@
             <!-- Admin Section -->
             <div
               id="dashboardAdminSection"
-              class="border rounded-xl p-3 bg-white mb-3 d-none"
+              class="dashboard-panel dashboard-panel-admin mb-3 d-none"
             >
               <h6 class="mb-2" th:text="#{dashboard.admin-section}">
                 Admin Section
@@ -580,7 +609,10 @@
                 All management functions are available from this panel.
               </div>
 
-              <ul class="nav nav-pills flex-wrap gap-2 mb-3" role="tablist">
+              <ul
+                class="nav nav-pills flex-wrap gap-2 mb-3 dashboard-tabs"
+                role="tablist"
+              >
                 <li class="nav-item" role="presentation">
                   <button
                     class="nav-link active"
@@ -1128,9 +1160,18 @@
 
                   <!-- Product CRUD -->
                   <div class="border rounded p-2 mb-2">
-                    <h6 class="mb-2" th:text="#{admin.product-crud}">
-                      Product CRUD
-                    </h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h6 class="mb-0" th:text="#{admin.product-crud}">
+                        Product CRUD
+                      </h6>
+                      <button
+                        id="adminOpenProductCreatePageBtn"
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                      >
+                        Open Create Page
+                      </button>
+                    </div>
                     <div class="row g-2 align-items-end mb-2">
                       <div class="col-md-9">
                         <label
@@ -1351,14 +1392,19 @@
                       <div class="col-md-5">
                         <label
                           class="form-label form-label-sm mb-1"
-                          th:text="#{admin.image-url}"
-                          >Image URL</label
+                          >Image Files (multiple)</label
                         >
                         <input
-                          id="adminImageUrl"
+                          id="adminImageFiles"
+                          type="file"
+                          multiple
+                          accept="image/*"
                           class="form-control form-control-sm"
-                          placeholder="https://..."
                         />
+                        <div class="small muted mt-1">
+                          Stored under:
+                          <code>/uploads/product-images/{category}/{product}/</code>
+                        </div>
                       </div>
                       <div class="col-md-4">
                         <label
@@ -1370,6 +1416,18 @@
                           id="adminImageAlt"
                           class="form-control form-control-sm"
                           placeholder="Front view"
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label
+                          class="form-label form-label-sm mb-1"
+                          th:text="#{admin.image-url}"
+                          >Image URL (optional)</label
+                        >
+                        <input
+                          id="adminImageUrl"
+                          class="form-control form-control-sm"
+                          placeholder="https://..."
                         />
                       </div>
                       <div class="col-md-3">
@@ -1386,7 +1444,16 @@
                           placeholder="10"
                         />
                       </div>
-                      <div class="col-md-9 d-flex flex-wrap gap-2">
+                      <div class="col-md-3 d-grid">
+                        <button
+                          id="adminImagesLoadBtn"
+                          class="btn btn-sm btn-outline-dark"
+                          type="button"
+                        >
+                          List Images
+                        </button>
+                      </div>
+                      <div class="col-md-12 d-flex flex-wrap gap-2">
                         <button
                           id="adminImageAddBtn"
                           class="btn btn-sm btn-outline-primary"
@@ -1405,6 +1472,44 @@
                         </button>
                       </div>
                     </div>
+                    <div class="table-responsive border rounded mt-2">
+                      <table class="table table-sm align-middle mb-0">
+                        <thead>
+                          <tr>
+                            <th>Id</th>
+                            <th>Preview</th>
+                            <th>URL</th>
+                            <th>Order</th>
+                            <th>Primary</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="adminImageRows">
+                          <tr>
+                            <td colspan="6" class="small muted">Not loaded</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                      <div id="adminImagePageInfo" class="small muted">Page 1/1</div>
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button
+                          id="adminImagePrevBtn"
+                          class="btn btn-outline-dark"
+                          type="button"
+                        >
+                          Prev
+                        </button>
+                        <button
+                          id="adminImageNextBtn"
+                          class="btn btn-outline-dark"
+                          type="button"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
                     <pre
                       id="adminImageResult"
                       class="small bg-light border rounded p-2 mt-2 mb-0"
@@ -1419,7 +1524,7 @@
             <!-- Worker Section -->
             <div
               id="dashboardWorkerSection"
-              class="border rounded-xl p-3 bg-white d-none"
+              class="dashboard-panel dashboard-panel-worker d-none"
             >
               <h6 class="mb-2" th:text="#{dashboard.worker-section}">
                 Worker Section
@@ -1431,6 +1536,12 @@
                 Operational/Fulfillment tasks will appear here.
               </div>
             </div>
+
+            <!-- Department Section (rendered by script.js renderDepartmentPanels) -->
+            <div id="dashboardDeptSection" class="dashboard-extra-panel d-none"></div>
+
+            <!-- Customer Tier Section (rendered by script.js renderTierPanel) -->
+            <div id="dashboardTierSection" class="dashboard-extra-panel d-none"></div>
           </div>
         </div>
       </div>
@@ -1919,9 +2030,7 @@
       id="newAddressModal"
       tabindex="-1"
       aria-hidden="true"
-    >
-    
-    </div>
+    ></div>
 
     <!--/* ===== TOAST ===== */-->
     <div

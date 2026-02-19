@@ -3,6 +3,7 @@
         me: "/api/v1/me",
         addresses: "/api/v1/addresses",
         addressById: (id) => `/api/v1/addresses/${id}`,
+        changeMyPassword: "/api/v1/me/password",
     };
 
     const LS_TOKEN = "auth.token";
@@ -540,6 +541,51 @@
         });
     }
 
+    function setPasswordResult(message, kind = "muted") {
+        const resultEl = document.getElementById("passwordResult");
+        if (!resultEl) {
+            return;
+        }
+        resultEl.textContent = message;
+        resultEl.className = `small mt-2 ${kind === "error" ? "text-danger" : kind === "success" ? "text-success" : "muted"}`;
+    }
+
+    function bindPasswordEvents() {
+        const form = document.getElementById("passwordForm");
+        if (!form) {
+            return;
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const currentPassword = document.getElementById("settingsCurrentPassword").value || "";
+            const newPassword = document.getElementById("settingsNewPassword").value || "";
+            const confirmNewPassword = document.getElementById("settingsConfirmPassword").value || "";
+
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                setPasswordResult("Please fill all password fields.", "error");
+                return;
+            }
+            if (newPassword.length < 8) {
+                setPasswordResult("New password must be at least 8 characters.", "error");
+                return;
+            }
+
+            try {
+                await apiFetch(API.changeMyPassword, {
+                    method: "POST",
+                    json: { currentPassword, newPassword, confirmNewPassword },
+                });
+                document.getElementById("settingsCurrentPassword").value = "";
+                document.getElementById("settingsNewPassword").value = "";
+                document.getElementById("settingsConfirmPassword").value = "";
+                setPasswordResult("Password updated successfully.", "success");
+            } catch (error) {
+                setPasswordResult(`Could not update password: ${error.message}`, "error");
+            }
+        });
+    }
+
     async function init() {
         await loadCurrentUser();
         if (!currentUser) {
@@ -558,6 +604,12 @@
             bindCardEvents();
             loadSavedCardToForm();
             renderSavedCard();
+            return;
+        }
+
+        if (page === "settings-password") {
+            bindPasswordEvents();
+            setPasswordResult("Fill form and submit to change password.");
         }
     }
 

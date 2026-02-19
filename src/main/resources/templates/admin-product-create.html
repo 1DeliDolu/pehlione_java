@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Product Create | Pehlione Shop</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" th:href="@{/style.css}" />
+  </head>
+  <body class="page-settings" data-page="admin-product-create">
+    <div th:replace="~{nav :: main('settings','admin-product-create')}"></div>
+
+    <main class="container settings-shell">
+      <div class="row g-4">
+        <aside class="col-lg-4">
+          <div class="settings-card p-4 h-100">
+            <span class="badge badge-soft rounded-pill px-3 py-2 mb-3"
+              >Admin</span
+            >
+            <h1 class="h4 fw-bold mb-3">Create Product</h1>
+
+            <div class="settings-kv">
+              <div class="small muted">Signed in user</div>
+              <div id="adminCreateUserEmail" class="fw-semibold">-</div>
+            </div>
+            <div class="settings-kv mt-2">
+              <div class="small muted">Roles</div>
+              <div id="adminCreateUserRoles" class="small">-</div>
+            </div>
+
+            <hr />
+            <div class="small muted mb-1">Size matrix behavior</div>
+            <div class="small">
+              If category matches apparel, clothing sizes are shown.
+            </div>
+            <div class="small">
+              If category matches shoes, shoe numbers are shown.
+            </div>
+          </div>
+        </aside>
+
+        <section class="col-lg-8">
+          <div id="adminCreateAuthAlert" class="alert alert-danger d-none mb-3">
+            Admin yetkisi bulunamadi. Bu sayfa yalnizca ROLE_ADMIN icindir.
+          </div>
+
+          <div class="settings-card p-4 mb-3">
+            <h2 class="h5 fw-bold mb-2">Base Product Fields</h2>
+            <form id="adminProductCreateForm">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label form-label-sm mb-1">SKU *</label>
+                  <input
+                    id="adminCreateSku"
+                    class="form-control form-control-sm"
+                    placeholder="SKU-001"
+                    required
+                  />
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label form-label-sm mb-1">Name *</label>
+                  <input
+                    id="adminCreateName"
+                    class="form-control form-control-sm"
+                    placeholder="Product name"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label form-label-sm mb-1">Price *</label>
+                  <input
+                    id="adminCreatePrice"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    class="form-control form-control-sm"
+                    value="10.00"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label form-label-sm mb-1">Currency *</label>
+                  <input
+                    id="adminCreateCurrency"
+                    class="form-control form-control-sm"
+                    value="EUR"
+                    required
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label form-label-sm mb-1"
+                    >Manual Stock</label
+                  >
+                  <input
+                    id="adminCreateStock"
+                    type="number"
+                    min="0"
+                    class="form-control form-control-sm"
+                    value="0"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label form-label-sm mb-1">Status *</label>
+                  <select id="adminCreateStatus" class="form-select form-select-sm">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="DRAFT">DRAFT</option>
+                    <option value="ARCHIVED">ARCHIVED</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label form-label-sm mb-1">Description</label>
+                  <textarea
+                    id="adminCreateDescription"
+                    class="form-control form-control-sm"
+                    rows="3"
+                    placeholder="Optional description"
+                  ></textarea>
+                </div>
+              </div>
+
+              <hr />
+              <h3 class="h6 fw-bold mb-2">Categories</h3>
+              <div id="adminCreateCategoryList" class="d-flex flex-column gap-2 small">
+                <div class="muted">Loading categories...</div>
+              </div>
+
+              <hr />
+              <h3 class="h6 fw-bold mb-2">Category Size Table</h3>
+              <div id="adminCreateSizeHint" class="small muted mb-2">
+                Select a category to render size table.
+              </div>
+              <div id="adminCreateSizeTableWrap" class="table-responsive border rounded">
+                <table class="table table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Size</th>
+                      <th>Stock Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminCreateSizeRows">
+                    <tr>
+                      <td colspan="2" class="small muted">No size matrix selected.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="d-flex justify-content-end mt-3">
+                <button id="adminCreateSubmitBtn" class="btn btn-brand" type="submit">
+                  <i class="bi bi-plus-circle me-1"></i>Create Product
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="settings-card p-4">
+            <h2 class="h5 fw-bold mb-2">Result</h2>
+            <pre id="adminCreateResult" class="small bg-light border rounded p-2 mb-0">-</pre>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div th:replace="~{footer :: main('compact')}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/admin-product-create.js" th:src="@{/js/admin-product-create.js}"></script>
+  </body>
+</html>

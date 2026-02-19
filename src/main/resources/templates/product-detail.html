@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+  <head th:replace="~{fragments/storefront-head :: head('Pehlione Shop | Product Detail')}"></head>
+  <body class="page-storefront" data-page="product-detail">
+    <div th:replace="~{nav :: main('storefront','products')}"></div>
+
+    <main class="container py-4" th:attr="data-product-id=${productId}" id="productDetailRoot">
+      <div class="mb-3">
+        <a class="btn btn-sm btn-outline-dark" href="/products" th:href="@{/products}">
+          <i class="bi bi-arrow-left me-1"></i>Back to Products
+        </a>
+      </div>
+
+      <section class="status-card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            <h1 id="pdName" class="h3 fw-bold mb-1">Loading...</h1>
+            <div id="pdSku" class="small muted">SKU: -</div>
+            <div id="pdCategories" class="d-flex flex-wrap gap-1 mt-2"></div>
+          </div>
+          <div id="pdPrice" class="h4 fw-bold mb-0">-</div>
+        </div>
+        <hr />
+        <div id="pdDescription" class="small">Loading product details...</div>
+      </section>
+
+      <section class="status-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 fw-bold mb-0">Product Images</h2>
+          <div id="pdImagePageInfo" class="small muted">Page 1/1</div>
+        </div>
+        <div id="pdImageGrid" class="row g-3">
+          <div class="col-12 small muted">Loading images...</div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <div class="btn-group btn-group-sm" role="group">
+            <button id="pdPrevBtn" class="btn btn-outline-dark" type="button">Prev</button>
+            <button id="pdNextBtn" class="btn btn-outline-dark" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div th:replace="~{footer :: main('storefront')}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/product-detail.js" th:src="@{/js/product-detail.js}"></script>
+  </body>
+</html>

@@ -4,11 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +24,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -339,6 +344,82 @@ class ProductControllerTests {
         assertThat(productBody).contains("\"primaryImage\"");
         assertThat(productBody).contains("\"images\"");
         assertThat(productBody).contains("https://cdn.example.com/p1.jpg");
+    }
+
+    @Test
+    void uploadImagesCreatesCategoryAndProductFoldersAndSupportsImagePagination() throws Exception {
+        jdbcTemplate.update(
+                "insert into categories (slug, name) values (?, ?) on duplicate key update name = values(name)",
+                "ayakkabi",
+                "Ayakkabi");
+        Long categoryId = jdbcTemplate.queryForObject(
+                "select id from categories where slug = ?",
+                Long.class,
+                "ayakkabi");
+
+        jdbcTemplate.update(
+                """
+                        insert into products (sku, name, description, price, currency, stock_quantity, status)
+                        values (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                "SKU-SHOE-IMG-1",
+                "Air Zoom Alpha",
+                "shoe",
+                new BigDecimal("129.99"),
+                "EUR",
+                4,
+                "ACTIVE");
+        Long productId = jdbcTemplate.queryForObject(
+                "select id from products where sku = ?",
+                Long.class,
+                "SKU-SHOE-IMG-1");
+        assertThat(productId).isNotNull();
+        jdbcTemplate.update(
+                "insert into product_categories (product_id, category_id) values (?, ?)",
+                productId,
+                categoryId);
+
+        String adminAccess = loginAndGetAccessToken("admin@pehlione.com", "admin123");
+
+        MockMultipartFile front = new MockMultipartFile(
+                "files",
+                "front.jpg",
+                "image/jpeg",
+                "front-image".getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile side = new MockMultipartFile(
+                "files",
+                "side.png",
+                "image/png",
+                "side-image".getBytes(StandardCharsets.UTF_8));
+
+        mockMvc.perform(multipart("/api/v1/products/{id}/images/upload", productId)
+                .file(front)
+                .file(side)
+                .param("altText", "Shoe angle")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminAccess))
+                .andExpect(status().isOk());
+
+        String latestUrl = jdbcTemplate.queryForObject(
+                "select url from product_images where product_id = ? order by id desc limit 1",
+                String.class,
+                productId);
+        assertThat(latestUrl).startsWith("/uploads/product-images/ayakkabi/");
+
+        String relativePath = latestUrl.substring("/uploads/product-images/".length());
+        Path absolutePath = Path.of("target/test-uploads/product-images").resolve(relativePath);
+        assertThat(Files.exists(absolutePath)).isTrue();
+
+        String imagesPageBody = mockMvc.perform(get("/api/v1/products/{id}/images", productId)
+                .param("page", "0")
+                .param("size", "1"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(imagesPageBody).contains("\"items\"");
+        assertThat(imagesPageBody).contains("\"page\"");
+        assertThat(imagesPageBody).contains("\"totalPages\"");
     }
 
     @Test

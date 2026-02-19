@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.2</version>
+		<version>4.0.3</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.pehlione</groupId>
@@ -30,6 +30,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<codegen.skip>true</codegen.skip>
+		<frontend.skip>false</frontend.skip>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -170,6 +171,106 @@
 
 	<build>
 		<plugins>
+			<!--
+			  frontend-maven-plugin: installs Node/npm locally and builds
+			  the TypeScript API clients (ts-public, ts-admin) plus the
+			  bundled api-client.js that script.js relies on.
+			  Runs during the 'generate-resources' phase so the bundle is
+			  available before the jar is assembled.
+			-->
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.15.1</version>
+				<configuration>
+					<nodeVersion>v22.12.0</nodeVersion>
+					<npmVersion>10.9.0</npmVersion>
+					<workingDirectory>${project.basedir}</workingDirectory>
+					<installDirectory>${project.build.directory}/node</installDirectory>
+					<skip>${frontend.skip}</skip>
+				</configuration>
+				<executions>
+					<!-- 1. Install Node + npm into target/node (offline after first run) -->
+					<execution>
+						<id>install-node-and-npm</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+					</execution>
+					<!-- 2. npm install (root package.json) -->
+					<execution>
+						<id>npm-install-root</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<!-- 3. npm install ts-public client -->
+					<execution>
+						<id>npm-install-ts-public</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<workingDirectory>${project.basedir}/clients/ts-public</workingDirectory>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<!-- 4. npm install ts-admin client -->
+					<execution>
+						<id>npm-install-ts-admin</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<workingDirectory>${project.basedir}/clients/ts-admin</workingDirectory>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<!-- 5. Build ts-public (tsc → dist/) -->
+					<execution>
+						<id>build-ts-public</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<workingDirectory>${project.basedir}/clients/ts-public</workingDirectory>
+							<arguments>run build</arguments>
+						</configuration>
+					</execution>
+					<!-- 6. Build ts-admin (tsc → dist/) -->
+					<execution>
+						<id>build-ts-admin</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<workingDirectory>${project.basedir}/clients/ts-admin</workingDirectory>
+							<arguments>run build</arguments>
+						</configuration>
+					</execution>
+					<!-- 7. Bundle api-client.ts → static/js/api-client.js via esbuild -->
+					<execution>
+						<id>bundle-api-client</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>run build:api-client</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

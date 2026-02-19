@@ -3,12 +3,16 @@
   "private": true,
   "scripts": {
     "contract:update": "bash scripts/update-openapi-contract.sh",
-    "contract:test": "./mvnw -Dcodegen.skip=true -Dtest=OpenApiContractTests test",
+    "contract:test": "./mvnw -Dcodegen.skip=true -Dfrontend.skip=true -Dtest=OpenApiContractTests test",
     "generate:clients:java": "./mvnw -DskipTests -Dcodegen.skip=false generate-sources",
     "generate:clients:ts": "bash scripts/generate-ts-clients.sh",
-    "generate:clients": "npm run generate:clients:java && npm run generate:clients:ts"
+    "generate:clients": "npm run generate:clients:java && npm run generate:clients:ts",
+    "build:clients": "cd clients/ts-public && npm run build && cd ../ts-admin && npm run build && cd ../..",
+    "build:api-client": "node_modules/.bin/esbuild src/js/api-client.ts --bundle --platform=browser --target=es2020 --format=iife --global-name=__unused --outfile=src/main/resources/static/js/api-client.js",
+    "build": "npm run build:clients && npm run build:api-client"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "2.25.0"
+    "@openapitools/openapi-generator-cli": "2.25.0",
+    "esbuild": "^0.27.3"
   }
 }

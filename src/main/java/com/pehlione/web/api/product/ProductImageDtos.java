@@ -1,6 +1,9 @@
 package com.pehlione.web.api.product;
 
+import java.time.Instant;
 import java.util.List;
+
+import com.pehlione.web.product.ProductImage;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,5 +25,23 @@ public class ProductImageDtos {
 
 	public record ReorderRequest(
 			@NotEmpty List<@NotNull ReorderItem> items) {
+	}
+
+	public record ImagePageItem(
+			Long id,
+			String url,
+			String altText,
+			int sortOrder,
+			boolean primary,
+			Instant createdAt) {
+		public static ImagePageItem from(ProductImage image) {
+			return new ImagePageItem(
+					image.getId(),
+					image.getUrl(),
+					image.getAltText(),
+					image.getSortOrder(),
+					image.isPrimary(),
+					image.getCreatedAt());
+		}
 	}
 }
