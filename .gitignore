@@ -34,3 +34,7 @@ build/
 
 node_modules/
 uploads/
+
+# Generated TypeScript client lock files (not produced by openapi-generator-cli)
+clients/ts-admin/package-lock.json
+clients/ts-public/package-lock.json
