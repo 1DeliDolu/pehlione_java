@@ -257,6 +257,14 @@ var __unused = (() => {
     }
     return `${encodeURIComponent(fullKey)}=${encodeURIComponent(String(value))}`;
   }
+  function canConsumeForm(consumes) {
+    for (const consume of consumes) {
+      if ("multipart/form-data" === consume.contentType) {
+        return true;
+      }
+    }
+    return false;
+  }
   var JSONApiResponse = class {
     constructor(raw, transformer = (jsonValue) => jsonValue) {
       this.raw = raw;
@@ -272,14 +280,6 @@ var __unused = (() => {
     }
     async value() {
       return void 0;
-    }
-  };
-  var TextApiResponse = class {
-    constructor(raw) {
-      this.raw = raw;
-    }
-    async value() {
-      return await this.raw.text();
     }
   };
 
@@ -384,6 +384,21 @@ var __unused = (() => {
       "name": json["name"] == null ? void 0 : json["name"],
       "slug": json["slug"] == null ? void 0 : json["slug"],
       "updatedAt": json["updatedAt"] == null ? void 0 : new Date(json["updatedAt"])
+    };
+  }
+
+  // clients/ts-public/src/models/ChangePasswordRequest.ts
+  function ChangePasswordRequestToJSON(json) {
+    return ChangePasswordRequestToJSONTyped(json, false);
+  }
+  function ChangePasswordRequestToJSONTyped(value, ignoreDiscriminator = false) {
+    if (value == null) {
+      return value;
+    }
+    return {
+      "confirmNewPassword": value["confirmNewPassword"],
+      "currentPassword": value["currentPassword"],
+      "newPassword": value["newPassword"]
     };
   }
 
@@ -508,6 +523,24 @@ var __unused = (() => {
     };
   }
 
+  // clients/ts-public/src/models/ImagePageItem.ts
+  function ImagePageItemFromJSON(json) {
+    return ImagePageItemFromJSONTyped(json, false);
+  }
+  function ImagePageItemFromJSONTyped(json, ignoreDiscriminator) {
+    if (json == null) {
+      return json;
+    }
+    return {
+      "altText": json["altText"] == null ? void 0 : json["altText"],
+      "createdAt": json["createdAt"] == null ? void 0 : new Date(json["createdAt"]),
+      "id": json["id"] == null ? void 0 : json["id"],
+      "primary": json["primary"] == null ? void 0 : json["primary"],
+      "sortOrder": json["sortOrder"] == null ? void 0 : json["sortOrder"],
+      "url": json["url"] == null ? void 0 : json["url"]
+    };
+  }
+
   // clients/ts-public/src/models/ImageRef.ts
   function ImageRefFromJSON(json) {
     return ImageRefFromJSONTyped(json, false);
@@ -536,6 +569,24 @@ var __unused = (() => {
     return {
       "email": value["email"],
       "password": value["password"]
+    };
+  }
+
+  // clients/ts-public/src/models/MeResponse.ts
+  function MeResponseFromJSON(json) {
+    return MeResponseFromJSONTyped(json, false);
+  }
+  function MeResponseFromJSONTyped(json, ignoreDiscriminator) {
+    if (json == null) {
+      return json;
+    }
+    return {
+      "createdAt": json["createdAt"] == null ? void 0 : new Date(json["createdAt"]),
+      "email": json["email"] == null ? void 0 : json["email"],
+      "enabled": json["enabled"] == null ? void 0 : json["enabled"],
+      "locked": json["locked"] == null ? void 0 : json["locked"],
+      "roles": json["roles"] == null ? void 0 : json["roles"],
+      "updatedAt": json["updatedAt"] == null ? void 0 : new Date(json["updatedAt"])
     };
   }
 
@@ -616,23 +667,6 @@ var __unused = (() => {
     };
   }
 
-  // clients/ts-public/src/models/OrderSummaryResponse.ts
-  function OrderSummaryResponseFromJSON(json) {
-    return OrderSummaryResponseFromJSONTyped(json, false);
-  }
-  function OrderSummaryResponseFromJSONTyped(json, ignoreDiscriminator) {
-    if (json == null) {
-      return json;
-    }
-    return {
-      "createdAt": json["createdAt"] == null ? void 0 : new Date(json["createdAt"]),
-      "currency": json["currency"] == null ? void 0 : json["currency"],
-      "orderId": json["orderId"] == null ? void 0 : json["orderId"],
-      "status": json["status"] == null ? void 0 : json["status"],
-      "totalAmount": json["totalAmount"] == null ? void 0 : json["totalAmount"]
-    };
-  }
-
   // clients/ts-public/src/models/PageMeta.ts
   function PageMetaFromJSON(json) {
     return PageMetaFromJSONTyped(json, false);
@@ -660,7 +694,7 @@ var __unused = (() => {
       return json;
     }
     return {
-      "items": json["items"] == null ? void 0 : json["items"].map(OrderSummaryResponseFromJSON),
+      "items": json["items"] == null ? void 0 : json["items"].map(ImagePageItemFromJSON),
       "page": json["page"] == null ? void 0 : PageMetaFromJSON(json["page"])
     };
   }
@@ -674,7 +708,12 @@ var __unused = (() => {
       return value;
     }
     return {
-      "addressId": value["addressId"]
+      "addressId": value["addressId"],
+      "cardHolderName": value["cardHolderName"],
+      "cardNumber": value["cardNumber"],
+      "cvc": value["cvc"],
+      "expiryMonth": value["expiryMonth"],
+      "expiryYear": value["expiryYear"]
     };
   }
 
@@ -1050,9 +1089,9 @@ var __unused = (() => {
       await this.delete2Raw(requestParameters, initOverrides);
     }
     /**
-     * Creates request options for list2 without sending the request
+     * Creates request options for list3 without sending the request
      */
-    async list2RequestOpts() {
+    async list3RequestOpts() {
       const queryParameters = {};
       const headerParameters = {};
       if (this.configuration && this.configuration.accessToken) {
@@ -1072,15 +1111,15 @@ var __unused = (() => {
     }
     /**
      */
-    async list2Raw(initOverrides) {
-      const requestOptions = await this.list2RequestOpts();
+    async list3Raw(initOverrides) {
+      const requestOptions = await this.list3RequestOpts();
       const response = await this.request(requestOptions, initOverrides);
       return new JSONApiResponse(response, (jsonValue) => jsonValue.map(AddressResponseFromJSON));
     }
     /**
      */
-    async list2(initOverrides) {
-      const response = await this.list2Raw(initOverrides);
+    async list3(initOverrides) {
+      const response = await this.list3Raw(initOverrides);
       return await response.value();
     }
     /**
@@ -1610,9 +1649,9 @@ var __unused = (() => {
       await this.delete1Raw(requestParameters, initOverrides);
     }
     /**
-     * Creates request options for list1 without sending the request
+     * Creates request options for list2 without sending the request
      */
-    async list1RequestOpts() {
+    async list2RequestOpts() {
       const queryParameters = {};
       const headerParameters = {};
       if (this.configuration && this.configuration.accessToken) {
@@ -1632,15 +1671,15 @@ var __unused = (() => {
     }
     /**
      */
-    async list1Raw(initOverrides) {
-      const requestOptions = await this.list1RequestOpts();
+    async list2Raw(initOverrides) {
+      const requestOptions = await this.list2RequestOpts();
       const response = await this.request(requestOptions, initOverrides);
       return new JSONApiResponse(response, (jsonValue) => jsonValue.map(CategoryResponseFromJSON));
     }
     /**
      */
-    async list1(initOverrides) {
-      const response = await this.list1Raw(initOverrides);
+    async list2(initOverrides) {
+      const response = await this.list2Raw(initOverrides);
       return await response.value();
     }
     /**
@@ -2084,9 +2123,9 @@ var __unused = (() => {
       return await response.value();
     }
     /**
-     * Creates request options for list4 without sending the request
+     * Creates request options for list5 without sending the request
      */
-    async list4RequestOpts(requestParameters) {
+    async list5RequestOpts(requestParameters) {
       const queryParameters = {};
       if (requestParameters["page"] != null) {
         queryParameters["page"] = requestParameters["page"];
@@ -2117,8 +2156,8 @@ var __unused = (() => {
      * Returns the authenticated user\'s orders (newest first).
      * List my orders
      */
-    async list4Raw(requestParameters, initOverrides) {
-      const requestOptions = await this.list4RequestOpts(requestParameters);
+    async list5Raw(requestParameters, initOverrides) {
+      const requestOptions = await this.list5RequestOpts(requestParameters);
       const response = await this.request(requestOptions, initOverrides);
       return new JSONApiResponse(response, (jsonValue) => PageResponseFromJSON(jsonValue));
     }
@@ -2126,8 +2165,8 @@ var __unused = (() => {
      * Returns the authenticated user\'s orders (newest first).
      * List my orders
      */
-    async list4(requestParameters = {}, initOverrides) {
-      const response = await this.list4Raw(requestParameters, initOverrides);
+    async list5(requestParameters = {}, initOverrides) {
+      const response = await this.list5Raw(requestParameters, initOverrides);
       return await response.value();
     }
     /**
@@ -2401,6 +2440,56 @@ var __unused = (() => {
       await this.delete3Raw(requestParameters, initOverrides);
     }
     /**
+     * Creates request options for list1 without sending the request
+     */
+    async list1RequestOpts(requestParameters) {
+      if (requestParameters["productId"] == null) {
+        throw new RequiredError(
+          "productId",
+          'Required parameter "productId" was null or undefined when calling list1().'
+        );
+      }
+      const queryParameters = {};
+      if (requestParameters["page"] != null) {
+        queryParameters["page"] = requestParameters["page"];
+      }
+      if (requestParameters["size"] != null) {
+        queryParameters["size"] = requestParameters["size"];
+      }
+      if (requestParameters["sort"] != null) {
+        queryParameters["sort"] = requestParameters["sort"];
+      }
+      const headerParameters = {};
+      if (this.configuration && this.configuration.accessToken) {
+        const token = this.configuration.accessToken;
+        const tokenString = await token("bearerAuth", []);
+        if (tokenString) {
+          headerParameters["Authorization"] = `Bearer ${tokenString}`;
+        }
+      }
+      let urlPath = `/api/v1/products/{productId}/images`;
+      urlPath = urlPath.replace(`{${"productId"}}`, encodeURIComponent(String(requestParameters["productId"])));
+      return {
+        path: urlPath,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters
+      };
+    }
+    /**
+     */
+    async list1Raw(requestParameters, initOverrides) {
+      const requestOptions = await this.list1RequestOpts(requestParameters);
+      const response = await this.request(requestOptions, initOverrides);
+      return new JSONApiResponse(response, (jsonValue) => PageResponseFromJSON(jsonValue));
+    }
+    /**
+     */
+    async list1(requestParameters, initOverrides) {
+      const response = await this.list1Raw(requestParameters, initOverrides);
+      return await response.value();
+    }
+    /**
      * Creates request options for reorder without sending the request
      */
     async reorderRequestOpts(requestParameters) {
@@ -2447,6 +2536,74 @@ var __unused = (() => {
      */
     async reorder(requestParameters, initOverrides) {
       const response = await this.reorderRaw(requestParameters, initOverrides);
+      return await response.value();
+    }
+    /**
+     * Creates request options for upload without sending the request
+     */
+    async uploadRequestOpts(requestParameters) {
+      if (requestParameters["productId"] == null) {
+        throw new RequiredError(
+          "productId",
+          'Required parameter "productId" was null or undefined when calling upload().'
+        );
+      }
+      if (requestParameters["files"] == null) {
+        throw new RequiredError(
+          "files",
+          'Required parameter "files" was null or undefined when calling upload().'
+        );
+      }
+      const queryParameters = {};
+      if (requestParameters["altText"] != null) {
+        queryParameters["altText"] = requestParameters["altText"];
+      }
+      const headerParameters = {};
+      if (this.configuration && this.configuration.accessToken) {
+        const token = this.configuration.accessToken;
+        const tokenString = await token("bearerAuth", []);
+        if (tokenString) {
+          headerParameters["Authorization"] = `Bearer ${tokenString}`;
+        }
+      }
+      const consumes = [
+        { contentType: "multipart/form-data" }
+      ];
+      const canConsumeForm2 = canConsumeForm(consumes);
+      let formParams;
+      let useForm = false;
+      useForm = canConsumeForm2;
+      if (useForm) {
+        formParams = new FormData();
+      } else {
+        formParams = new URLSearchParams();
+      }
+      if (requestParameters["files"] != null) {
+        requestParameters["files"].forEach((element) => {
+          formParams.append("files", element);
+        });
+      }
+      let urlPath = `/api/v1/products/{productId}/images/upload`;
+      urlPath = urlPath.replace(`{${"productId"}}`, encodeURIComponent(String(requestParameters["productId"])));
+      return {
+        path: urlPath,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: formParams
+      };
+    }
+    /**
+     */
+    async uploadRaw(requestParameters, initOverrides) {
+      const requestOptions = await this.uploadRequestOpts(requestParameters);
+      const response = await this.request(requestOptions, initOverrides);
+      return new JSONApiResponse(response, (jsonValue) => ProductResponseFromJSON(jsonValue));
+    }
+    /**
+     */
+    async upload(requestParameters, initOverrides) {
+      const response = await this.uploadRaw(requestParameters, initOverrides);
       return await response.value();
     }
   };
@@ -2679,6 +2836,47 @@ var __unused = (() => {
   // clients/ts-public/src/apis/ProfileApi.ts
   var ProfileApi = class extends BaseAPI {
     /**
+     * Creates request options for changePassword without sending the request
+     */
+    async changePasswordRequestOpts(requestParameters) {
+      if (requestParameters["changePasswordRequest"] == null) {
+        throw new RequiredError(
+          "changePasswordRequest",
+          'Required parameter "changePasswordRequest" was null or undefined when calling changePassword().'
+        );
+      }
+      const queryParameters = {};
+      const headerParameters = {};
+      headerParameters["Content-Type"] = "application/json";
+      if (this.configuration && this.configuration.accessToken) {
+        const token = this.configuration.accessToken;
+        const tokenString = await token("bearerAuth", []);
+        if (tokenString) {
+          headerParameters["Authorization"] = `Bearer ${tokenString}`;
+        }
+      }
+      let urlPath = `/api/v1/me/password`;
+      return {
+        path: urlPath,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: ChangePasswordRequestToJSON(requestParameters["changePasswordRequest"])
+      };
+    }
+    /**
+     */
+    async changePasswordRaw(requestParameters, initOverrides) {
+      const requestOptions = await this.changePasswordRequestOpts(requestParameters);
+      const response = await this.request(requestOptions, initOverrides);
+      return new VoidApiResponse(response);
+    }
+    /**
+     */
+    async changePassword(requestParameters, initOverrides) {
+      await this.changePasswordRaw(requestParameters, initOverrides);
+    }
+    /**
      * Creates request options for me without sending the request
      */
     async meRequestOpts() {
@@ -2704,11 +2902,7 @@ var __unused = (() => {
     async meRaw(initOverrides) {
       const requestOptions = await this.meRequestOpts();
       const response = await this.request(requestOptions, initOverrides);
-      if (this.isJsonMime(response.headers.get("content-type"))) {
-        return new JSONApiResponse(response);
-      } else {
-        return new TextApiResponse(response);
-      }
+      return new JSONApiResponse(response, (jsonValue) => MeResponseFromJSON(jsonValue));
     }
     /**
      */
@@ -2721,9 +2915,9 @@ var __unused = (() => {
   // clients/ts-public/src/apis/SessionsApi.ts
   var SessionsApi = class extends BaseAPI {
     /**
-     * Creates request options for list3 without sending the request
+     * Creates request options for list4 without sending the request
      */
-    async list3RequestOpts() {
+    async list4RequestOpts() {
       const queryParameters = {};
       const headerParameters = {};
       if (this.configuration && this.configuration.accessToken) {
@@ -2743,15 +2937,15 @@ var __unused = (() => {
     }
     /**
      */
-    async list3Raw(initOverrides) {
-      const requestOptions = await this.list3RequestOpts();
+    async list4Raw(initOverrides) {
+      const requestOptions = await this.list4RequestOpts();
       const response = await this.request(requestOptions, initOverrides);
       return new JSONApiResponse(response, (jsonValue) => jsonValue.map(SessionDtoFromJSON));
     }
     /**
      */
-    async list3(initOverrides) {
-      const response = await this.list3Raw(initOverrides);
+    async list4(initOverrides) {
+      const response = await this.list4Raw(initOverrides);
       return await response.value();
     }
     /**
