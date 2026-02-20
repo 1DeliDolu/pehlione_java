@@ -1,29 +1,30 @@
-# OrdersApi
+# DeptInfoControllerApi
 
 All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**get2**](OrdersApi.md#get2) | **GET** /api/v1/orders/{orderId} | Get my order details |
-| [**list5**](OrdersApi.md#list5) | **GET** /api/v1/orders | List my orders |
-| [**refund**](OrdersApi.md#refundoperation) | **POST** /api/v1/orders/{orderId}/refund |  |
+| [**listDepartments**](DeptInfoControllerApi.md#listdepartments) | **GET** /api/v1/dept/list |  |
+| [**myDepartments**](DeptInfoControllerApi.md#mydepartments) | **GET** /api/v1/dept/me |  |
+| [**myTier**](DeptInfoControllerApi.md#mytier) | **GET** /api/v1/tier/me |  |
+| [**tierBenefits**](DeptInfoControllerApi.md#tierbenefits) | **GET** /api/v1/tier/benefits |  |
 
 
 
-## get2
+## listDepartments
 
-> OrderDetailResponse get2(orderId)
+> Array&lt;{ [key: string]: string; }&gt; listDepartments()
 
-Get my order details
+
 
 ### Example
 
 ```ts
 import {
   Configuration,
-  OrdersApi,
+  DeptInfoControllerApi,
 } from '@pehlione/api-public';
-import type { Get2Request } from '@pehlione/api-public';
+import type { ListDepartmentsRequest } from '@pehlione/api-public';
 
 async function example() {
   console.log("🚀 Testing @pehlione/api-public SDK...");
@@ -31,15 +32,10 @@ async function example() {
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
-  const api = new OrdersApi(config);
-
-  const body = {
-    // string | Order public id
-    orderId: 6b7a2f42-0b0a-4d88-9129-6de8da1a6f10,
-  } satisfies Get2Request;
+  const api = new DeptInfoControllerApi(config);
 
   try {
-    const data = await api.get2(body);
+    const data = await api.listDepartments();
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -52,14 +48,11 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **orderId** | `string` | Order public id | [Defaults to `undefined`] |
+This endpoint does not need any parameter.
 
 ### Return type
 
-[**OrderDetailResponse**](OrderDetailResponse.md)
+**Array<{ [key: string]: string; }>**
 
 ### Authorization
 
@@ -74,11 +67,10 @@ example().catch(console.error);
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | Order detail |  -  |
+| **200** | OK |  -  |
 | **400** | Bad Request / Validation |  -  |
 | **401** | Unauthorized |  -  |
 | **403** | Forbidden |  -  |
-| **404** | Order not found |  -  |
 | **409** | Conflict |  -  |
 | **429** | Too Many Requests |  -  |
 | **500** | Internal Server Error |  -  |
@@ -86,22 +78,20 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## list5
+## myDepartments
 
-> PageResponse list5(page, size, sort)
+> { [key: string]: any; } myDepartments()
 
-List my orders
 
-Returns the authenticated user\&#39;s orders (newest first).
 
 ### Example
 
 ```ts
 import {
   Configuration,
-  OrdersApi,
+  DeptInfoControllerApi,
 } from '@pehlione/api-public';
-import type { List5Request } from '@pehlione/api-public';
+import type { MyDepartmentsRequest } from '@pehlione/api-public';
 
 async function example() {
   console.log("🚀 Testing @pehlione/api-public SDK...");
@@ -109,19 +99,10 @@ async function example() {
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
-  const api = new OrdersApi(config);
-
-  const body = {
-    // number | Zero-based page index (0..N) (optional)
-    page: 56,
-    // number | The size of the page to be returned (optional)
-    size: 56,
-    // Array<string> | Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. (optional)
-    sort: ...,
-  } satisfies List5Request;
+  const api = new DeptInfoControllerApi(config);
 
   try {
-    const data = await api.list5(body);
+    const data = await api.myDepartments();
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -134,16 +115,11 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **page** | `number` | Zero-based page index (0..N) | [Optional] [Defaults to `0`] |
-| **size** | `number` | The size of the page to be returned | [Optional] [Defaults to `20`] |
-| **sort** | `Array<string>` | Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. | [Optional] |
+This endpoint does not need any parameter.
 
 ### Return type
 
-[**PageResponse**](PageResponse.md)
+**{ [key: string]: any; }**
 
 ### Authorization
 
@@ -158,7 +134,7 @@ example().catch(console.error);
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | Paged order list |  -  |
+| **200** | OK |  -  |
 | **400** | Bad Request / Validation |  -  |
 | **401** | Unauthorized |  -  |
 | **403** | Forbidden |  -  |
@@ -169,9 +145,9 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## refund
+## myTier
 
-> RefundResponse refund(orderId, refundRequest)
+> { [key: string]: any; } myTier()
 
 
 
@@ -180,9 +156,9 @@ example().catch(console.error);
 ```ts
 import {
   Configuration,
-  OrdersApi,
+  DeptInfoControllerApi,
 } from '@pehlione/api-public';
-import type { RefundOperationRequest } from '@pehlione/api-public';
+import type { MyTierRequest } from '@pehlione/api-public';
 
 async function example() {
   console.log("🚀 Testing @pehlione/api-public SDK...");
@@ -190,17 +166,10 @@ async function example() {
     // Configure HTTP bearer authorization: bearerAuth
     accessToken: "YOUR BEARER TOKEN",
   });
-  const api = new OrdersApi(config);
-
-  const body = {
-    // string
-    orderId: orderId_example,
-    // RefundRequest (optional)
-    refundRequest: ...,
-  } satisfies RefundOperationRequest;
+  const api = new DeptInfoControllerApi(config);
 
   try {
-    const data = await api.refund(body);
+    const data = await api.myTier();
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -213,15 +182,11 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **orderId** | `string` |  | [Defaults to `undefined`] |
-| **refundRequest** | [RefundRequest](RefundRequest.md) |  | [Optional] |
+This endpoint does not need any parameter.
 
 ### Return type
 
-[**RefundResponse**](RefundResponse.md)
+**{ [key: string]: any; }**
 
 ### Authorization
 
@@ -229,7 +194,74 @@ example().catch(console.error);
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`
+- **Content-Type**: Not defined
+- **Accept**: `*/*`, `application/problem+json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **400** | Bad Request / Validation |  -  |
+| **401** | Unauthorized |  -  |
+| **403** | Forbidden |  -  |
+| **409** | Conflict |  -  |
+| **429** | Too Many Requests |  -  |
+| **500** | Internal Server Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## tierBenefits
+
+> Array&lt;{ [key: string]: any; }&gt; tierBenefits()
+
+
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DeptInfoControllerApi,
+} from '@pehlione/api-public';
+import type { TierBenefitsRequest } from '@pehlione/api-public';
+
+async function example() {
+  console.log("🚀 Testing @pehlione/api-public SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: bearerAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DeptInfoControllerApi(config);
+
+  try {
+    const data = await api.tierBenefits();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+**Array<{ [key: string]: any; }>**
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `*/*`, `application/problem+json`
 
 

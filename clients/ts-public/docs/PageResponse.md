@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`items` | [Array&lt;OrderSummaryResponse&gt;](OrderSummaryResponse.md)
+`items` | [Array&lt;ImagePageItem&gt;](ImagePageItem.md)
 `page` | [PageMeta](PageMeta.md)
 
 ## Example

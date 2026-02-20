@@ -6,7 +6,7 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 | [**create2**](AddressesApi.md#create2) | **POST** /api/v1/addresses |  |
 | [**delete2**](AddressesApi.md#delete2) | **DELETE** /api/v1/addresses/{id} |  |
-| [**list2**](AddressesApi.md#list2) | **GET** /api/v1/addresses |  |
+| [**list3**](AddressesApi.md#list3) | **GET** /api/v1/addresses |  |
 | [**setDefault**](AddressesApi.md#setdefault) | **POST** /api/v1/addresses/{id}/default |  |
 | [**update2**](AddressesApi.md#update2) | **PUT** /api/v1/addresses/{id} |  |
 
@@ -162,9 +162,9 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## list2
+## list3
 
-> Array&lt;AddressResponse&gt; list2()
+> Array&lt;AddressResponse&gt; list3()
 
 
 
@@ -175,7 +175,7 @@ import {
   Configuration,
   AddressesApi,
 } from '@pehlione/api-public';
-import type { List2Request } from '@pehlione/api-public';
+import type { List3Request } from '@pehlione/api-public';
 
 async function example() {
   console.log("🚀 Testing @pehlione/api-public SDK...");
@@ -186,7 +186,7 @@ async function example() {
   const api = new AddressesApi(config);
 
   try {
-    const data = await api.list2();
+    const data = await api.list3();
     console.log(data);
   } catch (error) {
     console.error(error);

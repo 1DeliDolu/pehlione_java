@@ -38,7 +38,7 @@ export interface Get2Request {
     orderId: string;
 }
 
-export interface List4Request {
+export interface List5Request {
     page?: number;
     size?: number;
     sort?: Array<string>;
@@ -108,9 +108,9 @@ export class OrdersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for list4 without sending the request
+     * Creates request options for list5 without sending the request
      */
-    async list4RequestOpts(requestParameters: List4Request): Promise<runtime.RequestOpts> {
+    async list5RequestOpts(requestParameters: List5Request): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         if (requestParameters['page'] != null) {
@@ -150,8 +150,8 @@ export class OrdersApi extends runtime.BaseAPI {
      * Returns the authenticated user\'s orders (newest first).
      * List my orders
      */
-    async list4Raw(requestParameters: List4Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PageResponse>> {
-        const requestOptions = await this.list4RequestOpts(requestParameters);
+    async list5Raw(requestParameters: List5Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PageResponse>> {
+        const requestOptions = await this.list5RequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => PageResponseFromJSON(jsonValue));
@@ -161,8 +161,8 @@ export class OrdersApi extends runtime.BaseAPI {
      * Returns the authenticated user\'s orders (newest first).
      * List my orders
      */
-    async list4(requestParameters: List4Request = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PageResponse> {
-        const response = await this.list4Raw(requestParameters, initOverrides);
+    async list5(requestParameters: List5Request = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PageResponse> {
+        const response = await this.list5Raw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -1,30 +1,26 @@
 
-# OrderSummaryResponse
+# ChangePasswordRequest
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`createdAt` | Date
-`currency` | string
-`orderId` | string
-`status` | string
-`totalAmount` | number
+`confirmNewPassword` | string
+`currentPassword` | string
+`newPassword` | string
 
 ## Example
 
 ```typescript
-import type { OrderSummaryResponse } from '@pehlione/api-public'
+import type { ChangePasswordRequest } from '@pehlione/api-public'
 
 // TODO: Update the object below with actual values
 const example = {
-  "createdAt": null,
-  "currency": null,
-  "orderId": null,
-  "status": null,
-  "totalAmount": null,
-} satisfies OrderSummaryResponse
+  "confirmNewPassword": null,
+  "currentPassword": null,
+  "newPassword": null,
+} satisfies ChangePasswordRequest
 
 console.log(example)
 
@@ -33,7 +29,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as OrderSummaryResponse
+const exampleParsed = JSON.parse(exampleJSON) as ChangePasswordRequest
 console.log(exampleParsed)
 ```
 

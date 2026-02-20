@@ -1,32 +1,32 @@
 
-# PayRequest
+# ImagePageItem
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`addressId` | number
-`cardHolderName` | string
-`cardNumber` | string
-`cvc` | string
-`expiryMonth` | number
-`expiryYear` | number
+`altText` | string
+`createdAt` | Date
+`id` | number
+`primary` | boolean
+`sortOrder` | number
+`url` | string
 
 ## Example
 
 ```typescript
-import type { PayRequest } from '@pehlione/api-public'
+import type { ImagePageItem } from '@pehlione/api-public'
 
 // TODO: Update the object below with actual values
 const example = {
-  "addressId": 1,
-  "cardHolderName": Max Mustermann,
-  "cardNumber": 4242,
-  "cvc": 123,
-  "expiryMonth": 12,
-  "expiryYear": 2030,
-} satisfies PayRequest
+  "altText": null,
+  "createdAt": null,
+  "id": null,
+  "primary": null,
+  "sortOrder": null,
+  "url": null,
+} satisfies ImagePageItem
 
 console.log(example)
 
@@ -35,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as PayRequest
+const exampleParsed = JSON.parse(exampleJSON) as ImagePageItem
 console.log(exampleParsed)
 ```
 

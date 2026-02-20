@@ -6,7 +6,7 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 | [**create1**](CategoriesApi.md#create1) | **POST** /api/v1/categories |  |
 | [**delete1**](CategoriesApi.md#delete1) | **DELETE** /api/v1/categories/{id} |  |
-| [**list1**](CategoriesApi.md#list1) | **GET** /api/v1/categories |  |
+| [**list2**](CategoriesApi.md#list2) | **GET** /api/v1/categories |  |
 | [**update1**](CategoriesApi.md#update1) | **PUT** /api/v1/categories/{id} |  |
 
 
@@ -161,9 +161,9 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## list1
+## list2
 
-> Array&lt;CategoryResponse&gt; list1()
+> Array&lt;CategoryResponse&gt; list2()
 
 
 
@@ -174,7 +174,7 @@ import {
   Configuration,
   CategoriesApi,
 } from '@pehlione/api-public';
-import type { List1Request } from '@pehlione/api-public';
+import type { List2Request } from '@pehlione/api-public';
 
 async function example() {
   console.log("🚀 Testing @pehlione/api-public SDK...");
@@ -185,7 +185,7 @@ async function example() {
   const api = new CategoriesApi(config);
 
   try {
-    const data = await api.list1();
+    const data = await api.list2();
     console.log(data);
   } catch (error) {
     console.error(error);

@@ -16,16 +16,78 @@
 import * as runtime from '../runtime';
 import type {
   ApiProblem,
+  ChangePasswordRequest,
+  MeResponse,
 } from '../models/index';
 import {
     ApiProblemFromJSON,
     ApiProblemToJSON,
+    ChangePasswordRequestFromJSON,
+    ChangePasswordRequestToJSON,
+    MeResponseFromJSON,
+    MeResponseToJSON,
 } from '../models/index';
+
+export interface ChangePasswordOperationRequest {
+    changePasswordRequest: ChangePasswordRequest;
+}
 
 /**
  * 
  */
 export class ProfileApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for changePassword without sending the request
+     */
+    async changePasswordRequestOpts(requestParameters: ChangePasswordOperationRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['changePasswordRequest'] == null) {
+            throw new runtime.RequiredError(
+                'changePasswordRequest',
+                'Required parameter "changePasswordRequest" was null or undefined when calling changePassword().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/me/password`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ChangePasswordRequestToJSON(requestParameters['changePasswordRequest']),
+        };
+    }
+
+    /**
+     */
+    async changePasswordRaw(requestParameters: ChangePasswordOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.changePasswordRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async changePassword(requestParameters: ChangePasswordOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.changePasswordRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Creates request options for me without sending the request
@@ -56,20 +118,16 @@ export class ProfileApi extends runtime.BaseAPI {
 
     /**
      */
-    async meRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+    async meRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MeResponse>> {
         const requestOptions = await this.meRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => MeResponseFromJSON(jsonValue));
     }
 
     /**
      */
-    async me(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+    async me(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MeResponse> {
         const response = await this.meRaw(initOverrides);
         return await response.value();
     }

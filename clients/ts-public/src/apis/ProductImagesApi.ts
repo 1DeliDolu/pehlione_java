@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AddImageRequest,
   ApiProblem,
+  PageResponse,
   ProductResponse,
   ReorderRequest,
 } from '../models/index';
@@ -25,6 +26,8 @@ import {
     AddImageRequestToJSON,
     ApiProblemFromJSON,
     ApiProblemToJSON,
+    PageResponseFromJSON,
+    PageResponseToJSON,
     ProductResponseFromJSON,
     ProductResponseToJSON,
     ReorderRequestFromJSON,
@@ -41,9 +44,22 @@ export interface Delete3Request {
     imageId: number;
 }
 
+export interface List1Request {
+    productId: number;
+    page?: number;
+    size?: number;
+    sort?: Array<string>;
+}
+
 export interface ReorderOperationRequest {
     productId: number;
     reorderRequest: ReorderRequest;
+}
+
+export interface UploadRequest {
+    productId: number;
+    files: Array<Blob>;
+    altText?: string;
 }
 
 /**
@@ -171,6 +187,69 @@ export class ProductImagesApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for list1 without sending the request
+     */
+    async list1RequestOpts(requestParameters: List1Request): Promise<runtime.RequestOpts> {
+        if (requestParameters['productId'] == null) {
+            throw new runtime.RequiredError(
+                'productId',
+                'Required parameter "productId" was null or undefined when calling list1().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/api/v1/products/{productId}/images`;
+        urlPath = urlPath.replace(`{${"productId"}}`, encodeURIComponent(String(requestParameters['productId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     */
+    async list1Raw(requestParameters: List1Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PageResponse>> {
+        const requestOptions = await this.list1RequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async list1(requestParameters: List1Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PageResponse> {
+        const response = await this.list1Raw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for reorder without sending the request
      */
     async reorderRequestOpts(requestParameters: ReorderOperationRequest): Promise<runtime.RequestOpts> {
@@ -228,6 +307,91 @@ export class ProductImagesApi extends runtime.BaseAPI {
      */
     async reorder(requestParameters: ReorderOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProductResponse> {
         const response = await this.reorderRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for upload without sending the request
+     */
+    async uploadRequestOpts(requestParameters: UploadRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['productId'] == null) {
+            throw new runtime.RequiredError(
+                'productId',
+                'Required parameter "productId" was null or undefined when calling upload().'
+            );
+        }
+
+        if (requestParameters['files'] == null) {
+            throw new runtime.RequiredError(
+                'files',
+                'Required parameter "files" was null or undefined when calling upload().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['altText'] != null) {
+            queryParameters['altText'] = requestParameters['altText'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearerAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['files'] != null) {
+            requestParameters['files'].forEach((element) => {
+                formParams.append('files', element as any);
+            })
+        }
+
+
+        let urlPath = `/api/v1/products/{productId}/images/upload`;
+        urlPath = urlPath.replace(`{${"productId"}}`, encodeURIComponent(String(requestParameters['productId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        };
+    }
+
+    /**
+     */
+    async uploadRaw(requestParameters: UploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProductResponse>> {
+        const requestOptions = await this.uploadRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProductResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async upload(requestParameters: UploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProductResponse> {
+        const response = await this.uploadRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

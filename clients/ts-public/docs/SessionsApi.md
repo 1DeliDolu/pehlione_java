@@ -4,16 +4,16 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**list3**](SessionsApi.md#list3) | **GET** /api/v1/sessions |  |
+| [**list4**](SessionsApi.md#list4) | **GET** /api/v1/sessions |  |
 | [**rename**](SessionsApi.md#renameoperation) | **PATCH** /api/v1/sessions/{sessionId} |  |
 | [**revokeAll**](SessionsApi.md#revokeall) | **POST** /api/v1/sessions/revoke-all |  |
 | [**revokeOne**](SessionsApi.md#revokeone) | **POST** /api/v1/sessions/{sessionId}/revoke |  |
 
 
 
-## list3
+## list4
 
-> Array&lt;SessionDto&gt; list3()
+> Array&lt;SessionDto&gt; list4()
 
 
 
@@ -24,7 +24,7 @@ import {
   Configuration,
   SessionsApi,
 } from '@pehlione/api-public';
-import type { List3Request } from '@pehlione/api-public';
+import type { List4Request } from '@pehlione/api-public';
 
 async function example() {
   console.log("🚀 Testing @pehlione/api-public SDK...");
@@ -35,7 +35,7 @@ async function example() {
   const api = new SessionsApi(config);
 
   try {
-    const data = await api.list3();
+    const data = await api.list4();
     console.log(data);
   } catch (error) {
     console.error(error);

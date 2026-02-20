@@ -157,9 +157,9 @@ export class AddressesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for list2 without sending the request
+     * Creates request options for list3 without sending the request
      */
-    async list2RequestOpts(): Promise<runtime.RequestOpts> {
+    async list3RequestOpts(): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -185,8 +185,8 @@ export class AddressesApi extends runtime.BaseAPI {
 
     /**
      */
-    async list2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<AddressResponse>>> {
-        const requestOptions = await this.list2RequestOpts();
+    async list3Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<AddressResponse>>> {
+        const requestOptions = await this.list3RequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(AddressResponseFromJSON));
@@ -194,8 +194,8 @@ export class AddressesApi extends runtime.BaseAPI {
 
     /**
      */
-    async list2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<AddressResponse>> {
-        const response = await this.list2Raw(initOverrides);
+    async list3(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<AddressResponse>> {
+        const response = await this.list3Raw(initOverrides);
         return await response.value();
     }
 

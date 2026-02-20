@@ -43,9 +43,9 @@ export interface RevokeOneRequest {
 export class SessionsApi extends runtime.BaseAPI {
 
     /**
-     * Creates request options for list3 without sending the request
+     * Creates request options for list4 without sending the request
      */
-    async list3RequestOpts(): Promise<runtime.RequestOpts> {
+    async list4RequestOpts(): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -71,8 +71,8 @@ export class SessionsApi extends runtime.BaseAPI {
 
     /**
      */
-    async list3Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SessionDto>>> {
-        const requestOptions = await this.list3RequestOpts();
+    async list4Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SessionDto>>> {
+        const requestOptions = await this.list4RequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(SessionDtoFromJSON));
@@ -80,8 +80,8 @@ export class SessionsApi extends runtime.BaseAPI {
 
     /**
      */
-    async list3(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SessionDto>> {
-        const response = await this.list3Raw(initOverrides);
+    async list4(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SessionDto>> {
+        const response = await this.list4Raw(initOverrides);
         return await response.value();
     }
 

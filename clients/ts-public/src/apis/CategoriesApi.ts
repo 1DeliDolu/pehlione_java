@@ -153,9 +153,9 @@ export class CategoriesApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for list1 without sending the request
+     * Creates request options for list2 without sending the request
      */
-    async list1RequestOpts(): Promise<runtime.RequestOpts> {
+    async list2RequestOpts(): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -181,8 +181,8 @@ export class CategoriesApi extends runtime.BaseAPI {
 
     /**
      */
-    async list1Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<CategoryResponse>>> {
-        const requestOptions = await this.list1RequestOpts();
+    async list2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<CategoryResponse>>> {
+        const requestOptions = await this.list2RequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(CategoryResponseFromJSON));
@@ -190,8 +190,8 @@ export class CategoriesApi extends runtime.BaseAPI {
 
     /**
      */
-    async list1(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<CategoryResponse>> {
-        const response = await this.list1Raw(initOverrides);
+    async list2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<CategoryResponse>> {
+        const response = await this.list2Raw(initOverrides);
         return await response.value();
     }
 

@@ -25,6 +25,36 @@ export interface PayRequest {
      * @memberof PayRequest
      */
     addressId: number;
+    /**
+     * Card holder full name
+     * @type {string}
+     * @memberof PayRequest
+     */
+    cardHolderName?: string;
+    /**
+     * Card number digits (can include spaces/hyphens)
+     * @type {string}
+     * @memberof PayRequest
+     */
+    cardNumber?: string;
+    /**
+     * Card security code
+     * @type {string}
+     * @memberof PayRequest
+     */
+    cvc?: string;
+    /**
+     * Card expiration month (1-12)
+     * @type {number}
+     * @memberof PayRequest
+     */
+    expiryMonth?: number;
+    /**
+     * Card expiration year (YYYY)
+     * @type {number}
+     * @memberof PayRequest
+     */
+    expiryYear?: number;
 }
 
 /**
@@ -46,6 +76,11 @@ export function PayRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     return {
         
         'addressId': json['addressId'],
+        'cardHolderName': json['cardHolderName'] == null ? undefined : json['cardHolderName'],
+        'cardNumber': json['cardNumber'] == null ? undefined : json['cardNumber'],
+        'cvc': json['cvc'] == null ? undefined : json['cvc'],
+        'expiryMonth': json['expiryMonth'] == null ? undefined : json['expiryMonth'],
+        'expiryYear': json['expiryYear'] == null ? undefined : json['expiryYear'],
     };
 }
 
@@ -61,6 +96,11 @@ export function PayRequestToJSONTyped(value?: PayRequest | null, ignoreDiscrimin
     return {
         
         'addressId': value['addressId'],
+        'cardHolderName': value['cardHolderName'],
+        'cardNumber': value['cardNumber'],
+        'cvc': value['cvc'],
+        'expiryMonth': value['expiryMonth'],
+        'expiryYear': value['expiryYear'],
     };
 }
 

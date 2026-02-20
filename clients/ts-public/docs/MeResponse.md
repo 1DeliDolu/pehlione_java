@@ -1,32 +1,32 @@
 
-# PayRequest
+# MeResponse
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`addressId` | number
-`cardHolderName` | string
-`cardNumber` | string
-`cvc` | string
-`expiryMonth` | number
-`expiryYear` | number
+`createdAt` | Date
+`email` | string
+`enabled` | boolean
+`locked` | boolean
+`roles` | Array&lt;string&gt;
+`updatedAt` | Date
 
 ## Example
 
 ```typescript
-import type { PayRequest } from '@pehlione/api-public'
+import type { MeResponse } from '@pehlione/api-public'
 
 // TODO: Update the object below with actual values
 const example = {
-  "addressId": 1,
-  "cardHolderName": Max Mustermann,
-  "cardNumber": 4242,
-  "cvc": 123,
-  "expiryMonth": 12,
-  "expiryYear": 2030,
-} satisfies PayRequest
+  "createdAt": null,
+  "email": null,
+  "enabled": null,
+  "locked": null,
+  "roles": null,
+  "updatedAt": null,
+} satisfies MeResponse
 
 console.log(example)
 
@@ -35,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as PayRequest
+const exampleParsed = JSON.parse(exampleJSON) as MeResponse
 console.log(exampleParsed)
 ```
 

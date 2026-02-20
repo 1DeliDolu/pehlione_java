@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { OrderSummaryResponse } from './OrderSummaryResponse';
-import {
-    OrderSummaryResponseFromJSON,
-    OrderSummaryResponseFromJSONTyped,
-    OrderSummaryResponseToJSON,
-    OrderSummaryResponseToJSONTyped,
-} from './OrderSummaryResponse';
 import type { PageMeta } from './PageMeta';
 import {
     PageMetaFromJSON,
@@ -27,6 +20,13 @@ import {
     PageMetaToJSON,
     PageMetaToJSONTyped,
 } from './PageMeta';
+import type { ImagePageItem } from './ImagePageItem';
+import {
+    ImagePageItemFromJSON,
+    ImagePageItemFromJSONTyped,
+    ImagePageItemToJSON,
+    ImagePageItemToJSONTyped,
+} from './ImagePageItem';
 
 /**
  * 
@@ -36,10 +36,10 @@ import {
 export interface PageResponse {
     /**
      * Listed items
-     * @type {Array<OrderSummaryResponse>}
+     * @type {Array<ImagePageItem>}
      * @memberof PageResponse
      */
-    items?: Array<OrderSummaryResponse>;
+    items?: Array<ImagePageItem>;
     /**
      * Paging metadata
      * @type {PageMeta}
@@ -65,7 +65,7 @@ export function PageResponseFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'items': json['items'] == null ? undefined : ((json['items'] as Array<any>).map(OrderSummaryResponseFromJSON)),
+        'items': json['items'] == null ? undefined : ((json['items'] as Array<any>).map(ImagePageItemFromJSON)),
         'page': json['page'] == null ? undefined : PageMetaFromJSON(json['page']),
     };
 }
@@ -81,7 +81,7 @@ export function PageResponseToJSONTyped(value?: PageResponse | null, ignoreDiscr
 
     return {
         
-        'items': value['items'] == null ? undefined : ((value['items'] as Array<any>).map(OrderSummaryResponseToJSON)),
+        'items': value['items'] == null ? undefined : ((value['items'] as Array<any>).map(ImagePageItemToJSON)),
         'page': PageMetaToJSON(value['page']),
     };
 }

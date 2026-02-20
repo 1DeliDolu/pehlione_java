@@ -56,7 +56,7 @@ All URIs are relative to *http://localhost*
 | ----- | ------ | ------------ | -------------
 *AddressesApi* | [**create2**](docs/AddressesApi.md#create2) | **POST** /api/v1/addresses | 
 *AddressesApi* | [**delete2**](docs/AddressesApi.md#delete2) | **DELETE** /api/v1/addresses/{id} | 
-*AddressesApi* | [**list2**](docs/AddressesApi.md#list2) | **GET** /api/v1/addresses | 
+*AddressesApi* | [**list3**](docs/AddressesApi.md#list3) | **GET** /api/v1/addresses | 
 *AddressesApi* | [**setDefault**](docs/AddressesApi.md#setdefault) | **POST** /api/v1/addresses/{id}/default | 
 *AddressesApi* | [**update2**](docs/AddressesApi.md#update2) | **PUT** /api/v1/addresses/{id} | 
 *AuthApi* | [**login**](docs/AuthApi.md#loginoperation) | **POST** /api/v1/auth/login | 
@@ -70,13 +70,18 @@ All URIs are relative to *http://localhost*
 *CartApi* | [**upsert**](docs/CartApi.md#upsert) | **POST** /api/v1/cart/items | 
 *CategoriesApi* | [**create1**](docs/CategoriesApi.md#create1) | **POST** /api/v1/categories | 
 *CategoriesApi* | [**delete1**](docs/CategoriesApi.md#delete1) | **DELETE** /api/v1/categories/{id} | 
-*CategoriesApi* | [**list1**](docs/CategoriesApi.md#list1) | **GET** /api/v1/categories | 
+*CategoriesApi* | [**list2**](docs/CategoriesApi.md#list2) | **GET** /api/v1/categories | 
 *CategoriesApi* | [**update1**](docs/CategoriesApi.md#update1) | **PUT** /api/v1/categories/{id} | 
 *CheckoutApi* | [**cancel**](docs/CheckoutApi.md#cancel) | **POST** /api/v1/checkout/drafts/{draftId}/cancel | 
 *CheckoutApi* | [**getDraft**](docs/CheckoutApi.md#getdraft) | **GET** /api/v1/checkout/drafts/{draftId} | 
 *CheckoutApi* | [**pay**](docs/CheckoutApi.md#payoperation) | **POST** /api/v1/checkout/drafts/{draftId}/pay | Start payment for a draft
 *CheckoutApi* | [**reserve1**](docs/CheckoutApi.md#reserve1) | **POST** /api/v1/checkout/reserve | 
 *CheckoutApi* | [**submit**](docs/CheckoutApi.md#submit) | **POST** /api/v1/checkout/drafts/{draftId}/submit | 
+*DeptInfoControllerApi* | [**listDepartments**](docs/DeptInfoControllerApi.md#listdepartments) | **GET** /api/v1/dept/list | 
+*DeptInfoControllerApi* | [**myDepartments**](docs/DeptInfoControllerApi.md#mydepartments) | **GET** /api/v1/dept/me | 
+*DeptInfoControllerApi* | [**myTier**](docs/DeptInfoControllerApi.md#mytier) | **GET** /api/v1/tier/me | 
+*DeptInfoControllerApi* | [**tierBenefits**](docs/DeptInfoControllerApi.md#tierbenefits) | **GET** /api/v1/tier/benefits | 
+*FinanceDeptControllerApi* | [**dashboard5**](docs/FinanceDeptControllerApi.md#dashboard5) | **GET** /api/v1/dept/finance/dashboard | 
 *HomeControllerApi* | [**apiRoot**](docs/HomeControllerApi.md#apiroot) | **GET** /api/v1 | 
 *HomeControllerApi* | [**apiRoot1**](docs/HomeControllerApi.md#apiroot1) | **POST** /api/v1 | 
 *HomeControllerApi* | [**apiRoot2**](docs/HomeControllerApi.md#apiroot2) | **PUT** /api/v1 | 
@@ -85,28 +90,36 @@ All URIs are relative to *http://localhost*
 *HomeControllerApi* | [**apiRoot5**](docs/HomeControllerApi.md#apiroot5) | **HEAD** /api/v1 | 
 *HomeControllerApi* | [**apiRoot6**](docs/HomeControllerApi.md#apiroot6) | **OPTIONS** /api/v1 | 
 *HomeControllerApi* | [**status**](docs/HomeControllerApi.md#status) | **GET** /api/v1/status | 
+*HrDeptControllerApi* | [**dashboard4**](docs/HrDeptControllerApi.md#dashboard4) | **GET** /api/v1/dept/hr/dashboard | 
 *InventoryApi* | [**consume**](docs/InventoryApi.md#consume) | **POST** /api/v1/inventory/reservations/{reservationId}/consume | 
 *InventoryApi* | [**release**](docs/InventoryApi.md#release) | **POST** /api/v1/inventory/reservations/{reservationId}/release | 
 *InventoryApi* | [**reserve**](docs/InventoryApi.md#reserveoperation) | **POST** /api/v1/inventory/reserve | 
+*ItDeptControllerApi* | [**dashboard3**](docs/ItDeptControllerApi.md#dashboard3) | **GET** /api/v1/dept/it/dashboard | 
+*MarketingDeptControllerApi* | [**dashboard2**](docs/MarketingDeptControllerApi.md#dashboard2) | **GET** /api/v1/dept/marketing/dashboard | 
 *OrdersApi* | [**get2**](docs/OrdersApi.md#get2) | **GET** /api/v1/orders/{orderId} | Get my order details
-*OrdersApi* | [**list4**](docs/OrdersApi.md#list4) | **GET** /api/v1/orders | List my orders
+*OrdersApi* | [**list5**](docs/OrdersApi.md#list5) | **GET** /api/v1/orders | List my orders
 *OrdersApi* | [**refund**](docs/OrdersApi.md#refundoperation) | **POST** /api/v1/orders/{orderId}/refund | 
 *PaymentsApi* | [**confirmMock**](docs/PaymentsApi.md#confirmmock) | **POST** /api/v1/payments/{paymentId}/confirm-mock | 
 *PaymentsApi* | [**failMock**](docs/PaymentsApi.md#failmock) | **POST** /api/v1/payments/{paymentId}/fail-mock | 
 *PaymentsApi* | [**get1**](docs/PaymentsApi.md#get1) | **GET** /api/v1/payments/{paymentId} | 
+*ProcessDeptControllerApi* | [**dashboard1**](docs/ProcessDeptControllerApi.md#dashboard1) | **GET** /api/v1/dept/process/dashboard | 
 *ProductImagesApi* | [**add**](docs/ProductImagesApi.md#add) | **POST** /api/v1/products/{productId}/images | 
 *ProductImagesApi* | [**delete3**](docs/ProductImagesApi.md#delete3) | **DELETE** /api/v1/products/{productId}/images/{imageId} | 
+*ProductImagesApi* | [**list1**](docs/ProductImagesApi.md#list1) | **GET** /api/v1/products/{productId}/images | 
 *ProductImagesApi* | [**reorder**](docs/ProductImagesApi.md#reorderoperation) | **PUT** /api/v1/products/{productId}/images/reorder | 
+*ProductImagesApi* | [**upload**](docs/ProductImagesApi.md#upload) | **POST** /api/v1/products/{productId}/images/upload | 
 *ProductsApi* | [**_delete**](docs/ProductsApi.md#_delete) | **DELETE** /api/v1/products/{id} | 
 *ProductsApi* | [**create**](docs/ProductsApi.md#create) | **POST** /api/v1/products | 
 *ProductsApi* | [**get**](docs/ProductsApi.md#get) | **GET** /api/v1/products/{id} | 
 *ProductsApi* | [**list**](docs/ProductsApi.md#list) | **GET** /api/v1/products | 
 *ProductsApi* | [**update**](docs/ProductsApi.md#update) | **PUT** /api/v1/products/{id} | 
+*ProfileApi* | [**changePassword**](docs/ProfileApi.md#changepasswordoperation) | **POST** /api/v1/me/password | 
 *ProfileApi* | [**me**](docs/ProfileApi.md#me) | **GET** /api/v1/me | 
-*SessionsApi* | [**list3**](docs/SessionsApi.md#list3) | **GET** /api/v1/sessions | 
+*SessionsApi* | [**list4**](docs/SessionsApi.md#list4) | **GET** /api/v1/sessions | 
 *SessionsApi* | [**rename**](docs/SessionsApi.md#renameoperation) | **PATCH** /api/v1/sessions/{sessionId} | 
 *SessionsApi* | [**revokeAll**](docs/SessionsApi.md#revokeall) | **POST** /api/v1/sessions/revoke-all | 
 *SessionsApi* | [**revokeOne**](docs/SessionsApi.md#revokeone) | **POST** /api/v1/sessions/{sessionId}/revoke | 
+*SupportDeptControllerApi* | [**dashboard**](docs/SupportDeptControllerApi.md#dashboard) | **GET** /api/v1/dept/support/dashboard | 
 
 
 ### Models
@@ -121,6 +134,7 @@ All URIs are relative to *http://localhost*
 - [CartResponse](docs/CartResponse.md)
 - [CategoryRef](docs/CategoryRef.md)
 - [CategoryResponse](docs/CategoryResponse.md)
+- [ChangePasswordRequest](docs/ChangePasswordRequest.md)
 - [CreateAddressRequest](docs/CreateAddressRequest.md)
 - [CreateCategoryRequest](docs/CreateCategoryRequest.md)
 - [CreateProductRequest](docs/CreateProductRequest.md)
@@ -128,11 +142,12 @@ All URIs are relative to *http://localhost*
 - [DraftResponse](docs/DraftResponse.md)
 - [FailRequest](docs/FailRequest.md)
 - [ForgotRequest](docs/ForgotRequest.md)
+- [ImagePageItem](docs/ImagePageItem.md)
 - [ImageRef](docs/ImageRef.md)
 - [LoginRequest](docs/LoginRequest.md)
+- [MeResponse](docs/MeResponse.md)
 - [OrderDetailResponse](docs/OrderDetailResponse.md)
 - [OrderItemResponse](docs/OrderItemResponse.md)
-- [OrderSummaryResponse](docs/OrderSummaryResponse.md)
 - [PageMeta](docs/PageMeta.md)
 - [PageResponse](docs/PageResponse.md)
 - [PayRequest](docs/PayRequest.md)
