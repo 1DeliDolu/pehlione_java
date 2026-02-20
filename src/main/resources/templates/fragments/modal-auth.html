@@ -1,0 +1,80 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+  <body>
+    <!--/* ===== LOGIN MODAL ===== */-->
+    <div
+      th:fragment="login-modal"
+      class="modal fade"
+      id="loginModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-xl">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-shield-lock me-2"></i
+              ><span th:text="#{login.title}">Login</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              class="alert alert-info small mb-3"
+              th:text="#{login.token-hint}"
+            >
+              Access token from login response is stored in localStorage and
+              used as Bearer token for API calls.
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label">Email</label>
+              <input
+                id="loginEmail"
+                class="form-control"
+                placeholder="user@example.com"
+                autocomplete="username"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" th:text="#{login.password}"
+                >Password</label
+              >
+              <input
+                id="loginPassword"
+                type="password"
+                class="form-control"
+                placeholder="********"
+                autocomplete="current-password"
+              />
+            </div>
+
+            <div class="d-grid">
+              <button id="loginSubmitBtn" class="btn btn-dark" type="button">
+                <i class="bi bi-box-arrow-in-right me-1"></i
+                ><span th:text="#{login.submit}">Login</span>
+              </button>
+            </div>
+
+            <div class="small muted mt-3">
+              Endpoint: <code>POST /api/v1/auth/login</code>
+            </div>
+            <div class="small mt-2">
+              <span th:text="#{login.new-account}">New account?</span>
+              <a
+                href="/register"
+                th:href="@{/register}"
+                th:text="#{login.create-here}"
+                >Create here</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

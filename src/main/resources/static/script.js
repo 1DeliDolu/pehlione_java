@@ -1020,7 +1020,7 @@
 
   async function openDashboard() {
     if (!currentIdentity) {
-      toast("Dashboard icin once giris yapin");
+      toast("Please sign in first for dashboard");
       showModal(els.loginModal);
       return;
     }
@@ -1040,7 +1040,7 @@
     if (getToken()) {
       return true;
     }
-    toast(message || "Bu islem icin giris gerekli");
+    toast(message || "Sign-in is required for this action");
     showModal(els.loginModal);
     return false;
   }
@@ -1049,7 +1049,7 @@
     if (currentIdentity && hasRole(currentIdentity, "ROLE_ADMIN")) {
       return true;
     }
-    toast("Bu alan sadece admin kullanicilar icin");
+    toast("This section is only for admin users");
     return false;
   }
 
@@ -1124,7 +1124,7 @@
   }
 
   async function openOrdersModal() {
-    if (!ensureLoggedIn("Siparisler icin once giris yapin")) {
+    if (!ensureLoggedIn("Please sign in first for orders")) {
       return;
     }
     await loadMyOrders();
@@ -1132,7 +1132,7 @@
   }
 
   async function loadMyOrders() {
-    if (!ensureLoggedIn("Siparisler icin once giris yapin")) {
+    if (!ensureLoggedIn("Please sign in first for orders")) {
       return;
     }
 
@@ -1147,7 +1147,7 @@
 
       if (!items.length) {
         els.ordersBody.innerHTML =
-          '<tr><td colspan="5" class="small muted">Siparis bulunamadi</td></tr>';
+          '<tr><td colspan="5" class="small muted">No orders found</td></tr>';
       } else {
         els.ordersBody.innerHTML = items
           .map(
@@ -1168,7 +1168,7 @@
       els.ordersMeta.textContent = pageMetaText(data && data.page);
     } catch (error) {
       els.ordersBody.innerHTML = `<tr><td colspan="5" class="small text-danger">${escapeHtml(error.message)}</td></tr>`;
-      els.ordersMeta.textContent = "Yukleme hatasi";
+      els.ordersMeta.textContent = "Loading error";
     }
   }
 
@@ -1225,7 +1225,7 @@
     const currency = detail && detail.currency ? detail.currency : "EUR";
     const items = Array.isArray(detail && detail.items) ? detail.items : [];
     if (!items.length) {
-      return '<div class="small muted mb-3">Bu sipariste urun yok.</div>';
+      return '<div class="small muted mb-3">No items in this order.</div>';
     }
 
     const rows = items
@@ -1277,7 +1277,7 @@
       ? detail.shipments
       : [];
     if (!shipments.length) {
-      return '<div class="small muted mb-3">Henuz sevkiyat kaydi yok.</div>';
+      return '<div class="small muted mb-3">No shipment record yet.</div>';
     }
 
     const rows = shipments
@@ -1328,7 +1328,7 @@
     const address =
       detail && detail.shippingAddress ? detail.shippingAddress : null;
     if (!address || typeof address !== "object") {
-      return '<div class="small muted">Teslimat adresi bulunamadi.</div>';
+      return '<div class="small muted">Delivery address not found.</div>';
     }
 
     const street = [address.line1, address.line2]
@@ -1366,18 +1366,18 @@
     }
     if (!detail || typeof detail !== "object") {
       els.ordersDetailBox.innerHTML =
-        '<div class="small text-danger">Siparis detayi bulunamadi.</div>';
+        '<div class="small text-danger">Order detail not found.</div>';
       return;
     }
 
     els.ordersDetailBox.innerHTML = `
-          <div class="mb-2 fw-semibold">Siparis Ozeti</div>
+          <div class="mb-2 fw-semibold">Order Summary</div>
           ${renderOrderSummaryHtml(detail)}
-          <div class="mb-2 fw-semibold">Siparis Urunleri</div>
+          <div class="mb-2 fw-semibold">Order Items</div>
           ${renderOrderItemsHtml(detail)}
           <div class="mb-2 fw-semibold">Sevkiyat</div>
           ${renderOrderShipmentsHtml(detail)}
-          <div class="mb-2 fw-semibold">Teslimat Adresi</div>
+          <div class="mb-2 fw-semibold">Delivery Address</div>
           ${renderOrderAddressHtml(detail)}
         `;
   }
@@ -1391,7 +1391,7 @@
       renderMyOrderDetail(detail);
     } catch (error) {
       if (els.ordersDetailBox) {
-        els.ordersDetailBox.innerHTML = `<div class="small text-danger">Detay yuklenemedi: ${escapeHtml(error.message)}</div>`;
+        els.ordersDetailBox.innerHTML = `<div class="small text-danger">Detail could not be loaded: ${escapeHtml(error.message)}</div>`;
       }
     }
   }
@@ -1430,7 +1430,7 @@
 
       if (!items.length) {
         els.adminOrdersBody.innerHTML =
-          '<tr><td colspan="5" class="small muted">Kayit bulunamadi</td></tr>';
+          '<tr><td colspan="5" class="small muted">No records found</td></tr>';
       } else {
         els.adminOrdersBody.innerHTML = items
           .map(
@@ -1452,7 +1452,7 @@
       els.adminOrdersMeta.textContent = pageMetaText(data && data.page);
     } catch (error) {
       els.adminOrdersBody.innerHTML = `<tr><td colspan="5" class="small text-danger">${escapeHtml(error.message)}</td></tr>`;
-      els.adminOrdersMeta.textContent = "Yukleme hatasi";
+      els.adminOrdersMeta.textContent = "Loading error";
     }
   }
 
@@ -1461,7 +1461,7 @@
       return;
     }
     if (!orderId) {
-      toast("Order id gerekli");
+      toast("Order ID is required");
       return;
     }
     try {
@@ -1471,7 +1471,7 @@
     } catch (error) {
       setResultBox(
         els.adminOrderDetailBox,
-        `Detay yuklenemedi: ${error.message}`,
+        `Detail could not be loaded: ${error.message}`,
       );
     }
   }
@@ -1482,7 +1482,7 @@
     }
     const orderId = normalizeText(els.adminOrderIdInput.value);
     if (!orderId) {
-      toast("Ship icin order id gerekli");
+      toast("Order ID is required for shipping");
       return;
     }
     try {
@@ -1495,11 +1495,11 @@
         json: payload,
       });
       setResultBox(els.adminOrderDetailBox, res || { ok: true });
-      toast("Ship islemi tamamlandi");
+      toast("Order marked as shipped");
       await loadAdminOrders();
       await loadAdminOrderDetail(orderId);
     } catch (error) {
-      toast(`Ship hatasi: ${error.message}`);
+      toast(`Shipping error: ${error.message}`);
     }
   }
 
@@ -1509,16 +1509,16 @@
     }
     const orderId = normalizeText(els.adminOrderIdInput.value);
     if (!orderId) {
-      toast("Deliver icin order id gerekli");
+      toast("Order ID is required for delivery");
       return;
     }
     try {
       await apiFetch(API.adminOrderDeliver(orderId), { method: "POST" });
-      toast("Deliver islemi tamamlandi");
+      toast("Order marked as delivered");
       await loadAdminOrders();
       await loadAdminOrderDetail(orderId);
     } catch (error) {
-      toast(`Deliver hatasi: ${error.message}`);
+      toast(`Delivery error: ${error.message}`);
     }
   }
 
@@ -1528,7 +1528,7 @@
     }
     const orderId = normalizeText(els.adminOrderIdInput.value);
     if (!orderId) {
-      toast("Cancel icin order id gerekli");
+      toast("Order ID is required for cancellation");
       return;
     }
     try {
@@ -1538,11 +1538,11 @@
         opts.json = { reason };
       }
       await apiFetch(API.adminOrderCancel(orderId), opts);
-      toast("Cancel islemi tamamlandi");
+      toast("Order cancelled");
       await loadAdminOrders();
       await loadAdminOrderDetail(orderId);
     } catch (error) {
-      toast(`Cancel hatasi: ${error.message}`);
+      toast(`Cancellation error: ${error.message}`);
     }
   }
 
@@ -1554,7 +1554,7 @@
     const quantity = toPositiveInt(els.adminRestockQty.value);
     const reason = normalizeText(els.adminInventoryReason.value);
     if (!productId || !quantity || !reason) {
-      toast("Restock icin productId, quantity ve reason gerekli");
+      toast("productId, quantity and reason are required for restock");
       return;
     }
     try {
@@ -1563,11 +1563,11 @@
         json: { quantity, reason },
       });
       setResultBox(els.adminInventoryResult, result);
-      toast("Restock tamamlandi");
+      toast("Restock completed");
     } catch (error) {
       setResultBox(
         els.adminInventoryResult,
-        `Restock hatasi: ${error.message}`,
+        `Restock error: ${error.message}`,
       );
     }
   }
@@ -1580,7 +1580,7 @@
     const delta = toInt(els.adminAdjustDelta.value);
     const reason = normalizeText(els.adminInventoryReason.value);
     if (!productId || delta == null || !reason) {
-      toast("Adjust icin productId, delta ve reason gerekli");
+      toast("productId, delta and reason are required for adjustment");
       return;
     }
     try {
@@ -1589,9 +1589,9 @@
         json: { delta, reason },
       });
       setResultBox(els.adminInventoryResult, result);
-      toast("Adjust tamamlandi");
+      toast("Adjustment completed");
     } catch (error) {
-      setResultBox(els.adminInventoryResult, `Adjust hatasi: ${error.message}`);
+      setResultBox(els.adminInventoryResult, `Adjustment error: ${error.message}`);
     }
   }
 
@@ -1612,7 +1612,7 @@
       const items = Array.isArray(data && data.items) ? data.items : [];
       if (!items.length) {
         els.adminRefundsBody.innerHTML =
-          '<tr><td colspan="5" class="small muted">Kayit bulunamadi</td></tr>';
+          '<tr><td colspan="5" class="small muted">No records found</td></tr>';
       } else {
         els.adminRefundsBody.innerHTML = items
           .map(
@@ -1631,7 +1631,7 @@
       els.adminRefundsMeta.textContent = pageMetaText(data && data.page);
     } catch (error) {
       els.adminRefundsBody.innerHTML = `<tr><td colspan="5" class="small text-danger">${escapeHtml(error.message)}</td></tr>`;
-      els.adminRefundsMeta.textContent = "Yukleme hatasi";
+      els.adminRefundsMeta.textContent = "Loading error";
     }
   }
 
@@ -1651,7 +1651,7 @@
       const items = Array.isArray(data && data.items) ? data.items : [];
       if (!items.length) {
         els.adminWebhookBody.innerHTML =
-          '<tr><td colspan="4" class="small muted">Kayit bulunamadi</td></tr>';
+          '<tr><td colspan="4" class="small muted">No records found</td></tr>';
       } else {
         els.adminWebhookBody.innerHTML = items
           .map(
@@ -1669,7 +1669,7 @@
       els.adminWebhookMeta.textContent = pageMetaText(data && data.page);
     } catch (error) {
       els.adminWebhookBody.innerHTML = `<tr><td colspan="4" class="small text-danger">${escapeHtml(error.message)}</td></tr>`;
-      els.adminWebhookMeta.textContent = "Yukleme hatasi";
+      els.adminWebhookMeta.textContent = "Loading error";
     }
   }
 
@@ -1713,7 +1713,7 @@
 
       if (!items.length) {
         els.adminProductsBody.innerHTML =
-          '<tr><td colspan="6" class="small muted">Urun bulunamadi</td></tr>';
+          '<tr><td colspan="6" class="small muted">No products found</td></tr>';
       } else {
         els.adminProductsBody.innerHTML = items
           .map(
@@ -1725,7 +1725,7 @@
                 <td>${escapeHtml(product.status)}</td>
                 <td>${formatMoney(product.price, product.currency)}</td>
                 <td>
-                  <button class="btn btn-sm btn-outline-dark" type="button" data-admin-product-use="${escapeAttr(product.id)}">Forma Al</button>
+                  <button class="btn btn-sm btn-outline-dark" type="button" data-admin-product-use="${escapeAttr(product.id)}">Use in Form</button>
                 </td>
               </tr>
             `,
@@ -1736,11 +1736,11 @@
       if (data && data.page) {
         els.adminProductsMeta.textContent = pageMetaText(data.page);
       } else {
-        els.adminProductsMeta.textContent = `${items.length} urun`;
+        els.adminProductsMeta.textContent = `${items.length} products`;
       }
     } catch (error) {
       els.adminProductsBody.innerHTML = `<tr><td colspan="6" class="small text-danger">${escapeHtml(error.message)}</td></tr>`;
-      els.adminProductsMeta.textContent = "Yukleme hatasi";
+      els.adminProductsMeta.textContent = "Loading error";
     }
   }
 
@@ -1750,7 +1750,7 @@
     }
     const id = toPositiveInt(productId);
     if (!id) {
-      toast("Gecerli product id gerekli");
+      toast("Valid product ID is required");
       return;
     }
     try {
@@ -1761,7 +1761,7 @@
     } catch (error) {
       setResultBox(
         els.adminProductResult,
-        `Product yuklenemedi: ${error.message}`,
+        `Product could not be loaded: ${error.message}`,
       );
     }
   }
@@ -1786,7 +1786,7 @@
       stockQuantity < 0 ||
       !status
     ) {
-      throw new Error("Product alanlari gecersiz");
+      throw new Error("Product fields are invalid");
     }
 
     const payload = {
@@ -1802,7 +1802,7 @@
     if (includeSku) {
       const sku = normalizeText(els.adminProductSku.value);
       if (!sku) {
-        throw new Error("Create icin SKU gerekli");
+        throw new Error("SKU is required for create");
       }
       payload.sku = sku;
     }
@@ -1817,7 +1817,7 @@
     const slug = normalizeText(els.adminCategorySlug.value);
     const name = normalizeText(els.adminCategoryName.value);
     if (!slug || !name) {
-      toast("Category create icin slug ve name gerekli");
+      toast("Slug and name are required for category creation");
       return;
     }
     try {
@@ -1826,13 +1826,13 @@
         json: { slug, name },
       });
       setResultBox(els.adminCategoryResult, result);
-      toast("Category create tamamlandi");
+      toast("Category created");
       els.adminCategoryId.value =
         result && result.id ? result.id : els.adminCategoryId.value;
     } catch (error) {
       setResultBox(
         els.adminCategoryResult,
-        `Category create hatasi: ${error.message}`,
+        `Category create error: ${error.message}`,
       );
     }
   }
@@ -1844,7 +1844,7 @@
     const categoryId = toPositiveInt(els.adminCategoryId.value);
     const name = normalizeText(els.adminCategoryName.value);
     if (!categoryId || !name) {
-      toast("Category update icin id ve name gerekli");
+      toast("Category ID and name are required for update");
       return;
     }
     try {
@@ -1853,11 +1853,11 @@
         json: { name },
       });
       setResultBox(els.adminCategoryResult, result);
-      toast("Category update tamamlandi");
+      toast("Category updated");
     } catch (error) {
       setResultBox(
         els.adminCategoryResult,
-        `Category update hatasi: ${error.message}`,
+        `Category update error: ${error.message}`,
       );
     }
   }
@@ -1868,7 +1868,7 @@
     }
     const categoryId = toPositiveInt(els.adminCategoryId.value);
     if (!categoryId) {
-      toast("Category delete icin id gerekli");
+      toast("Category ID is required for delete");
       return;
     }
     try {
@@ -1877,11 +1877,11 @@
         deletedCategoryId: categoryId,
         ok: true,
       });
-      toast("Category delete tamamlandi");
+      toast("Category deleted");
     } catch (error) {
       setResultBox(
         els.adminCategoryResult,
-        `Category delete hatasi: ${error.message}`,
+        `Category delete error: ${error.message}`,
       );
     }
   }
@@ -1898,12 +1898,12 @@
       });
       applyProductForm(result);
       setResultBox(els.adminProductResult, result);
-      toast("Product create tamamlandi");
+      toast("Product created");
       await loadAdminProducts();
     } catch (error) {
       setResultBox(
         els.adminProductResult,
-        `Product create hatasi: ${error.message}`,
+        `Product create error: ${error.message}`,
       );
     }
   }
@@ -1914,7 +1914,7 @@
     }
     const productId = toPositiveInt(els.adminProductId.value);
     if (!productId) {
-      toast("Product update icin product id gerekli");
+      toast("Product ID is required for update");
       return;
     }
     try {
@@ -1925,12 +1925,12 @@
       });
       applyProductForm(result);
       setResultBox(els.adminProductResult, result);
-      toast("Product update tamamlandi");
+      toast("Product updated");
       await loadAdminProducts();
     } catch (error) {
       setResultBox(
         els.adminProductResult,
-        `Product update hatasi: ${error.message}`,
+        `Product update error: ${error.message}`,
       );
     }
   }
@@ -1941,7 +1941,7 @@
     }
     const productId = toPositiveInt(els.adminProductId.value);
     if (!productId) {
-      toast("Product delete icin product id gerekli");
+      toast("Product ID is required for delete");
       return;
     }
     try {
@@ -1959,12 +1959,12 @@
       els.adminProductStock.value = "1";
       els.adminProductStatus.value = "ACTIVE";
       els.adminProductCategoryIds.value = "";
-      toast("Product delete tamamlandi");
+      toast("Product deleted");
       await loadAdminProducts();
     } catch (error) {
       setResultBox(
         els.adminProductResult,
-        `Product delete hatasi: ${error.message}`,
+        `Product delete error: ${error.message}`,
       );
     }
   }
@@ -2040,7 +2040,7 @@
     } catch (error) {
       setResultBox(
         els.adminImageResult,
-        `Image list hatasi: ${error.message}`,
+        `Image list error: ${error.message}`,
       );
       renderAdminImageTable([], null);
     }
@@ -2072,7 +2072,7 @@
         : [];
 
     if (!productId) {
-      toast("Image add icin product id gerekli");
+      toast("Product ID is required to add image");
       return;
     }
 
@@ -2103,10 +2103,10 @@
       }
 
       setResultBox(els.adminImageResult, result);
-      toast("Image add tamamlandi");
+      toast("Image added");
       await loadAdminImages(true);
     } catch (error) {
-      setResultBox(els.adminImageResult, `Image add hatasi: ${error.message}`);
+      setResultBox(els.adminImageResult, `Image add error: ${error.message}`);
     }
   }
 
@@ -2117,7 +2117,7 @@
     const productId = toPositiveInt(els.adminImageProductId.value);
     const imageId = toPositiveInt(imageIdOverride || els.adminImageId.value);
     if (!productId || !imageId) {
-      toast("Image delete icin product id ve image id gerekli");
+      toast("Product ID and image ID are required for delete");
       return;
     }
     try {
@@ -2129,12 +2129,12 @@
         productId,
         ok: true,
       });
-      toast("Image delete tamamlandi");
+      toast("Image deleted");
       await loadAdminImages(false);
     } catch (error) {
       setResultBox(
         els.adminImageResult,
-        `Image delete hatasi: ${error.message}`,
+        `Image delete error: ${error.message}`,
       );
     }
   }
@@ -2679,7 +2679,7 @@
     }
     cart.currency = product.currency || cart.currency || "EUR";
     setCart(cart);
-    toast("Sepete eklendi");
+    toast("Added to cart");
   }
 
   function removeFromCart(productId) {
@@ -2703,7 +2703,7 @@
 
   function clearCart() {
     setCart({ currency: "EUR", items: [] });
-    toast("Sepet temizlendi");
+    toast("Cart cleared");
   }
 
   function normalizeProductsResponse(data) {
@@ -2906,7 +2906,7 @@
                   <div class="fw-semibold text-truncate" title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</div>
                   <span class="badge text-bg-light border">${escapeHtml(product.sku || "SKU")}</span>
                 </div>
-                <div class="small muted mb-3">${escapeHtml(product.description || "Aciklama eklenmemis")}</div>
+                <div class="small muted mb-3">${escapeHtml(product.description || "No description provided")}</div>
                 <div class="d-flex flex-wrap gap-1 mb-3">${categoryBadges}</div>
                 <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                   <div class="price">${formatMoney(product.price, product.currency)}</div>
@@ -3137,11 +3137,11 @@
 
       applySearchSort();
       if (showToast) {
-        toast("Urunler yuklendi");
+        toast("Products loaded");
       }
     } catch (error) {
-      els.productGrid.innerHTML = `<div class="col-12"><div class="alert alert-danger">Urunler yuklenemedi: ${escapeHtml(error.message)}</div></div>`;
-      els.resultInfo.textContent = "Yukleme hatasi";
+      els.productGrid.innerHTML = `<div class="col-12"><div class="alert alert-danger">Products could not be loaded: ${escapeHtml(error.message)}</div></div>`;
+      els.resultInfo.textContent = "Loading error";
       renderCatalogPagination(0, 0, 0);
     }
   }
@@ -3186,7 +3186,7 @@
     const password = els.loginPassword.value;
 
     if (!email || !password) {
-      toast("Email ve password gerekli");
+      toast("Email and password are required");
       return;
     }
 
@@ -3198,7 +3198,7 @@
 
       const accessToken = data && (data.accessToken || data.token || data.jwt);
       if (!accessToken) {
-        throw new Error("Login response icinde accessToken bulunamadi");
+        throw new Error("No accessToken found in login response");
       }
 
       setToken(accessToken);
@@ -3206,9 +3206,9 @@
       adminBootstrapped = false;
       updateAuthUi();
       hideModal(els.loginModal);
-      toast("Giris basarili");
+      toast("Login successful");
     } catch (error) {
-      toast(`Giris basarisiz: ${error.message}`);
+      toast(`Login failed: ${error.message}`);
     }
   }
 
@@ -3275,12 +3275,68 @@
     });
   }
 
+  function renderCheckoutAddressCreateForm() {
+    els.checkoutAddresses.innerHTML = `
+      <div class="alert alert-light border mb-2">
+        No saved address found. Please enter your delivery address below.
+      </div>
+      <div class="border rounded-xl p-3 bg-white">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label form-label-sm mb-1">Label</label>
+            <input id="checkoutNewAddrLabel" class="form-control form-control-sm" placeholder="Home" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label form-label-sm mb-1">Full Name *</label>
+            <input id="checkoutNewAddrFullName" class="form-control form-control-sm" placeholder="Max Mustermann" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label form-label-sm mb-1">Phone</label>
+            <input id="checkoutNewAddrPhone" class="form-control form-control-sm" placeholder="+49..." />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label form-label-sm mb-1">Country Code *</label>
+            <input id="checkoutNewAddrCountry" class="form-control form-control-sm" value="DE" />
+          </div>
+          <div class="col-md-8">
+            <label class="form-label form-label-sm mb-1">Street *</label>
+            <input id="checkoutNewAddrStreet" class="form-control form-control-sm" placeholder="Musterstrasse" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label form-label-sm mb-1">House Number *</label>
+            <input id="checkoutNewAddrHouseNumber" class="form-control form-control-sm" placeholder="12a" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label form-label-sm mb-1">Address Line 2</label>
+            <input id="checkoutNewAddrLine2" class="form-control form-control-sm" placeholder="Apartment / c/o" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label form-label-sm mb-1">City *</label>
+            <input id="checkoutNewAddrCity" class="form-control form-control-sm" placeholder="Berlin" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label form-label-sm mb-1">State</label>
+            <input id="checkoutNewAddrState" class="form-control form-control-sm" placeholder="BE" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label form-label-sm mb-1">Postal Code *</label>
+            <input id="checkoutNewAddrPostal" class="form-control form-control-sm" placeholder="10115" />
+          </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <button id="checkoutSaveAddressBtn" class="btn btn-sm btn-dark" type="button">
+            Save Address
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderCheckoutAddresses() {
     els.checkoutAddresses.innerHTML = "";
 
     if (!addresses.length) {
-      els.checkoutAddresses.innerHTML =
-        '<div class="alert alert-light border">No address found. Add one first.</div>';
+      renderCheckoutAddressCreateForm();
       selectedAddressId = null;
       renderCheckoutReview();
       return;
@@ -3318,6 +3374,61 @@
       els.checkoutAddresses.appendChild(row);
     });
     renderCheckoutReview();
+  }
+
+  async function saveCheckoutAddressFromCheckout() {
+    if (!ensureLoggedIn("Please sign in to save address")) {
+      return;
+    }
+
+    let payload;
+    try {
+      payload = buildGermanAddressPayload({
+        label: document.getElementById("checkoutNewAddrLabel")?.value,
+        fullName: document.getElementById("checkoutNewAddrFullName")?.value,
+        phone: document.getElementById("checkoutNewAddrPhone")?.value,
+        street: document.getElementById("checkoutNewAddrStreet")?.value,
+        houseNumber: document.getElementById("checkoutNewAddrHouseNumber")?.value,
+        line2: document.getElementById("checkoutNewAddrLine2")?.value,
+        city: document.getElementById("checkoutNewAddrCity")?.value,
+        state: document.getElementById("checkoutNewAddrState")?.value,
+        postalCode: document.getElementById("checkoutNewAddrPostal")?.value,
+        countryCode: document.getElementById("checkoutNewAddrCountry")?.value,
+        makeDefault: true,
+      });
+    } catch (error) {
+      toast(error.message);
+      return;
+    }
+
+    const saveBtn = document.getElementById("checkoutSaveAddressBtn");
+    if (saveBtn) {
+      saveBtn.disabled = true;
+    }
+    try {
+      const created = await apiFetch(API.addresses, {
+        method: "POST",
+        json: payload,
+      });
+      await loadAddresses();
+      const createdId =
+        created && Number.isFinite(Number(created.id)) ? Number(created.id) : null;
+      if (createdId) {
+        selectedAddressId = createdId;
+      } else if (addresses.length) {
+        const defaultAddress =
+          addresses.find((address) => address.isDefault) || addresses[0];
+        selectedAddressId = Number(defaultAddress.id);
+      }
+      renderCheckoutAddresses();
+      toast("Address saved and selected");
+    } catch (error) {
+      toast(`Address could not be saved: ${error.message}`);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+      }
+    }
   }
 
   async function setDefaultAddress(id) {
@@ -3869,6 +3980,9 @@
         (item) => Number(item.id) === Number(selectedAddressId),
       );
       if (!selectedAddressId || !hasSelectedAddress) {
+        if (!addresses.length) {
+          throw new Error("Please fill and save delivery address first");
+        }
         throw new Error("Select a delivery address");
       }
       return;
@@ -3978,12 +4092,12 @@
   async function syncCartToServer() {
     const authToken = getToken();
     if (!authToken) {
-      throw new Error("Checkout icin giris gerekli");
+      throw new Error("Sign-in is required for checkout");
     }
 
     const cart = getCart();
     if (!cart.items.length) {
-      throw new Error("Sepet bos");
+      throw new Error("Cart is empty");
     }
 
     await apiFetch(API.cart, { method: "DELETE" });
@@ -3991,7 +4105,7 @@
     for (const item of cart.items) {
       const productId = Number(item.id);
       if (!Number.isFinite(productId)) {
-        throw new Error("Sepette gecersiz urun id var");
+        throw new Error("Cart contains invalid product ID");
       }
 
       await apiFetch(API.cartItems, {
@@ -4006,7 +4120,7 @@
 
   async function startPayment() {
     if (!getToken()) {
-      toast("Once giris yapin");
+      toast("Please sign in first");
       showModal(els.loginModal);
       return;
     }
@@ -4038,7 +4152,7 @@
           reserveResponse.id ||
           reserveResponse.publicId);
       if (!lastDraftId) {
-        throw new Error("Reserve response icinde draft id bulunamadi");
+        throw new Error("No draft ID found in reserve response");
       }
 
       const payResponse = await apiFetch(API.payDraft(lastDraftId), {
@@ -4062,15 +4176,15 @@
       els.lastPaymentId.textContent = lastPaymentId || "-";
       els.lastOrderId.textContent = lastOrderId || "-";
 
-      toast("Odeme baslatildi");
+      toast("Payment started");
     } catch (error) {
-      toast(`Checkout basarisiz: ${error.message}`);
+      toast(`Checkout failed: ${error.message}`);
     }
   }
 
   async function confirmMockPayment() {
     if (!lastPaymentId) {
-      toast("Once odeme baslatin");
+      toast("Start payment first");
       return;
     }
 
@@ -4086,7 +4200,7 @@
       clearCart();
       toast("Mock payment confirmed");
     } catch (error) {
-      toast(`Mock confirm basarisiz: ${error.message}`);
+      toast(`Mock confirmation failed: ${error.message}`);
     }
   }
 
@@ -4131,7 +4245,7 @@
 
   async function openCheckout() {
     if (!getToken()) {
-      toast("Checkout icin once giris yapin");
+      toast("Please sign in first for checkout");
       showModal(els.loginModal);
       return;
     }
@@ -4178,13 +4292,13 @@
 
     const productId = Number(btn.dataset.id);
     if (!Number.isFinite(productId)) {
-      toast("Gecersiz urun id");
+      toast("Invalid product ID");
       return;
     }
 
     addToCart({
       id: productId,
-      name: btn.dataset.name || "Urun",
+      name: btn.dataset.name || "Product",
       price: Number(btn.dataset.price || 0),
       currency: btn.dataset.currency || "EUR",
     });
@@ -4488,6 +4602,13 @@
         selectedAddressId = Number(event.target.value);
         renderCheckoutReview();
       }
+    });
+    els.checkoutAddresses.addEventListener("click", (event) => {
+      const saveBtn = event.target.closest("#checkoutSaveAddressBtn");
+      if (!saveBtn) {
+        return;
+      }
+      saveCheckoutAddressFromCheckout();
     });
 
     [els.loginEmail, els.loginPassword].forEach((field) => {

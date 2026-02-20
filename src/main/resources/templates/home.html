@@ -271,14 +271,14 @@
 
     <div th:replace="~{footer :: main('storefront')}"></div>
 
-    <div th:replace="~{fragments/storefront-modals :: cart-offcanvas}"></div>
-    <div th:replace="~{fragments/storefront-modals :: login-modal}"></div>
-    <div th:replace="~{fragments/storefront-modals :: dashboard-modal}"></div>
-    <div th:replace="~{fragments/storefront-modals :: orders-modal}"></div>
-    <div th:replace="~{fragments/storefront-modals :: addresses-modal}"></div>
-    <div th:replace="~{fragments/storefront-modals :: checkout-modal}"></div>
-    <div th:replace="~{fragments/storefront-modals :: new-address-modal}"></div>
-    <div th:replace="~{fragments/storefront-modals :: toast}"></div>
+    <div th:replace="~{fragments/modal-cart :: cart-offcanvas}"></div>
+    <div th:replace="~{fragments/modal-auth :: login-modal}"></div>
+    <div th:replace="~{fragments/modal-dashboard :: dashboard-modal}"></div>
+    <div th:replace="~{fragments/modal-orders :: orders-modal}"></div>
+    <div th:replace="~{fragments/modal-addresses :: addresses-modal}"></div>
+    <div th:replace="~{fragments/modal-checkout :: checkout-modal}"></div>
+    <div th:replace="~{fragments/modal-addresses :: new-address-modal}"></div>
+    <div th:replace="~{fragments/modal-toast :: toast}"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/api-client.js" th:src="@{/js/api-client.js}"></script>

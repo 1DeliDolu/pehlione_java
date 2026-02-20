@@ -1,0 +1,54 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+  <body>
+    <!--/* ===== ADDRESSES MODAL ===== */-->
+    <div
+      th:fragment="addresses-modal"
+      class="modal fade"
+      id="addressesModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-xl">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-geo-alt me-2"></i
+              ><span th:text="#{addresses.title}">Addresses</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="muted small" th:text="#{addresses.hint}">
+                Used to select the delivery address during checkout.
+              </div>
+              <button
+                id="openNewAddressBtn"
+                class="btn btn-sm btn-brand"
+                type="button"
+              >
+                <i class="bi bi-plus-lg me-1"></i
+                ><span th:text="#{addresses.new}">New Address</span>
+              </button>
+            </div>
+            <div id="addressesList" class="row g-2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--/* ===== NEW ADDRESS MODAL ===== */-->
+    <div
+      th:fragment="new-address-modal"
+      class="modal fade"
+      id="newAddressModal"
+      tabindex="-1"
+      aria-hidden="true"
+    ></div>
+  </body>
+</html>

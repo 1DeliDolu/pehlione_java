@@ -4,9 +4,11 @@
     productImages: (id) => `/api/v1/products/${id}/images`,
   };
 
+  const LS_CART = "cart.v1";
   const IMAGE_PAGE_SIZE = 6;
   let productId = null;
   let imagePageIndex = 0;
+  let currentProduct = null;
 
   const els = {
     root: null,
@@ -19,6 +21,17 @@
     imagePageInfo: null,
     prevBtn: null,
     nextBtn: null,
+    addToCartBtn: null,
+    cartActionBox: null,
+    continueShoppingBtn: null,
+    goToCartBtn: null,
+    cartCount: null,
+    cartList: null,
+    cartEmpty: null,
+    cartSubtotal: null,
+    cartCurrency: null,
+    clearCartBtn: null,
+    openCheckoutBtn: null,
   };
 
   function escapeHtml(value) {
@@ -90,11 +103,145 @@
     }
   }
 
+  function getCart() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(LS_CART));
+      if (parsed && Array.isArray(parsed.items)) {
+        return parsed;
+      }
+    } catch (_) {
+      // keep fallback cart
+    }
+    return { currency: "EUR", items: [] };
+  }
+
+  function setCart(cart) {
+    localStorage.setItem(LS_CART, JSON.stringify(cart));
+    renderCart();
+  }
+
+  function cartItemCount() {
+    return getCart().items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+  }
+
+  function cartSubtotal() {
+    return getCart().items.reduce(
+      (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
+      0,
+    );
+  }
+
+  function addToCart(product) {
+    const cart = getCart();
+    const existing = cart.items.find((item) => Number(item.id) === Number(product.id));
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      cart.items.push({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price || 0),
+        currency: product.currency || "EUR",
+        qty: 1,
+      });
+    }
+    cart.currency = product.currency || cart.currency || "EUR";
+    setCart(cart);
+    if (els.cartActionBox) {
+      els.cartActionBox.classList.remove("d-none");
+    }
+  }
+
+  function removeFromCart(productId) {
+    const cart = getCart();
+    cart.items = cart.items.filter((item) => Number(item.id) !== Number(productId));
+    setCart(cart);
+  }
+
+  function changeCartQty(productId, delta) {
+    const cart = getCart();
+    const item = cart.items.find((entry) => Number(entry.id) === Number(productId));
+    if (!item) {
+      return;
+    }
+    item.qty = Number(item.qty || 0) + delta;
+    if (item.qty <= 0) {
+      cart.items = cart.items.filter((entry) => Number(entry.id) !== Number(productId));
+    }
+    setCart(cart);
+  }
+
+  function clearCart() {
+    setCart({ currency: "EUR", items: [] });
+  }
+
+  function renderCart() {
+    const cart = getCart();
+    if (els.cartCount) {
+      els.cartCount.textContent = String(cartItemCount());
+    }
+    if (!els.cartList || !els.cartEmpty || !els.cartSubtotal || !els.cartCurrency) {
+      return;
+    }
+
+    els.cartList.innerHTML = "";
+    if (!cart.items.length) {
+      els.cartEmpty.classList.remove("d-none");
+    } else {
+      els.cartEmpty.classList.add("d-none");
+      cart.items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "border rounded-xl p-2 bg-white";
+        row.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="me-2">
+              <div class="fw-semibold">${escapeHtml(item.name || "Product")}</div>
+              <div class="small muted">${formatMoney(item.price, item.currency)} x ${Number(item.qty || 0)}</div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" type="button" data-cart-action="remove" data-id="${escapeAttr(item.id)}">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <div class="btn-group btn-group-sm" role="group">
+              <button class="btn btn-outline-dark" type="button" data-cart-action="dec" data-id="${escapeAttr(item.id)}">-</button>
+              <button class="btn btn-outline-dark disabled" type="button">${Number(item.qty || 0)}</button>
+              <button class="btn btn-outline-dark" type="button" data-cart-action="inc" data-id="${escapeAttr(item.id)}">+</button>
+            </div>
+            <div class="price">${formatMoney(Number(item.price || 0) * Number(item.qty || 0), item.currency || cart.currency || "EUR")}</div>
+          </div>
+        `;
+        els.cartList.appendChild(row);
+      });
+    }
+
+    els.cartCurrency.textContent = cart.currency || "EUR";
+    els.cartSubtotal.textContent = formatMoney(cartSubtotal(), cart.currency || "EUR");
+  }
+
+  function openCartCanvas() {
+    const cartCanvas = document.getElementById("cartCanvas");
+    if (!cartCanvas || !window.bootstrap || !window.bootstrap.Offcanvas) {
+      return;
+    }
+    const instance = window.bootstrap.Offcanvas.getOrCreateInstance(cartCanvas);
+    instance.show();
+  }
+
   function renderProduct(product) {
     els.name.textContent = product.name || "Product";
     els.sku.textContent = `SKU: ${product.sku || "-"}`;
     els.price.textContent = formatMoney(product.price, product.currency);
     els.description.textContent = product.description || "No description.";
+    currentProduct = {
+      id: product.id,
+      name: product.name || "Product",
+      price: Number(product.price || 0),
+      currency: product.currency || "EUR",
+    };
+    if (els.addToCartBtn) {
+      els.addToCartBtn.disabled = false;
+    }
 
     const categories = Array.isArray(product.categories) ? product.categories : [];
     if (!categories.length) {
@@ -162,11 +309,15 @@
       const product = await apiFetch(API.productById(productId));
       renderProduct(product);
     } catch (error) {
+      currentProduct = null;
       els.name.textContent = "Product not found";
       els.sku.textContent = "-";
       els.price.textContent = "-";
       els.categories.innerHTML = "";
       els.description.textContent = error.message;
+      if (els.addToCartBtn) {
+        els.addToCartBtn.disabled = true;
+      }
     }
   }
 
@@ -181,6 +332,17 @@
     els.imagePageInfo = document.getElementById("pdImagePageInfo");
     els.prevBtn = document.getElementById("pdPrevBtn");
     els.nextBtn = document.getElementById("pdNextBtn");
+    els.addToCartBtn = document.getElementById("pdAddToCartBtn");
+    els.cartActionBox = document.getElementById("pdCartActionBox");
+    els.continueShoppingBtn = document.getElementById("pdContinueShoppingBtn");
+    els.goToCartBtn = document.getElementById("pdGoToCartBtn");
+    els.cartCount = document.getElementById("cartCount");
+    els.cartList = document.getElementById("cartList");
+    els.cartEmpty = document.getElementById("cartEmpty");
+    els.cartSubtotal = document.getElementById("cartSubtotal");
+    els.cartCurrency = document.getElementById("cartCurrency");
+    els.clearCartBtn = document.getElementById("clearCartBtn");
+    els.openCheckoutBtn = document.getElementById("openCheckoutBtn");
   }
 
   function bindEvents() {
@@ -195,6 +357,54 @@
       imagePageIndex += 1;
       await loadImages();
     });
+
+    if (els.addToCartBtn) {
+      els.addToCartBtn.addEventListener("click", () => {
+        if (!currentProduct || !Number.isFinite(Number(currentProduct.id))) {
+          return;
+        }
+        addToCart(currentProduct);
+      });
+    }
+
+    if (els.goToCartBtn) {
+      els.goToCartBtn.addEventListener("click", openCartCanvas);
+    }
+
+    if (els.clearCartBtn) {
+      els.clearCartBtn.addEventListener("click", clearCart);
+    }
+
+    if (els.openCheckoutBtn) {
+      els.openCheckoutBtn.addEventListener("click", () => {
+        window.location.assign("/products");
+      });
+    }
+
+    if (els.cartList) {
+      els.cartList.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-cart-action]");
+        if (!btn) {
+          return;
+        }
+        const productIdFromBtn = Number(btn.dataset.id);
+        if (!Number.isFinite(productIdFromBtn)) {
+          return;
+        }
+        const action = String(btn.dataset.cartAction || "");
+        if (action === "remove") {
+          removeFromCart(productIdFromBtn);
+          return;
+        }
+        if (action === "dec") {
+          changeCartQty(productIdFromBtn, -1);
+          return;
+        }
+        if (action === "inc") {
+          changeCartQty(productIdFromBtn, 1);
+        }
+      });
+    }
   }
 
   async function init() {
@@ -204,8 +414,12 @@
       return;
     }
     bindEvents();
+    renderCart();
     await loadProduct();
     await loadImages();
+    if (window.location.hash === "#cart") {
+      openCartCanvas();
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);

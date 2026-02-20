@@ -1,0 +1,78 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+  <body>
+    <!--/* ===== ORDERS MODAL ===== */-->
+    <div
+      th:fragment="orders-modal"
+      class="modal fade"
+      id="ordersModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-xl">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-receipt me-2"></i
+              ><span th:text="#{orders.title}">My Orders</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="small muted" th:text="#{orders.hint}">
+                Your orders (newest first)
+              </div>
+              <button
+                id="ordersLoadBtn"
+                class="btn btn-sm btn-outline-dark"
+                type="button"
+                th:text="#{orders.refresh}"
+              >
+                Refresh
+              </button>
+            </div>
+            <div class="table-responsive border rounded mb-2">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th th:text="#{orders.created}">Created</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="ordersBody">
+                  <tr>
+                    <td
+                      colspan="5"
+                      class="small muted"
+                      th:text="#{admin.not-loaded}"
+                    >
+                      Not loaded
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="ordersMeta" class="small muted mb-2">-</div>
+            <div
+              id="ordersDetailBox"
+              class="small bg-light border rounded p-2 mb-0"
+              style="max-height: 320px; overflow: auto"
+            >
+              <div class="muted" th:text="#{orders.detail-hint}">
+                Order details will appear here.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

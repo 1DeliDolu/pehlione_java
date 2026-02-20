@@ -1,0 +1,371 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org">
+  <body>
+    <!--/* ===== CHECKOUT MODAL ===== */-->
+    <div
+      th:fragment="checkout-modal"
+      class="modal fade"
+      id="checkoutModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-xl">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-receipt me-2"></i>Checkout
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="small muted mb-2">
+              <span th:text="#{checkout.step}">Step</span>
+              <span id="checkoutStepIndicator">1</span>/5
+            </div>
+            <div class="progress mb-3">
+              <div
+                id="checkoutProgressBar"
+                class="progress-bar"
+                role="progressbar"
+                style="width: 20%"
+                aria-valuenow="20"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                20%
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-lg-8">
+                <!-- Step 1: Account Check -->
+                <div
+                  class="border rounded-xl p-3 mb-2 checkout-step"
+                  data-checkout-step="1"
+                >
+                  <div class="fw-semibold mb-2" th:text="#{checkout.step1}">
+                    1. Account Check
+                  </div>
+                  <div
+                    id="checkoutLoginStatus"
+                    class="small"
+                    th:text="#{checkout.checking}"
+                  >
+                    Checking...
+                  </div>
+                </div>
+
+                <!-- Step 2: Delivery Address -->
+                <div
+                  class="border rounded-xl p-3 mb-2 d-none checkout-step"
+                  data-checkout-step="2"
+                >
+                  <div class="fw-semibold mb-2" th:text="#{checkout.step2}">
+                    2. Delivery Address
+                  </div>
+                  <div
+                    id="checkoutAddresses"
+                    class="d-flex flex-column gap-2"
+                  ></div>
+                  <div
+                    class="small muted mt-2"
+                    th:text="#{checkout.no-address-hint}"
+                  >
+                    If no address exists, enter and save one below.
+                  </div>
+                </div>
+
+                <!-- Step 3: Invoice Information -->
+                <div
+                  class="border rounded-xl p-3 mb-2 d-none checkout-step"
+                  data-checkout-step="3"
+                >
+                  <div class="fw-semibold mb-2" th:text="#{checkout.step3}">
+                    3. Invoice Information
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <label
+                        class="form-label form-label-sm mb-1"
+                        th:text="#{checkout.billing-name}"
+                        >Billing Full Name</label
+                      >
+                      <input
+                        id="invoiceFullName"
+                        class="form-control form-control-sm"
+                        placeholder="Max Mustermann"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label form-label-sm mb-1"
+                        th:text="#{checkout.billing-email}"
+                        >Billing Email</label
+                      >
+                      <input
+                        id="invoiceEmail"
+                        class="form-control form-control-sm"
+                        placeholder="user@pehlione.com"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label form-label-sm mb-1"
+                        th:text="#{checkout.invoice-type}"
+                        >Invoice Type</label
+                      >
+                      <select
+                        id="invoiceType"
+                        class="form-select form-select-sm"
+                      >
+                        <option value="PERSONAL" th:text="#{checkout.personal}">
+                          Personal
+                        </option>
+                        <option value="COMPANY" th:text="#{checkout.company}">
+                          Company
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label
+                        class="form-label form-label-sm mb-1"
+                        th:text="#{checkout.tax-number}"
+                        >Tax Number (Optional)</label
+                      >
+                      <input
+                        id="invoiceTaxNumber"
+                        class="form-control form-control-sm"
+                        placeholder="DE123456789"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label
+                        class="form-label form-label-sm mb-1"
+                        th:text="#{checkout.invoice-note}"
+                        >Invoice Note (Optional)</label
+                      >
+                      <textarea
+                        id="invoiceNote"
+                        class="form-control form-control-sm"
+                        rows="2"
+                        th:placeholder="#{checkout.invoice-note-ph}"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 4: Payment Method -->
+                <div
+                  class="border rounded-xl p-3 mb-2 d-none checkout-step"
+                  data-checkout-step="4"
+                >
+                  <div class="fw-semibold mb-2" th:text="#{checkout.step4}">
+                    4. Payment Method
+                  </div>
+                  <div class="d-flex flex-column gap-2 mb-3">
+                    <label class="form-check border rounded p-2">
+                      <input
+                        id="paymentMethodCredit"
+                        class="form-check-input me-2"
+                        type="radio"
+                        name="paymentMethod"
+                        value="CREDIT_CARD"
+                        checked
+                      />
+                      <span
+                        class="fw-semibold"
+                        th:text="#{checkout.credit-card}"
+                        >Credit Card</span
+                      >
+                    </label>
+                    <label class="form-check border rounded p-2">
+                      <input
+                        id="paymentMethodDebit"
+                        class="form-check-input me-2"
+                        type="radio"
+                        name="paymentMethod"
+                        value="DEBIT_CARD"
+                      />
+                      <span class="fw-semibold" th:text="#{checkout.debit-card}"
+                        >Debit Card</span
+                      >
+                    </label>
+                    <label class="form-check border rounded p-2">
+                      <input
+                        id="paymentMethodPaypal"
+                        class="form-check-input me-2"
+                        type="radio"
+                        name="paymentMethod"
+                        value="PAYPAL"
+                      />
+                      <span class="fw-semibold">PayPal</span>
+                    </label>
+                  </div>
+                  <div id="paymentCardFields" class="row g-2">
+                    <div class="col-12">
+                      <label class="form-label" th:text="#{card.holder}"
+                        >Cardholder Name</label
+                      >
+                      <input
+                        id="cardHolderName"
+                        class="form-control"
+                        autocomplete="cc-name"
+                        placeholder="Max Mustermann"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" th:text="#{card.number}"
+                        >Card Number</label
+                      >
+                      <input
+                        id="cardNumber"
+                        class="form-control"
+                        inputmode="numeric"
+                        autocomplete="cc-number"
+                        placeholder="4242 4242 4242 4242"
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label" th:text="#{card.exp-month}"
+                        >Exp. Month</label
+                      >
+                      <input
+                        id="cardExpMonth"
+                        class="form-control"
+                        inputmode="numeric"
+                        autocomplete="cc-exp-month"
+                        placeholder="MM"
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label" th:text="#{card.exp-year}"
+                        >Exp. Year</label
+                      >
+                      <input
+                        id="cardExpYear"
+                        class="form-control"
+                        inputmode="numeric"
+                        autocomplete="cc-exp-year"
+                        placeholder="YYYY"
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label">CVC</label>
+                      <input
+                        id="cardCvc"
+                        class="form-control"
+                        inputmode="numeric"
+                        autocomplete="cc-csc"
+                        placeholder="123"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 5: Review & Confirm -->
+                <div
+                  class="border rounded-xl p-3 d-none checkout-step"
+                  data-checkout-step="5"
+                >
+                  <div class="fw-semibold mb-2" th:text="#{checkout.step5}">
+                    5. Review &amp; Confirm
+                  </div>
+                  <pre
+                    id="checkoutReviewBox"
+                    class="small bg-light border rounded p-2 mb-2"
+                  >
+-</pre
+                  >
+                  <div class="form-check">
+                    <input
+                      id="checkoutTermsCheck"
+                      class="form-check-input"
+                      type="checkbox"
+                    />
+                    <label
+                      class="form-check-label small"
+                      th:text="#{checkout.terms}"
+                      >I accept the general terms and privacy policy.</label
+                    >
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-3">
+                  <button
+                    id="checkoutPrevBtn"
+                    class="btn btn-outline-dark btn-sm"
+                    type="button"
+                    th:text="#{checkout.back}"
+                  >
+                    Back
+                  </button>
+                  <button
+                    id="checkoutNextBtn"
+                    class="btn btn-brand btn-sm"
+                    type="button"
+                    th:text="#{checkout.next}"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Sidebar -->
+              <div class="col-lg-4">
+                <div class="bg-light rounded-xl p-3">
+                  <div class="fw-semibold mb-2" th:text="#{checkout.summary}">
+                    Summary
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="muted" th:text="#{checkout.total}">Total</span>
+                    <span class="price" id="checkoutTotal">0.00</span>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="muted" th:text="#{cart.currency}"
+                      >Currency</span
+                    >
+                    <span id="checkoutCurrency">EUR</span>
+                  </div>
+                  <hr />
+                  <div class="d-grid gap-2">
+                    <button
+                      id="startPaymentBtn"
+                      class="btn btn-brand"
+                      type="button"
+                    >
+                      <i class="bi bi-credit-card me-1"></i
+                      ><span th:text="#{checkout.confirm-pay}"
+                        >Confirm &amp; Start Payment</span
+                      >
+                    </button>
+                    <button
+                      id="confirmPaymentBtn"
+                      class="btn btn-outline-dark"
+                      type="button"
+                    >
+                      <i class="bi bi-check2-circle me-1"></i
+                      ><span th:text="#{checkout.mock-confirm}"
+                        >Mock confirm (dev)</span
+                      >
+                    </button>
+                  </div>
+                  <div class="small muted mt-2" th:text="#{checkout.flow-hint}">
+                    Flow: login check → address → invoice → payment → review.
+                  </div>
+                  <div class="alert alert-secondary small mt-3 mb-0">
+                    paymentId:
+                    <span id="lastPaymentId" class="fw-semibold">-</span><br />
+                    orderId: <span id="lastOrderId" class="fw-semibold">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
