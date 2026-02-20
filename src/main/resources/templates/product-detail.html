@@ -1,18 +1,30 @@
 <!doctype html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
-  <head th:replace="~{fragments/storefront-head :: head('Pehlione Shop | Product Detail')}"></head>
+  <head
+    th:replace="~{fragments/storefront-head :: head('Pehlione Shop | Product Detail')}"
+  ></head>
   <body class="page-storefront" data-page="product-detail">
     <div th:replace="~{nav :: main('storefront','products')}"></div>
 
-    <main class="container py-4" th:attr="data-product-id=${productId}" id="productDetailRoot">
+    <main
+      class="container py-4"
+      th:attr="data-product-id=${productId}"
+      id="productDetailRoot"
+    >
       <div class="mb-3">
-        <a class="btn btn-sm btn-outline-dark" href="/products" th:href="@{/products}">
+        <a
+          class="btn btn-sm btn-outline-dark"
+          href="/products"
+          th:href="@{/products}"
+        >
           <i class="bi bi-arrow-left me-1"></i>Back to Products
         </a>
       </div>
 
       <section class="status-card p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div
+          class="d-flex justify-content-between align-items-start flex-wrap gap-2"
+        >
           <div>
             <h1 id="pdName" class="h3 fw-bold mb-1">Loading...</h1>
             <div id="pdSku" class="small muted">SKU: -</div>
@@ -38,7 +50,11 @@
             >
               Continue Shopping
             </a>
-            <button id="pdGoToCartBtn" class="btn btn-sm btn-dark" type="button">
+            <button
+              id="pdGoToCartBtn"
+              class="btn btn-sm btn-dark"
+              type="button"
+            >
               Go to Cart
             </button>
           </div>
@@ -55,18 +71,25 @@
         </div>
         <div class="d-flex justify-content-end mt-3">
           <div class="btn-group btn-group-sm" role="group">
-            <button id="pdPrevBtn" class="btn btn-outline-dark" type="button">Prev</button>
-            <button id="pdNextBtn" class="btn btn-outline-dark" type="button">Next</button>
+            <button id="pdPrevBtn" class="btn btn-outline-dark" type="button">
+              Prev
+            </button>
+            <button id="pdNextBtn" class="btn btn-outline-dark" type="button">
+              Next
+            </button>
           </div>
         </div>
       </section>
     </main>
 
-    <div th:replace="~{fragments/storefront-modals :: cart-offcanvas}"></div>
+    <div th:replace="~{fragments/modal-cart :: cart-offcanvas}"></div>
 
     <div th:replace="~{footer :: main('storefront')}"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/product-detail.js" th:src="@{/js/product-detail.js}"></script>
+    <script
+      src="/js/product-detail.js"
+      th:src="@{/js/product-detail.js}"
+    ></script>
   </body>
 </html>

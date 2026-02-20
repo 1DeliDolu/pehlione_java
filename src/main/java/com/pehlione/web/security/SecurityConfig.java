@@ -122,6 +122,8 @@ public class SecurityConfig {
                                                                 "/card",
                                                                 "/password",
                                                                 "/admin-product-create",
+                                                                "/admin-product-edit",
+                                                                "/admin-product-edit/**",
                                                                 "/login",
                                                                 "/register",
                                                                 "/impressum",

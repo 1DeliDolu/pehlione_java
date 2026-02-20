@@ -11,6 +11,7 @@
     orderById: (orderId) => `/api/v1/orders/${orderId}`,
     login: "/api/v1/auth/login",
     logout: "/api/v1/auth/logout",
+    refresh: "/api/v1/auth/refresh",
     me: "/api/v1/me",
     changeMyPassword: "/api/v1/me/password",
     addresses: "/api/v1/addresses",
@@ -680,6 +681,22 @@
       return;
     }
     localStorage.setItem(LS_TOKEN, value);
+  }
+
+  async function silentRefresh() {
+    try {
+      const res = await fetch(API.refresh, { method: "POST" });
+      if (!res.ok) return false;
+      const data = await res.json();
+      const newToken = data.accessToken || data.token || data.jwt;
+      if (newToken) {
+        setToken(newToken);
+        return true;
+      }
+    } catch (_) {
+      // refresh failed silently
+    }
+    return false;
   }
 
   function parseJwtPayload(token) {
@@ -1565,10 +1582,7 @@
       setResultBox(els.adminInventoryResult, result);
       toast("Restock completed");
     } catch (error) {
-      setResultBox(
-        els.adminInventoryResult,
-        `Restock error: ${error.message}`,
-      );
+      setResultBox(els.adminInventoryResult, `Restock error: ${error.message}`);
     }
   }
 
@@ -1591,7 +1605,10 @@
       setResultBox(els.adminInventoryResult, result);
       toast("Adjustment completed");
     } catch (error) {
-      setResultBox(els.adminInventoryResult, `Adjustment error: ${error.message}`);
+      setResultBox(
+        els.adminInventoryResult,
+        `Adjustment error: ${error.message}`,
+      );
     }
   }
 
@@ -1724,8 +1741,9 @@
                 <td>${escapeHtml(product.name)}</td>
                 <td>${escapeHtml(product.status)}</td>
                 <td>${formatMoney(product.price, product.currency)}</td>
-                <td>
+                <td class="d-flex gap-1">
                   <button class="btn btn-sm btn-outline-dark" type="button" data-admin-product-use="${escapeAttr(product.id)}">Use in Form</button>
+                  <a class="btn btn-sm btn-outline-primary" href="/admin-product-edit/${escapeAttr(product.id)}"><i class="bi bi-pencil"></i> Edit</a>
                 </td>
               </tr>
             `,
@@ -2038,10 +2056,7 @@
       }
       renderAdminImageTable(items, pageMeta);
     } catch (error) {
-      setResultBox(
-        els.adminImageResult,
-        `Image list error: ${error.message}`,
-      );
+      setResultBox(els.adminImageResult, `Image list error: ${error.message}`);
       renderAdminImageTable([], null);
     }
   }
@@ -2371,10 +2386,12 @@
         url.match(/^\/api\/v1\/checkout\/drafts\/([^/]+)\/pay$/);
       if (payMatch && method === "POST") {
         return wrapClient(() =>
-          C.checkout.pay(
-            { draftId: payMatch[1], payRequest: body },
-            { headers: options.headers },
-          ),
+          C.checkout.pay({
+            draftId: payMatch[1],
+            payRequest: body,
+            idempotencyKey:
+              options.headers && options.headers["Idempotency-Key"],
+          }),
         );
       }
     }
@@ -2985,7 +3002,9 @@
 
     const allItems = [...items];
     for (let page = 1; page < totalPages; page += 1) {
-      const nextPage = await apiFetch(`${API.products}?page=${page}&size=${pageSize}`);
+      const nextPage = await apiFetch(
+        `${API.products}?page=${page}&size=${pageSize}`,
+      );
       allItems.push(...normalizeProductsResponse(nextPage));
     }
     return allItems;
@@ -3388,7 +3407,8 @@
         fullName: document.getElementById("checkoutNewAddrFullName")?.value,
         phone: document.getElementById("checkoutNewAddrPhone")?.value,
         street: document.getElementById("checkoutNewAddrStreet")?.value,
-        houseNumber: document.getElementById("checkoutNewAddrHouseNumber")?.value,
+        houseNumber: document.getElementById("checkoutNewAddrHouseNumber")
+          ?.value,
         line2: document.getElementById("checkoutNewAddrLine2")?.value,
         city: document.getElementById("checkoutNewAddrCity")?.value,
         state: document.getElementById("checkoutNewAddrState")?.value,
@@ -3412,7 +3432,9 @@
       });
       await loadAddresses();
       const createdId =
-        created && Number.isFinite(Number(created.id)) ? Number(created.id) : null;
+        created && Number.isFinite(Number(created.id))
+          ? Number(created.id)
+          : null;
       if (createdId) {
         selectedAddressId = createdId;
       } else if (addresses.length) {
@@ -4121,6 +4143,16 @@
   async function startPayment() {
     if (!getToken()) {
       toast("Please sign in first");
+      showModal(els.loginModal);
+      return;
+    }
+
+    await silentRefresh();
+    const _claims = parseJwtPayload(getToken());
+    const _now = Math.floor(Date.now() / 1000);
+    if (!_claims || !_claims.exp || _claims.exp <= _now) {
+      setToken(null);
+      toast("Session expired. Please sign in again.");
       showModal(els.loginModal);
       return;
     }

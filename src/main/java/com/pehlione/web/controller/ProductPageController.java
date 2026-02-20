@@ -13,4 +13,10 @@ public class ProductPageController {
 		model.addAttribute("productId", id);
 		return "product-detail";
 	}
+
+	@GetMapping("/admin-product-edit/{id}")
+	public String adminProductEdit(@PathVariable("id") Long id, Model model) {
+		model.addAttribute("productId", id);
+		return "admin-product-edit";
+	}
 }

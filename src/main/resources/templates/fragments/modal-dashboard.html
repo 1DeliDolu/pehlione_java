@@ -24,7 +24,9 @@
             ></button>
           </div>
           <div class="modal-body dashboard-body">
-            <div class="dashboard-summary mb-3">
+
+            <!-- Summary bar -->
+            <div class="dashboard-summary mb-4">
               <div class="dashboard-kv">
                 <strong th:text="#{dashboard.user}">User:</strong>
                 <span id="dashboardUserEmail">-</span>
@@ -35,59 +37,40 @@
               </div>
             </div>
 
-            <!-- User Section -->
+            <!-- USER SECTION -->
             <div
               id="dashboardUserSection"
-              class="dashboard-panel dashboard-panel-user mb-3"
+              class="dashboard-panel dashboard-panel-user mb-4"
             >
-              <h6 class="mb-2" th:text="#{dashboard.user-section}">
-                User Section
-              </h6>
-              <div
-                class="small muted mb-3"
-                th:text="#{dashboard.user-section-hint}"
-              >
-                View account details and manage password, address, and payment
-                card.
-              </div>
+              <h6 class="mb-3" th:text="#{dashboard.user-section}">User Section</h6>
               <div class="row g-3">
+
+                <!-- Profile Info card -->
                 <div class="col-lg-4">
-                  <div class="dashboard-card h-100">
-                    <h6 class="mb-2" th:text="#{dashboard.profile-info}">
-                      Profile Info
-                    </h6>
-                    <div class="small mb-1">
-                      <strong>Email:</strong>
-                      <span id="profileEmailValue">-</span>
+                  <div class="dashboard-card h-100 d-flex flex-column">
+                    <h6 class="mb-3" th:text="#{dashboard.profile-info}">Profile Info</h6>
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                      <div class="small">
+                        <span class="muted">Email</span><br />
+                        <strong id="profileEmailValue">-</strong>
+                      </div>
+                      <div class="small">
+                        <span class="muted" th:text="#{dashboard.roles}">Roles</span><br />
+                        <strong id="profileRolesValue">-</strong>
+                      </div>
+                      <div class="small">
+                        <span class="muted">Status</span><br />
+                        <strong id="profileStatusValue">-</strong>
+                      </div>
+                      <div class="small">
+                        <span class="muted" th:text="#{dashboard.member-since}">Member Since</span><br />
+                        <strong id="profileCreatedAtValue">-</strong>
+                      </div>
                     </div>
-                    <div class="small mb-1">
-                      <strong th:text="#{dashboard.roles}">Roles:</strong>
-                      <span id="profileRolesValue">-</span>
-                    </div>
-                    <div class="small mb-1">
-                      <strong>Status:</strong>
-                      <span id="profileStatusValue">-</span>
-                    </div>
-                    <div class="small">
-                      <strong th:text="#{dashboard.member-since}"
-                        >Member Since:</strong
-                      >
-                      <span id="profileCreatedAtValue">-</span>
-                    </div>
-                    <div class="d-grid gap-2 mt-3">
-                      <button
-                        id="dashboardAddressesBtn"
-                        class="btn btn-sm btn-brand"
-                        type="button"
-                      >
-                        <i class="bi bi-geo-alt me-1"></i
-                        ><span th:text="#{dashboard.my-addresses}"
-                          >My Addresses</span
-                        >
-                      </button>
+                    <div class="d-grid mt-3">
                       <button
                         id="dashboardCheckoutBtn"
-                        class="btn btn-sm btn-outline-dark"
+                        class="btn btn-sm btn-brand"
                         type="button"
                       >
                         <i class="bi bi-credit-card me-1"></i>Checkout
@@ -95,791 +78,188 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Quick-access nav cards -->
                 <div class="col-lg-8">
-                  <!-- Change Password -->
-                  <div class="dashboard-card mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h6 class="mb-0" th:text="#{dashboard.change-password}">
-                        Change Password
-                      </h6>
-                      <button
-                        id="openPasswordSettingsBtn"
-                        class="btn btn-sm btn-outline-dark"
-                        type="button"
-                      >
-                        Password Page
-                      </button>
-                    </div>
-                    <div class="row g-2">
-                      <div class="col-md-4">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{dashboard.current-password}"
-                          >Current Password</label
-                        >
-                        <input
-                          id="profileCurrentPassword"
-                          type="password"
-                          class="form-control form-control-sm"
-                          autocomplete="current-password"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{dashboard.new-password}"
-                          >New Password</label
-                        >
-                        <input
-                          id="profileNewPassword"
-                          type="password"
-                          class="form-control form-control-sm"
-                          autocomplete="new-password"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{dashboard.confirm-password}"
-                          >Confirm New Password</label
-                        >
-                        <input
-                          id="profileConfirmPassword"
-                          type="password"
-                          class="form-control form-control-sm"
-                          autocomplete="new-password"
-                        />
-                      </div>
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                      <button
-                        id="profilePasswordChangeBtn"
-                        class="btn btn-sm btn-brand"
-                        type="button"
-                        th:text="#{dashboard.update-password}"
-                      >
-                        Update Password
-                      </button>
-                    </div>
-                  </div>
+                  <div class="row g-3">
 
-                  <!-- Update Address -->
-                  <div class="dashboard-card mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h6 class="mb-0" th:text="#{dashboard.update-address}">
-                        Update Address
-                      </h6>
-                      <button
-                        id="openAddressSettingsBtn"
-                        class="btn btn-sm btn-outline-dark"
-                        type="button"
-                      >
-                        Address Page
-                      </button>
-                    </div>
-                    <div class="row g-2 mb-2">
-                      <div class="col-md-8">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{dashboard.saved-address}"
-                          >Saved Address</label
-                        >
-                        <select
-                          id="profileAddressSelect"
-                          class="form-select form-select-sm"
-                        >
-                          <option value="" th:text="#{dashboard.no-address}">
-                            No address selected
-                          </option>
-                        </select>
-                      </div>
-                      <div class="col-md-4 d-grid">
-                        <label class="form-label form-label-sm mb-1"
-                          >&nbsp;</label
-                        >
+                    <!-- Change Password card -->
+                    <div class="col-md-4">
+                      <div class="dashboard-card h-100 d-flex flex-column">
+                        <div class="mb-2"><i class="bi bi-key fs-4 text-secondary"></i></div>
+                        <h6 class="mb-1" th:text="#{dashboard.change-password}">Change Password</h6>
+                        <p class="small muted flex-grow-1 mb-3">Update your account password securely.</p>
                         <button
-                          id="profileAddressLoadBtn"
-                          class="btn btn-sm btn-outline-secondary"
+                          id="openPasswordSettingsBtn"
+                          class="btn btn-sm btn-outline-dark"
                           type="button"
-                          th:text="#{dashboard.load}"
                         >
-                          Load
+                          <i class="bi bi-arrow-right me-1"></i>Open Page
                         </button>
                       </div>
                     </div>
-                    <div class="row g-2">
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.label}"
-                          >Label</label
-                        >
-                        <input
-                          id="profileAddrLabel"
-                          class="form-control form-control-sm"
-                          placeholder="Home"
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.full-name}"
-                          >Full Name</label
-                        >
-                        <input
-                          id="profileAddrFullName"
-                          class="form-control form-control-sm"
-                          placeholder="Max Mustermann"
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.phone}"
-                          >Phone</label
-                        >
-                        <input
-                          id="profileAddrPhone"
-                          class="form-control form-control-sm"
-                          placeholder="+49..."
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.country}"
-                          >Country Code</label
-                        >
-                        <input
-                          id="profileAddrCountry"
-                          class="form-control form-control-sm"
-                          placeholder="DE"
-                          value="DE"
-                        />
-                      </div>
-                      <div class="col-md-8">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.street}"
-                          >Street</label
-                        >
-                        <input
-                          id="profileAddrStreet"
-                          class="form-control form-control-sm"
-                          placeholder="Musterstrasse"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.house-number}"
-                          >House Number</label
-                        >
-                        <input
-                          id="profileAddrHouseNumber"
-                          class="form-control form-control-sm"
-                          placeholder="12a"
-                        />
-                      </div>
-                      <div class="col-md-12">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.line2}"
-                          >Address Line 2 (Optional)</label
-                        >
-                        <input
-                          id="profileAddrLine2"
-                          class="form-control form-control-sm"
-                          placeholder="Apartment, floor, etc."
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.city}"
-                          >City</label
-                        >
-                        <input
-                          id="profileAddrCity"
-                          class="form-control form-control-sm"
-                          placeholder="Berlin"
-                        />
-                      </div>
-                      <div class="col-md-3">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.state}"
-                          >State (Optional)</label
-                        >
-                        <input
-                          id="profileAddrState"
-                          class="form-control form-control-sm"
-                          placeholder="BE"
-                        />
-                      </div>
-                      <div class="col-md-3">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{addr.postal}"
-                          >Postal Code</label
-                        >
-                        <input
-                          id="profileAddrPostal"
-                          class="form-control form-control-sm"
-                          placeholder="10115"
-                        />
-                      </div>
-                    </div>
-                    <div class="form-check mt-2">
-                      <input
-                        id="profileAddrDefault"
-                        class="form-check-input"
-                        type="checkbox"
-                      />
-                      <label
-                        class="form-check-label small"
-                        th:text="#{addr.set-default}"
-                        >Set as default</label
-                      >
-                    </div>
-                    <div class="d-flex justify-content-end mt-2">
-                      <button
-                        id="profileAddressUpdateBtn"
-                        class="btn btn-sm btn-brand"
-                        type="button"
-                        th:text="#{dashboard.update-address}"
-                      >
-                        Update Address
-                      </button>
-                    </div>
-                    <div id="profileAddressResult" class="small muted mt-2">
-                      -
-                    </div>
-                  </div>
 
-                  <!-- Saved Card -->
-                  <div class="dashboard-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h6 class="mb-0" th:text="#{dashboard.saved-card}">
-                        Saved Card (Mock)
-                      </h6>
-                      <button
-                        id="openCardSettingsBtn"
-                        class="btn btn-sm btn-outline-dark"
-                        type="button"
-                      >
-                        Card Page
-                      </button>
+                    <!-- Addresses card -->
+                    <div class="col-md-4">
+                      <div class="dashboard-card h-100 d-flex flex-column">
+                        <div class="mb-2"><i class="bi bi-geo-alt fs-4 text-secondary"></i></div>
+                        <h6 class="mb-1" th:text="#{dashboard.update-address}">Manage Addresses</h6>
+                        <p class="small muted flex-grow-1 mb-3">Add, edit or remove delivery addresses.</p>
+                        <div class="d-grid gap-1">
+                          <button
+                            id="openAddressSettingsBtn"
+                            class="btn btn-sm btn-outline-dark"
+                            type="button"
+                          >
+                            <i class="bi bi-arrow-right me-1"></i>Open Page
+                          </button>
+                          <button
+                            id="dashboardAddressesBtn"
+                            class="btn btn-sm btn-brand"
+                            type="button"
+                          >
+                            <i class="bi bi-geo-alt me-1"></i><span th:text="#{dashboard.my-addresses}">Quick View</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div
-                      class="small muted mb-2"
-                      th:text="#{dashboard.saved-card-hint}"
-                    >
-                      Card is stored locally on this browser for checkout
-                      autofill. CVC is not saved.
-                    </div>
-                    <div class="row g-2">
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{card.holder}"
-                          >Cardholder Name</label
-                        >
-                        <input
-                          id="profileCardHolderName"
-                          class="form-control form-control-sm"
-                          autocomplete="cc-name"
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{card.number}"
-                          >Card Number</label
-                        >
-                        <input
-                          id="profileCardNumber"
-                          class="form-control form-control-sm"
-                          inputmode="numeric"
-                          autocomplete="cc-number"
-                        />
-                      </div>
-                      <div class="col-md-3">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{card.exp-month}"
-                          >Exp. Month</label
-                        >
-                        <input
-                          id="profileCardExpMonth"
-                          class="form-control form-control-sm"
-                          inputmode="numeric"
-                          autocomplete="cc-exp-month"
-                          placeholder="MM"
-                        />
-                      </div>
-                      <div class="col-md-3">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{card.exp-year}"
-                          >Exp. Year</label
-                        >
-                        <input
-                          id="profileCardExpYear"
-                          class="form-control form-control-sm"
-                          inputmode="numeric"
-                          autocomplete="cc-exp-year"
-                          placeholder="YYYY"
-                        />
-                      </div>
-                      <div class="col-md-6 d-flex align-items-end gap-2">
+
+                    <!-- Saved Card card -->
+                    <div class="col-md-4">
+                      <div class="dashboard-card h-100 d-flex flex-column">
+                        <div class="mb-2"><i class="bi bi-credit-card fs-4 text-secondary"></i></div>
+                        <h6 class="mb-1" th:text="#{dashboard.saved-card}">Saved Card</h6>
+                        <p class="small muted flex-grow-1 mb-3" th:text="#{dashboard.saved-card-hint}">Card stored locally for checkout autofill. CVC is never saved.</p>
                         <button
-                          id="profileCardSaveBtn"
-                          class="btn btn-sm btn-brand"
+                          id="openCardSettingsBtn"
+                          class="btn btn-sm btn-outline-dark"
                           type="button"
-                          th:text="#{card.save}"
                         >
-                          Save Card
-                        </button>
-                        <button
-                          id="profileCardClearBtn"
-                          class="btn btn-sm btn-outline-danger"
-                          type="button"
-                          th:text="#{card.clear}"
-                        >
-                          Clear
+                          <i class="bi bi-arrow-right me-1"></i>Open Page
                         </button>
                       </div>
                     </div>
-                    <div
-                      id="profileCardResult"
-                      class="small muted mt-2"
-                      th:text="#{card.no-saved}"
-                    >
-                      No saved card
-                    </div>
+
                   </div>
                 </div>
               </div>
-            </div>
+            </div><!-- /user section -->
 
-            <!-- Admin Section -->
+            <!-- ADMIN SECTION -->
             <div
               id="dashboardAdminSection"
-              class="dashboard-panel dashboard-panel-admin mb-3 d-none"
+              class="dashboard-panel dashboard-panel-admin mb-4 d-none"
             >
-              <h6 class="mb-2" th:text="#{dashboard.admin-section}">
-                Admin Section
-              </h6>
-              <div
-                class="small muted mb-3"
-                th:text="#{dashboard.admin-section-hint}"
-              >
-                All management functions are available from this panel.
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0" th:text="#{dashboard.admin-section}">Admin Section</h6>
+                <a href="/admin" class="btn btn-sm btn-brand" target="_blank">
+                  <i class="bi bi-box-arrow-up-right me-1"></i>Full Admin Panel
+                </a>
               </div>
 
-              <ul
-                class="nav nav-pills flex-wrap gap-2 mb-3 dashboard-tabs"
-                role="tablist"
-              >
+              <ul class="nav nav-pills flex-wrap gap-2 mb-3 dashboard-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link active"
-                    data-bs-toggle="pill"
-                    data-bs-target="#adminOrdersPane"
-                    type="button"
-                    role="tab"
-                  >
-                    Orders
+                  <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#adminOrdersPane" type="button" role="tab">
+                    <i class="bi bi-receipt me-1"></i>Orders
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    data-bs-toggle="pill"
-                    data-bs-target="#adminInventoryPane"
-                    type="button"
-                    role="tab"
-                  >
-                    Inventory
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#adminInventoryPane" type="button" role="tab">
+                    <i class="bi bi-boxes me-1"></i>Inventory
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    data-bs-toggle="pill"
-                    data-bs-target="#adminRefundsPane"
-                    type="button"
-                    role="tab"
-                  >
-                    Refunds
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#adminRefundsPane" type="button" role="tab">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Refunds
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    data-bs-toggle="pill"
-                    data-bs-target="#adminWebhooksPane"
-                    type="button"
-                    role="tab"
-                  >
-                    Webhooks
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#adminWebhooksPane" type="button" role="tab">
+                    <i class="bi bi-broadcast me-1"></i>Webhooks
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    data-bs-toggle="pill"
-                    data-bs-target="#adminCatalogPane"
-                    type="button"
-                    role="tab"
-                  >
-                    Catalog
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#adminCatalogPane" type="button" role="tab">
+                    <i class="bi bi-grid me-1"></i>Catalog
                   </button>
                 </li>
               </ul>
 
               <div class="tab-content">
+
                 <!-- Orders Pane -->
-                <div
-                  id="adminOrdersPane"
-                  class="tab-pane fade show active"
-                  role="tabpanel"
-                >
-                  <div class="row g-2 align-items-end mb-2">
-                    <div class="col-md-3">
-                      <label class="form-label form-label-sm mb-1"
-                        >Status</label
-                      >
-                      <select
-                        id="adminOrderStatus"
-                        class="form-select form-select-sm"
-                      >
-                        <option value="">ALL</option>
-                        <option value="PENDING_PAYMENT">PENDING_PAYMENT</option>
-                        <option value="PAID">PAID</option>
-                        <option value="SHIPPED">SHIPPED</option>
-                        <option value="PAYMENT_FAILED">PAYMENT_FAILED</option>
-                        <option value="REFUND_PENDING">REFUND_PENDING</option>
-                        <option value="REFUNDED">REFUNDED</option>
-                        <option value="PLACED">PLACED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                        <option value="FULFILLED">FULFILLED</option>
-                      </select>
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.user-email}"
-                        >User Email</label
-                      >
-                      <input
-                        id="adminOrderEmail"
-                        class="form-control form-control-sm"
-                        placeholder="user@pehlione.com"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.order-id}"
-                        >Order Id</label
-                      >
-                      <input
-                        id="adminOrderQuery"
-                        class="form-control form-control-sm"
-                        placeholder="ord_..."
-                      />
-                    </div>
-                    <div class="col-md-3 d-grid">
-                      <button
-                        id="adminOrdersLoadBtn"
-                        class="btn btn-sm btn-outline-dark"
-                        type="button"
-                        th:text="#{admin.list}"
-                      >
-                        List
-                      </button>
-                    </div>
+                <div id="adminOrdersPane" class="tab-pane fade show active" role="tabpanel">
+                  <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
+                    <select id="adminOrderStatus" class="form-select form-select-sm" style="width:160px">
+                      <option value="">ALL</option>
+                      <option value="PENDING_PAYMENT">PENDING_PAYMENT</option>
+                      <option value="PAID">PAID</option>
+                      <option value="SHIPPED">SHIPPED</option>
+                      <option value="PAYMENT_FAILED">PAYMENT_FAILED</option>
+                      <option value="REFUND_PENDING">REFUND_PENDING</option>
+                      <option value="REFUNDED">REFUNDED</option>
+                      <option value="PLACED">PLACED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                      <option value="FULFILLED">FULFILLED</option>
+                    </select>
+                    <input id="adminOrderEmail" class="form-control form-control-sm" placeholder="Email" style="width:180px" />
+                    <input id="adminOrderQuery" class="form-control form-control-sm" placeholder="Order ID" style="width:130px" />
+                    <button id="adminOrdersLoadBtn" class="btn btn-sm btn-outline-dark" type="button" th:text="#{admin.list}">List</button>
                   </div>
-                  <div class="table-responsive border rounded mb-2">
+                  <div class="table-responsive border rounded mb-2" style="max-height:180px;overflow:auto">
                     <table class="table table-sm align-middle mb-0">
-                      <thead>
-                        <tr>
-                          <th>Order</th>
-                          <th>Status</th>
-                          <th>User</th>
-                          <th>Total</th>
-                          <th th:text="#{admin.actions}">Actions</th>
-                        </tr>
-                      </thead>
+                      <thead><tr><th>Order</th><th>Status</th><th>User</th><th>Total</th><th th:text="#{admin.actions}">Actions</th></tr></thead>
                       <tbody id="adminOrdersBody">
-                        <tr>
-                          <td
-                            colspan="5"
-                            class="small muted"
-                            th:text="#{admin.not-loaded}"
-                          >
-                            Not loaded
-                          </td>
-                        </tr>
+                        <tr><td colspan="5" class="small muted" th:text="#{admin.not-loaded}">Not loaded</td></tr>
                       </tbody>
                     </table>
                   </div>
-                  <div id="adminOrdersMeta" class="small muted mb-3">-</div>
-                  <div class="row g-2 align-items-end mb-2">
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.order-id}"
-                        >Order Id</label
-                      >
-                      <input
-                        id="adminOrderIdInput"
-                        class="form-control form-control-sm"
-                        placeholder="ord_..."
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label form-label-sm mb-1"
-                        >Carrier</label
-                      >
-                      <input
-                        id="adminShipCarrier"
-                        class="form-control form-control-sm"
-                        placeholder="mock-courier"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label form-label-sm mb-1"
-                        >Tracking</label
-                      >
-                      <input
-                        id="adminShipTracking"
-                        class="form-control form-control-sm"
-                        placeholder="TRK-001"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.cancel-reason}"
-                        >Cancel Reason</label
-                      >
-                      <input
-                        id="adminCancelReason"
-                        class="form-control form-control-sm"
-                        placeholder="optional"
-                      />
-                    </div>
+                  <div id="adminOrdersMeta" class="small muted mb-2">-</div>
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <input id="adminOrderIdInput" class="form-control form-control-sm" placeholder="Order ID"      style="width:120px" />
+                    <input id="adminShipCarrier"  class="form-control form-control-sm" placeholder="Carrier"      style="width:110px" />
+                    <input id="adminShipTracking" class="form-control form-control-sm" placeholder="Tracking"     style="width:110px" />
+                    <input id="adminCancelReason" class="form-control form-control-sm" placeholder="Cancel reason" style="width:130px" />
+                    <button id="adminOrderDetailBtn" class="btn btn-sm btn-outline-dark"    type="button">Detail</button>
+                    <button id="adminShipBtn"        class="btn btn-sm btn-outline-primary" type="button" th:text="#{admin.ship}">Ship</button>
+                    <button id="adminDeliverBtn"     class="btn btn-sm btn-outline-success" type="button" th:text="#{admin.deliver}">Deliver</button>
+                    <button id="adminCancelBtn"      class="btn btn-sm btn-outline-danger"  type="button" th:text="#{admin.cancel}">Cancel</button>
                   </div>
-                  <div class="d-flex flex-wrap gap-2 mb-2">
-                    <button
-                      id="adminOrderDetailBtn"
-                      class="btn btn-sm btn-outline-dark"
-                      type="button"
-                    >
-                      Detail
-                    </button>
-                    <button
-                      id="adminShipBtn"
-                      class="btn btn-sm btn-outline-primary"
-                      type="button"
-                      th:text="#{admin.ship}"
-                    >
-                      Ship
-                    </button>
-                    <button
-                      id="adminDeliverBtn"
-                      class="btn btn-sm btn-outline-success"
-                      type="button"
-                      th:text="#{admin.deliver}"
-                    >
-                      Deliver
-                    </button>
-                    <button
-                      id="adminCancelBtn"
-                      class="btn btn-sm btn-outline-danger"
-                      type="button"
-                      th:text="#{admin.cancel}"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  <pre
-                    id="adminOrderDetailBox"
-                    class="small bg-light border rounded p-2 mb-0"
-                    style="max-height: 220px; overflow: auto"
-                  >
--</pre
-                  >
+                  <pre id="adminOrderDetailBox" class="small bg-light border rounded p-2 mb-0" style="max-height:140px;overflow:auto">-</pre>
                 </div>
 
                 <!-- Inventory Pane -->
-                <div
-                  id="adminInventoryPane"
-                  class="tab-pane fade"
-                  role="tabpanel"
-                >
-                  <div class="row g-2 align-items-end mb-2">
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.product-id}"
-                        >Product Id</label
-                      >
-                      <input
-                        id="adminInventoryProductId"
-                        type="number"
-                        min="1"
-                        class="form-control form-control-sm"
-                        placeholder="1"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.restock-qty}"
-                        >Restock Qty</label
-                      >
-                      <input
-                        id="adminRestockQty"
-                        type="number"
-                        min="1"
-                        class="form-control form-control-sm"
-                        value="1"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.adjust-delta}"
-                        >Adjust Delta</label
-                      >
-                      <input
-                        id="adminAdjustDelta"
-                        type="number"
-                        class="form-control form-control-sm"
-                        value="-1"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.reason}"
-                        >Reason</label
-                      >
-                      <input
-                        id="adminInventoryReason"
-                        class="form-control form-control-sm"
-                        placeholder="manual correction"
-                      />
-                    </div>
+                <div id="adminInventoryPane" class="tab-pane fade" role="tabpanel">
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <input id="adminInventoryProductId" type="number" min="1" class="form-control form-control-sm" placeholder="Product ID"   style="width:110px" />
+                    <input id="adminRestockQty"         type="number" min="1" class="form-control form-control-sm" placeholder="Restock Qty"  style="width:110px" value="1" />
+                    <input id="adminAdjustDelta"        type="number"         class="form-control form-control-sm" placeholder="Adjust Delta" style="width:110px" value="-1" />
+                    <input id="adminInventoryReason"    class="form-control form-control-sm" placeholder="Reason" style="width:150px" />
+                    <button id="adminRestockBtn" class="btn btn-sm btn-outline-primary" type="button" th:text="#{admin.restock}">Restock</button>
+                    <button id="adminAdjustBtn"  class="btn btn-sm btn-outline-warning"  type="button" th:text="#{admin.adjust}">Adjust</button>
                   </div>
-                  <div class="d-flex flex-wrap gap-2 mb-2">
-                    <button
-                      id="adminRestockBtn"
-                      class="btn btn-sm btn-outline-primary"
-                      type="button"
-                      th:text="#{admin.restock}"
-                    >
-                      Restock
-                    </button>
-                    <button
-                      id="adminAdjustBtn"
-                      class="btn btn-sm btn-outline-warning"
-                      type="button"
-                      th:text="#{admin.adjust}"
-                    >
-                      Adjust
-                    </button>
-                  </div>
-                  <pre
-                    id="adminInventoryResult"
-                    class="small bg-light border rounded p-2 mb-0"
-                  >
--</pre
-                  >
+                  <pre id="adminInventoryResult" class="small bg-light border rounded p-2 mb-0">-</pre>
                 </div>
 
                 <!-- Refunds Pane -->
-                <div
-                  id="adminRefundsPane"
-                  class="tab-pane fade"
-                  role="tabpanel"
-                >
-                  <div class="row g-2 align-items-end mb-2">
-                    <div class="col-md-3">
-                      <label class="form-label form-label-sm mb-1"
-                        >Status</label
-                      >
-                      <select
-                        id="adminRefundStatus"
-                        class="form-select form-select-sm"
-                      >
-                        <option value="">ALL</option>
-                        <option value="PENDING">PENDING</option>
-                        <option value="SUCCEEDED">SUCCEEDED</option>
-                        <option value="FAILED">FAILED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                      </select>
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.user-email}"
-                        >User Email</label
-                      >
-                      <input
-                        id="adminRefundEmail"
-                        class="form-control form-control-sm"
-                        placeholder="user@"
-                      />
-                    </div>
-                    <div class="col-md-3">
-                      <label
-                        class="form-label form-label-sm mb-1"
-                        th:text="#{admin.order-id}"
-                        >Order Id</label
-                      >
-                      <input
-                        id="adminRefundOrderId"
-                        class="form-control form-control-sm"
-                        placeholder="ord_..."
-                      />
-                    </div>
-                    <div class="col-md-3 d-grid">
-                      <button
-                        id="adminRefundsLoadBtn"
-                        class="btn btn-sm btn-outline-dark"
-                        type="button"
-                        th:text="#{admin.list}"
-                      >
-                        List
-                      </button>
-                    </div>
+                <div id="adminRefundsPane" class="tab-pane fade" role="tabpanel">
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <select id="adminRefundStatus" class="form-select form-select-sm" style="width:140px">
+                      <option value="">ALL</option>
+                      <option value="PENDING">PENDING</option>
+                      <option value="SUCCEEDED">SUCCEEDED</option>
+                      <option value="FAILED">FAILED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                    <input id="adminRefundEmail"   class="form-control form-control-sm" placeholder="Email"    style="width:180px" />
+                    <input id="adminRefundOrderId" class="form-control form-control-sm" placeholder="Order ID" style="width:120px" />
+                    <button id="adminRefundsLoadBtn" class="btn btn-sm btn-outline-dark" type="button" th:text="#{admin.list}">List</button>
                   </div>
-                  <div class="table-responsive border rounded mb-2">
+                  <div class="table-responsive border rounded mb-1" style="max-height:220px;overflow:auto">
                     <table class="table table-sm align-middle mb-0">
-                      <thead>
-                        <tr>
-                          <th>Refund</th>
-                          <th>Status</th>
-                          <th>User</th>
-                          <th th:text="#{admin.order-id}">Order</th>
-                          <th th:text="#{admin.amount}">Amount</th>
-                        </tr>
-                      </thead>
+                      <thead><tr><th>Refund</th><th>Status</th><th>User</th><th th:text="#{admin.order-id}">Order</th><th th:text="#{admin.amount}">Amount</th></tr></thead>
                       <tbody id="adminRefundsBody">
-                        <tr>
-                          <td
-                            colspan="5"
-                            class="small muted"
-                            th:text="#{admin.not-loaded}"
-                          >
-                            Not loaded
-                          </td>
-                        </tr>
+                        <tr><td colspan="5" class="small muted" th:text="#{admin.not-loaded}">Not loaded</td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -887,63 +267,17 @@
                 </div>
 
                 <!-- Webhooks Pane -->
-                <div
-                  id="adminWebhooksPane"
-                  class="tab-pane fade"
-                  role="tabpanel"
-                >
-                  <div class="row g-2 align-items-end mb-2">
-                    <div class="col-md-4">
-                      <label class="form-label form-label-sm mb-1"
-                        >Provider</label
-                      >
-                      <input
-                        id="adminWebhookProvider"
-                        class="form-control form-control-sm"
-                        placeholder="mock"
-                      />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label form-label-sm mb-1"
-                        >Event Id</label
-                      >
-                      <input
-                        id="adminWebhookEventId"
-                        class="form-control form-control-sm"
-                        placeholder="evt_"
-                      />
-                    </div>
-                    <div class="col-md-4 d-grid">
-                      <button
-                        id="adminWebhookLoadBtn"
-                        class="btn btn-sm btn-outline-dark"
-                        type="button"
-                        th:text="#{admin.list}"
-                      >
-                        List
-                      </button>
-                    </div>
+                <div id="adminWebhooksPane" class="tab-pane fade" role="tabpanel">
+                  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <input id="adminWebhookProvider" class="form-control form-control-sm" placeholder="Provider" style="width:140px" />
+                    <input id="adminWebhookEventId"  class="form-control form-control-sm" placeholder="Event ID" style="width:140px" />
+                    <button id="adminWebhookLoadBtn" class="btn btn-sm btn-outline-dark" type="button" th:text="#{admin.list}">List</button>
                   </div>
-                  <div class="table-responsive border rounded mb-2">
+                  <div class="table-responsive border rounded mb-1" style="max-height:220px;overflow:auto">
                     <table class="table table-sm align-middle mb-0">
-                      <thead>
-                        <tr>
-                          <th>Provider</th>
-                          <th>Event Id</th>
-                          <th th:text="#{admin.payload-hash}">Payload Hash</th>
-                          <th th:text="#{admin.received}">Received</th>
-                        </tr>
-                      </thead>
+                      <thead><tr><th>Provider</th><th>Event ID</th><th th:text="#{admin.payload-hash}">Payload Hash</th><th th:text="#{admin.received}">Received</th></tr></thead>
                       <tbody id="adminWebhookBody">
-                        <tr>
-                          <td
-                            colspan="4"
-                            class="small muted"
-                            th:text="#{admin.not-loaded}"
-                          >
-                            Not loaded
-                          </td>
-                        </tr>
+                        <tr><td colspan="4" class="small muted" th:text="#{admin.not-loaded}">Not loaded</td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -951,471 +285,165 @@
                 </div>
 
                 <!-- Catalog Pane -->
-                <div
-                  id="adminCatalogPane"
-                  class="tab-pane fade"
-                  role="tabpanel"
-                >
+                <div id="adminCatalogPane" class="tab-pane fade" role="tabpanel">
+
                   <!-- Category CRUD -->
                   <div class="border rounded p-2 mb-2">
-                    <h6 class="mb-2" th:text="#{admin.category-crud}">
-                      Category CRUD
-                    </h6>
-                    <div class="row g-2 align-items-end">
-                      <div class="col-md-2">
-                        <label class="form-label form-label-sm mb-1">Id</label>
-                        <input
-                          id="adminCategoryId"
-                          type="number"
-                          min="1"
-                          class="form-control form-control-sm"
-                          placeholder="1"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label form-label-sm mb-1"
-                          >Slug</label
-                        >
-                        <input
-                          id="adminCategorySlug"
-                          class="form-control form-control-sm"
-                          placeholder="electronics"
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label form-label-sm mb-1"
-                          >Name</label
-                        >
-                        <input
-                          id="adminCategoryName"
-                          class="form-control form-control-sm"
-                          placeholder="Electronics"
-                        />
-                      </div>
+                    <h6 class="mb-2 small fw-semibold" th:text="#{admin.category-crud}">Category CRUD</h6>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                      <input id="adminCategoryId"   type="number" min="1" class="form-control form-control-sm" placeholder="ID"   style="width:70px" />
+                      <input id="adminCategorySlug" class="form-control form-control-sm" placeholder="Slug" style="width:130px" />
+                      <input id="adminCategoryName" class="form-control form-control-sm" placeholder="Name" style="width:150px" />
+                      <button id="adminCategoryCreateBtn" class="btn btn-sm btn-outline-primary" type="button" th:text="#{admin.create}">Create</button>
+                      <button id="adminCategoryUpdateBtn" class="btn btn-sm btn-outline-warning" type="button" th:text="#{admin.update}">Update</button>
+                      <button id="adminCategoryDeleteBtn" class="btn btn-sm btn-outline-danger"  type="button" th:text="#{admin.delete}">Delete</button>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 mt-2">
-                      <button
-                        id="adminCategoryCreateBtn"
-                        class="btn btn-sm btn-outline-primary"
-                        type="button"
-                        th:text="#{admin.create}"
-                      >
-                        Create
-                      </button>
-                      <button
-                        id="adminCategoryUpdateBtn"
-                        class="btn btn-sm btn-outline-warning"
-                        type="button"
-                        th:text="#{admin.update}"
-                      >
-                        Update
-                      </button>
-                      <button
-                        id="adminCategoryDeleteBtn"
-                        class="btn btn-sm btn-outline-danger"
-                        type="button"
-                        th:text="#{admin.delete}"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                    <pre
-                      id="adminCategoryResult"
-                      class="small bg-light border rounded p-2 mt-2 mb-0"
-                    >
--</pre
-                    >
+                    <pre id="adminCategoryResult" class="small bg-light border rounded p-2 mb-0" style="max-height:80px;overflow:auto">-</pre>
                   </div>
 
                   <!-- Product CRUD -->
                   <div class="border rounded p-2 mb-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h6 class="mb-0" th:text="#{admin.product-crud}">
-                        Product CRUD
-                      </h6>
-                      <button
-                        id="adminOpenProductCreatePageBtn"
-                        class="btn btn-sm btn-outline-primary"
-                        type="button"
-                      >
-                        Open Create Page
+                      <h6 class="mb-0 small fw-semibold" th:text="#{admin.product-crud}">Product CRUD</h6>
+                      <button id="adminOpenProductCreatePageBtn" class="btn btn-sm btn-outline-primary" type="button">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Create Page
                       </button>
                     </div>
-                    <div class="row g-2 align-items-end mb-2">
-                      <div class="col-md-9">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.search}"
-                          >Search</label
-                        >
-                        <input
-                          id="adminProductSearch"
-                          class="form-control form-control-sm"
-                          placeholder="name / SKU"
-                        />
-                      </div>
-                      <div class="col-md-3 d-grid">
-                        <button
-                          id="adminProductsLoadBtn"
-                          class="btn btn-sm btn-outline-dark"
-                          type="button"
-                          th:text="#{admin.list-products}"
-                        >
-                          List Products
-                        </button>
-                      </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                      <input id="adminProductSearch" class="form-control form-control-sm" placeholder="Search (name/SKU)" style="width:200px" />
+                      <button id="adminProductsLoadBtn" class="btn btn-sm btn-outline-dark" type="button" th:text="#{admin.list-products}">List</button>
                     </div>
-                    <div class="table-responsive border rounded mb-2">
+                    <div class="table-responsive border rounded mb-2" style="max-height:150px;overflow:auto">
                       <table class="table table-sm align-middle mb-0">
-                        <thead>
-                          <tr>
-                            <th>Id</th>
-                            <th>SKU</th>
-                            <th>Name</th>
-                            <th>Status</th>
-                            <th th:text="#{admin.price}">Price</th>
-                            <th></th>
-                          </tr>
-                        </thead>
+                        <thead><tr><th>Id</th><th>SKU</th><th>Name</th><th>Status</th><th th:text="#{admin.price}">Price</th><th></th></tr></thead>
                         <tbody id="adminProductsBody">
-                          <tr>
-                            <td
-                              colspan="6"
-                              class="small muted"
-                              th:text="#{admin.not-loaded}"
-                            >
-                              Not loaded
-                            </td>
-                          </tr>
+                          <tr><td colspan="6" class="small muted" th:text="#{admin.not-loaded}">Not loaded</td></tr>
                         </tbody>
                       </table>
                     </div>
                     <div id="adminProductsMeta" class="small muted mb-2">-</div>
-                    <div class="row g-2 align-items-end">
-                      <div class="col-md-2">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.product-id}"
-                          >Product Id</label
-                        >
-                        <input
-                          id="adminProductId"
-                          type="number"
-                          min="1"
-                          class="form-control form-control-sm"
-                          placeholder="1"
-                        />
-                      </div>
-                      <div class="col-md-2">
-                        <label class="form-label form-label-sm mb-1">SKU</label>
-                        <input
-                          id="adminProductSku"
-                          class="form-control form-control-sm"
-                          placeholder="SKU-001"
-                        />
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label form-label-sm mb-1"
-                          >Name</label
-                        >
-                        <input
-                          id="adminProductName"
-                          class="form-control form-control-sm"
-                          placeholder="Product name"
-                        />
-                      </div>
-                      <div class="col-md-2">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.price}"
-                          >Price</label
-                        >
-                        <input
-                          id="adminProductPrice"
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          class="form-control form-control-sm"
-                          value="10.00"
-                        />
-                      </div>
-                      <div class="col-md-2">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.currency}"
-                          >Currency</label
-                        >
-                        <input
-                          id="adminProductCurrency"
-                          class="form-control form-control-sm"
-                          value="EUR"
-                        />
-                      </div>
-                      <div class="col-md-2">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.stock}"
-                          >Stock</label
-                        >
-                        <input
-                          id="adminProductStock"
-                          type="number"
-                          min="0"
-                          class="form-control form-control-sm"
-                          value="1"
-                        />
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label form-label-sm mb-1"
-                          >Status</label
-                        >
-                        <select
-                          id="adminProductStatus"
-                          class="form-select form-select-sm"
-                        >
-                          <option value="ACTIVE">ACTIVE</option>
-                          <option value="DRAFT">DRAFT</option>
-                          <option value="ARCHIVED">ARCHIVED</option>
-                        </select>
-                      </div>
-                      <div class="col-md-7">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.category-ids}"
-                          >Category Ids (comma)</label
-                        >
-                        <input
-                          id="adminProductCategoryIds"
-                          class="form-control form-control-sm"
-                          placeholder="1,2,3"
-                        />
-                      </div>
-                      <div class="col-12">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.description}"
-                          >Description</label
-                        >
-                        <textarea
-                          id="adminProductDescription"
-                          class="form-control form-control-sm"
-                          rows="2"
-                          placeholder="Optional description"
-                        ></textarea>
-                      </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                      <input id="adminProductId"          type="number" step="1"    class="form-control form-control-sm" placeholder="ID"    style="width:70px" />
+                      <input id="adminProductSku"         class="form-control form-control-sm" placeholder="SKU"   style="width:90px" />
+                      <input id="adminProductName"        class="form-control form-control-sm" placeholder="Name"  style="width:140px" />
+                      <input id="adminProductPrice"       type="number" step="0.01" class="form-control form-control-sm" placeholder="Price" style="width:80px" value="10.00" />
+                      <input id="adminProductCurrency"    class="form-control form-control-sm" placeholder="EUR"   style="width:55px" value="EUR" />
+                      <input id="adminProductStock"       type="number" min="0"     class="form-control form-control-sm" placeholder="Stock" style="width:70px" value="1" />
+                      <select id="adminProductStatus" class="form-select form-select-sm" style="width:110px">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="DRAFT">DRAFT</option>
+                        <option value="ARCHIVED">ARCHIVED</option>
+                      </select>
+                      <input id="adminProductCategoryIds" class="form-control form-control-sm" placeholder="Cat IDs (1,2)" style="width:120px" />
                     </div>
-                    <div class="d-flex flex-wrap gap-2 mt-2">
-                      <button
-                        id="adminProductCreateBtn"
-                        class="btn btn-sm btn-outline-primary"
-                        type="button"
-                        th:text="#{admin.create}"
-                      >
-                        Create
-                      </button>
-                      <button
-                        id="adminProductUpdateBtn"
-                        class="btn btn-sm btn-outline-warning"
-                        type="button"
-                        th:text="#{admin.update}"
-                      >
-                        Update
-                      </button>
-                      <button
-                        id="adminProductDeleteBtn"
-                        class="btn btn-sm btn-outline-danger"
-                        type="button"
-                        th:text="#{admin.delete}"
-                      >
-                        Delete
-                      </button>
+                    <div class="mb-2">
+                      <textarea id="adminProductDescription" class="form-control form-control-sm" rows="1" placeholder="Description (optional)"></textarea>
                     </div>
-                    <pre
-                      id="adminProductResult"
-                      class="small bg-light border rounded p-2 mt-2 mb-0"
-                    >
--</pre
-                    >
+                    <div class="d-flex gap-2 mb-2">
+                      <button id="adminProductCreateBtn" class="btn btn-sm btn-outline-primary" type="button" th:text="#{admin.create}">Create</button>
+                      <button id="adminProductUpdateBtn" class="btn btn-sm btn-outline-warning" type="button" th:text="#{admin.update}">Update</button>
+                      <button id="adminProductDeleteBtn" class="btn btn-sm btn-outline-danger"  type="button" th:text="#{admin.delete}">Delete</button>
+                    </div>
+                    <pre id="adminProductResult" class="small bg-light border rounded p-2 mb-0" style="max-height:80px;overflow:auto">-</pre>
                   </div>
 
                   <!-- Product Images -->
                   <div class="border rounded p-2">
-                    <h6 class="mb-2" th:text="#{admin.product-image}">
-                      Product Image
-                    </h6>
-                    <div class="row g-2 align-items-end">
-                      <div class="col-md-3">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.product-id}"
-                          >Product Id</label
-                        >
-                        <input
-                          id="adminImageProductId"
-                          type="number"
-                          min="1"
-                          class="form-control form-control-sm"
-                          placeholder="1"
-                        />
-                      </div>
-                      <div class="col-md-5">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          >Image Files (multiple)</label
-                        >
-                        <input
-                          id="adminImageFiles"
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          class="form-control form-control-sm"
-                        />
-                        <div class="small muted mt-1">
-                          Stored under:
-                          <code>/uploads/product-images/{category}/{product}/</code>
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.alt-text}"
-                          >Alt Text</label
-                        >
-                        <input
-                          id="adminImageAlt"
-                          class="form-control form-control-sm"
-                          placeholder="Front view"
-                        />
-                      </div>
-                      <div class="col-md-6">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.image-url}"
-                          >Image URL (optional)</label
-                        >
-                        <input
-                          id="adminImageUrl"
-                          class="form-control form-control-sm"
-                          placeholder="https://..."
-                        />
-                      </div>
-                      <div class="col-md-3">
-                        <label
-                          class="form-label form-label-sm mb-1"
-                          th:text="#{admin.image-id}"
-                          >Image Id (delete)</label
-                        >
-                        <input
-                          id="adminImageId"
-                          type="number"
-                          min="1"
-                          class="form-control form-control-sm"
-                          placeholder="10"
-                        />
-                      </div>
-                      <div class="col-md-3 d-grid">
-                        <button
-                          id="adminImagesLoadBtn"
-                          class="btn btn-sm btn-outline-dark"
-                          type="button"
-                        >
-                          List Images
-                        </button>
-                      </div>
-                      <div class="col-md-12 d-flex flex-wrap gap-2">
-                        <button
-                          id="adminImageAddBtn"
-                          class="btn btn-sm btn-outline-primary"
-                          type="button"
-                          th:text="#{admin.add-image}"
-                        >
-                          Add Image
-                        </button>
-                        <button
-                          id="adminImageDeleteBtn"
-                          class="btn btn-sm btn-outline-danger"
-                          type="button"
-                          th:text="#{admin.delete-image}"
-                        >
-                          Delete Image
-                        </button>
-                      </div>
+                    <h6 class="mb-2 small fw-semibold" th:text="#{admin.product-image}">Product Images</h6>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                      <input id="adminImageProductId" type="number" min="1" class="form-control form-control-sm" placeholder="Product ID"  style="width:100px" />
+                      <input id="adminImageFiles"     type="file" multiple accept="image/*" class="form-control form-control-sm" style="width:200px" />
+                      <input id="adminImageAlt"       class="form-control form-control-sm" placeholder="Alt text"  style="width:110px" />
+                      <input id="adminImageUrl"       class="form-control form-control-sm" placeholder="URL (opt)" style="width:140px" />
+                      <input id="adminImageId"        type="number" min="1" class="form-control form-control-sm" placeholder="Img ID (del)" style="width:110px" />
+                      <button id="adminImagesLoadBtn"  class="btn btn-sm btn-outline-dark"    type="button">List</button>
+                      <button id="adminImageAddBtn"    class="btn btn-sm btn-outline-primary" type="button" th:text="#{admin.add-image}">Add</button>
+                      <button id="adminImageDeleteBtn" class="btn btn-sm btn-outline-danger"  type="button" th:text="#{admin.delete-image}">Delete</button>
                     </div>
-                    <div class="table-responsive border rounded mt-2">
+                    <div class="table-responsive border rounded mb-2" style="max-height:150px;overflow:auto">
                       <table class="table table-sm align-middle mb-0">
-                        <thead>
-                          <tr>
-                            <th>Id</th>
-                            <th>Preview</th>
-                            <th>URL</th>
-                            <th>Order</th>
-                            <th>Primary</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
+                        <thead><tr><th>Id</th><th>Preview</th><th>URL</th><th>Order</th><th>Primary</th><th>Actions</th></tr></thead>
                         <tbody id="adminImageRows">
-                          <tr>
-                            <td colspan="6" class="small muted">Not loaded</td>
-                          </tr>
+                          <tr><td colspan="6" class="small muted">Not loaded</td></tr>
                         </tbody>
                       </table>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
                       <div id="adminImagePageInfo" class="small muted">Page 1/1</div>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button
-                          id="adminImagePrevBtn"
-                          class="btn btn-outline-dark"
-                          type="button"
-                        >
-                          Prev
-                        </button>
-                        <button
-                          id="adminImageNextBtn"
-                          class="btn btn-outline-dark"
-                          type="button"
-                        >
-                          Next
-                        </button>
+                      <div class="btn-group btn-group-sm">
+                        <button id="adminImagePrevBtn" class="btn btn-outline-dark" type="button">Prev</button>
+                        <button id="adminImageNextBtn" class="btn btn-outline-dark" type="button">Next</button>
                       </div>
                     </div>
-                    <pre
-                      id="adminImageResult"
-                      class="small bg-light border rounded p-2 mt-2 mb-0"
-                    >
--</pre
-                    >
+                    <pre id="adminImageResult" class="small bg-light border rounded p-2 mb-0" style="max-height:80px;overflow:auto">-</pre>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- Worker Section -->
+                </div><!-- /catalog pane -->
+              </div><!-- /tab-content -->
+            </div><!-- /admin section -->
+
+            <!-- WORKER SECTION -->
             <div
               id="dashboardWorkerSection"
               class="dashboard-panel dashboard-panel-worker d-none"
             >
-              <h6 class="mb-2" th:text="#{dashboard.worker-section}">
-                Worker Section
-              </h6>
-              <div
-                class="small muted"
-                th:text="#{dashboard.worker-section-hint}"
-              >
+              <h6 class="mb-2" th:text="#{dashboard.worker-section}">Worker Section</h6>
+              <div class="small muted" th:text="#{dashboard.worker-section-hint}">
                 Operational/Fulfillment tasks will appear here.
               </div>
             </div>
 
-            <!-- Department Section (rendered by script.js renderDepartmentPanels) -->
+            <!-- Department Section (rendered by script.js) -->
             <div id="dashboardDeptSection" class="dashboard-extra-panel d-none"></div>
 
-            <!-- Customer Tier Section (rendered by script.js renderTierPanel) -->
+            <!-- Customer Tier Section (rendered by script.js) -->
             <div id="dashboardTierSection" class="dashboard-extra-panel d-none"></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!--/* ===== ORDERS MODAL ===== */-->
+          </div><!-- /modal-body -->
+        </div><!-- /modal-content -->
+      </div><!-- /modal-dialog -->
+
+      <!--
+        HIDDEN COMPATIBILITY LAYER
+        Keeps script.js getElementById() from returning null after the
+        inline Change-Password / Update-Address / Saved-Card forms were
+        replaced with page-navigation cards.  These elements are never
+        displayed but must exist in the DOM.
+      -->
+      <div class="d-none" aria-hidden="true">
+        <!-- Change-password (now at /password) -->
+        <input  id="profileCurrentPassword" type="password" autocomplete="current-password" />
+        <input  id="profileNewPassword"     type="password" autocomplete="new-password" />
+        <input  id="profileConfirmPassword" type="password" autocomplete="new-password" />
+        <button id="profilePasswordChangeBtn" type="button"></button>
+
+        <!-- Update-address (now at /adress) -->
+        <select id="profileAddressSelect"></select>
+        <button id="profileAddressLoadBtn" type="button"></button>
+        <input  id="profileAddrLabel" />
+        <input  id="profileAddrFullName" />
+        <input  id="profileAddrPhone" />
+        <input  id="profileAddrCountry" value="DE" />
+        <input  id="profileAddrStreet" />
+        <input  id="profileAddrHouseNumber" />
+        <input  id="profileAddrLine2" />
+        <input  id="profileAddrCity" />
+        <input  id="profileAddrState" />
+        <input  id="profileAddrPostal" />
+        <input  id="profileAddrDefault" type="checkbox" />
+        <button id="profileAddressUpdateBtn" type="button"></button>
+        <div    id="profileAddressResult"></div>
+
+        <!-- Saved-card (now at /karte) -->
+        <input  id="profileCardHolderName" autocomplete="cc-name" />
+        <input  id="profileCardNumber"     inputmode="numeric" autocomplete="cc-number" />
+        <input  id="profileCardExpMonth"   inputmode="numeric" autocomplete="cc-exp-month" />
+        <input  id="profileCardExpYear"    inputmode="numeric" autocomplete="cc-exp-year" />
+        <button id="profileCardSaveBtn"  type="button"></button>
+        <button id="profileCardClearBtn" type="button"></button>
+        <div    id="profileCardResult"></div>
+      </div>
+
+    </div><!-- /modal -->
   </body>
 </html>
